@@ -83,10 +83,14 @@
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
         .admin-panel { background: #fffbeb; border: 2px solid #f59e0b; padding: 20px; border-radius: 10px; margin-bottom: 25px; }
         .admin-panel h3 { color: #b45309; margin-top: 0; }
-        
         .hw-quiz-box { margin-top: 20px; padding: 15px; background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 8px; text-align: right; }
         .match-row { display: flex; align-items: center; justify-content: space-between; margin: 10px 0; background: white; padding: 10px; border-radius: 6px; border: 1px solid #e2e8f0; direction: ltr; }
-        .correct-ans-indicator { color: #10b981; font-weight: bold; font-size: 13px; margin-right: 10px; }
+        
+        /* تأثيرات زر Zoom */
+        .zoom-btn { background:#2563eb; color:white; text-decoration:none; padding:6px 12px; display:inline-block; border-radius:6px; font-weight:bold; }
+        .zoom-btn:hover { background:#1e40af; }
+        .zoom-active { animation: zoomPulse 1.5s infinite; }
+        @keyframes zoomPulse { 0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.7); } 50% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(37, 99, 235, 0); } 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(37, 99, 235, 0); } }
     </style>
 </head>
 <body>
@@ -95,6 +99,7 @@
     <img src="logo.png?v=18" alt="English Land Logo" class="global-logo">
 </div>
 
+<!-- ==================== واجهة الهبوط الاحترافية ==================== -->
 <div id="landingPage" class="landing-wrapper">
     <div class="slider-container">
         <div class="slide active" style="background-image: url('https://images.unsplash.com/photo-1573164713988-8665fc963095?auto=format&fit=crop&w=1000&q=80');">
@@ -120,10 +125,8 @@
     <div class="login-wrapper">
         <h2 style="font-size: 24px;">English Land LMS</h2>
         <p style="margin-bottom: 20px;">قم بإدخال بيانات الدخول لفتح حسابك</p>
-        
         <input type="text" id="universalId" placeholder="اكتب الـ ID الخاص بك هنا" style="margin-bottom: 10px;">
         <input type="password" id="universalPass" placeholder="كلمة المرور" style="margin-bottom: 15px;">
-        
         <button onclick="handleLogin()" style="padding: 15px; font-size: 16px;">تسجيل الدخول الآمن 🔒</button>
         <div id="errorMsg" style="color:var(--danger); font-weight:bold; margin-top:15px;"></div>
     </div>
@@ -139,6 +142,7 @@
     <button class="btn-skip" id="skipBtn" onclick="skipIntroVideo()" disabled>جاري التحضير...</button>
 </div>
 
+<!-- ==================== لوحة تحكم الطالب ==================== -->
 <div class="container hidden" id="studentDashboard">
     <div style="text-align: right;"><h2 id="welcomeStudent">مرحباً بك</h2></div>
     <div class="grid-cards">
@@ -154,11 +158,11 @@
     <div class="feedback-box"><h4>💬 الملاحظات العامة للتقييم:</h4><p id="instructorFeedback" style="margin:5px 0 0 0; color:#1e3a8a;"></p></div>
 
     <div class="card-section">
-        <div class="card-title">📅 جدول مواعيد المحاضرات المبرمجة</div>
+        <div class="card-title">📅 جدول المواعيد (حضور المركز والبث المباشر)</div>
         <div class="table-responsive">
             <table>
-                <thead><tr><th>المحاضرة</th><th>اليوم والتاريخ</th><th>حالة الحضور</th></tr></thead>
-                <tbody id="studentScheduleTableBody"><tr><td colspan="3">جاري جلب الجدول...⏳</td></tr></tbody>
+                <thead><tr><th>المحاضرة</th><th>اليوم والتاريخ</th><th>حالة الحضور</th><th>البث المباشر 🔴</th></tr></thead>
+                <tbody id="studentScheduleTableBody"><tr><td colspan="4">جاري جلب الجدول...⏳</td></tr></tbody>
             </table>
         </div>
     </div>
@@ -200,16 +204,19 @@
     <button onclick="gradeAndSubmitExam()" style="background-color: var(--secondary); font-size: 16px; margin-top: 20px;">🏁 تسليم الإجابات وإنهاء الامتحان</button>
 </div>
 
+<!-- ==================== لوحة تحكم المحاضر والأدمن ==================== -->
 <div class="container hidden" id="teacherDashboard" style="max-width: 1050px; text-align: right;">
     <h2 id="welcomeTeacher">مرحباً يا أستاذ</h2>
     
+    <!-- قسم إدارة الجداول وزوم المحدث -->
     <div id="superAdminPanel" class="admin-panel hidden">
-        <h3>👑 تحكم الإدارة العليا (المواعيد والجداول)</h3>
-        <p style="font-size:13px; margin:0 0 15px 0;">أزرار الغياب والحضور مفتوحة لك دائماً كأدمن لإصلاح الأخطاء. الجدول التالي لتحديد المواعيد التي تظهر للطلاب وتلزم المحاضرين.</p>
+        <h3>👑 تحكم الإدارة العليا (المواعيد وروابط Zoom)</h3>
+        <p style="font-size:13px; margin:0 0 15px 0;">أزرار الغياب والحضور مفتوحة لك دائماً كأدمن لإصلاح الأخطاء. الجدول التالي لتحديد المواعيد التي تظهر للطلاب وتلزم المحاضرين، مع إمكانية إضافة رابط بث مباشر (Zoom).</p>
         <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
             <div style="flex: 1; min-width: 120px;"><label style="font-size: 12px; font-weight: bold;">اختر الجروب:</label><select id="adminGroupSelect" style="padding: 8px; font-size: 14px; margin: 5px 0;"></select></div>
             <div style="flex: 1; min-width: 120px;"><label style="font-size: 12px; font-weight: bold;">اختر المحاضرة:</label><select id="adminLecSelect" style="padding: 8px; font-size: 14px; margin: 5px 0;"><option value="L1">L1</option><option value="L2">L2</option><option value="L3">L3</option><option value="L4">L4</option><option value="L5">L5</option><option value="L6">L6</option><option value="L7">L7</option><option value="L8">L8</option></select></div>
             <div style="flex: 2; min-width: 180px;"><label style="font-size: 12px; font-weight: bold;">التاريخ والوقت:</label><input type="datetime-local" id="adminDateTime" style="padding: 8px; font-size: 14px; margin: 5px 0;"></div>
+            <div style="flex: 2; min-width: 180px;"><label style="font-size: 12px; font-weight: bold;">رابط Zoom (اختياري):</label><input type="url" id="adminZoomLink" placeholder="https://zoom.us/..." style="padding: 8px; font-size: 14px; margin: 5px 0; text-align: left; direction: ltr;"></div>
             <div style="flex: 1; min-width: 120px;"><label style="display:block; height:18px;"></label><button onclick="saveScheduleDate()" style="padding: 10px; font-size: 14px; background: #b45309; margin: 0;">حفظ الموعد ⏱️</button></div>
         </div>
         <div id="adminMsg" style="margin-top:10px; font-weight:bold; font-size:14px;"></div>
@@ -236,7 +243,7 @@
         <div style="flex: 1; min-width: 150px;"><label style="font-weight: bold; color: var(--primary);">اختر المجموعة:</label><select id="groupFilter" onchange="filterTeacherStudents()"></select></div>
         <div style="flex: 1; min-width: 150px;"><label style="font-weight: bold; color: var(--primary);">اختر المحاضرة:</label><select id="lectureSelect" onchange="filterTeacherStudents()"><option value="L1">المحاضرة 1 (L1)</option><option value="L2">المحاضرة 2 (L2)</option><option value="L3">المحاضرة 3 (L3)</option><option value="L4">المحاضرة 4 (L4)</option><option value="L5">المحاضرة 5 (L5)</option><option value="L6">المحاضرة 6 (L6)</option><option value="L7">المحاضرة 7 (L7)</option><option value="L8">المحاضرة 8 (L8)</option></select></div>
     </div>
-    <div id="lectureStatusMsg" style="text-align:center; font-weight:bold; margin-bottom:15px; font-size:14px;"></div>
+    <div id="lectureStatusMsg" style="text-align:center; font-weight:bold; margin-bottom:15px; font-size:14px; line-height: 1.6;"></div>
     
     <div class="card-section">
         <div class="card-title">👥 قائمة طلاب المجموعة</div>
@@ -246,6 +253,7 @@
     </div>
 </div>
 
+<!-- موديولات النوافذ المنبثقة -->
 <div id="hwModal" class="modal hidden">
     <div class="modal-content">
         <span class="close-btn" onclick="closeHomeworkModal()">&times;</span>
@@ -281,7 +289,7 @@
         }, 4000); 
     }
 
-    // تم تثبيت الرابط الخاص بك كما هو بناءً على طلبك
+    // رابطك القديم ثابت كما طلبته بدون تغيير
     const GAS_URL = "https://script.google.com/macros/s/AKfycbxjjZmjHiv3WB8JS5CXjhYE_de3jCh9RuIlManhPRdJcgWtaoiOcsg4jYMyMWisCem7/exec";
 
     let teacherStudentsData = [], studentActiveExams = {}, currentExamQuestions = [], currentExamTypeKey = "", examTimerInterval, cachedUserData = null, splashCountdownInterval;
@@ -360,17 +368,50 @@
         const scheduleTbody = document.getElementById('studentScheduleTableBody'); scheduleTbody.innerHTML = "";
         const studentGrp = String(data.student.group).trim();
         
+        // بناء جدول الحضور وزر Zoom الذكي
         for(let i=1; i<=8; i++) {
-            let lecKey = "L" + i, schKey = studentGrp + "_" + lecKey, dateStr = data.schedule ? data.schedule[schKey] : null, displayDate = "لم يُحدد بعد ⏳";
+            let lecKey = "L" + i, schKey = studentGrp + "_" + lecKey;
+            let schObj = data.schedule ? data.schedule[schKey] : null;
+            let dateStr = schObj ? schObj.date : null;
+            let zLink = schObj ? schObj.zoom : null;
+            let displayDate = "لم يُحدد بعد ⏳";
+            let zoomBtnHtml = `<span style="color:#94a3b8; font-size:12px;">غير متاح</span>`;
+            
             if(dateStr) {
                 let safeDateStr = String(dateStr).replace(/-/g, "/").replace("T", " ");
                 let d = new Date(safeDateStr);
                 if (isNaN(d.getTime())) { d = new Date(dateStr); }
-                if (!isNaN(d.getTime())) { displayDate = d.toLocaleString('ar-EG', { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit' }); }
+                
+                if (!isNaN(d.getTime())) { 
+                    displayDate = d.toLocaleString('ar-EG', { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit' }); 
+                    
+                    if (zLink) {
+                        let now = new Date();
+                        let diffMins = (now - d) / (1000 * 60);
+                        
+                        // يفتح قبل 15 دقيقة ويقفل بعد 135 دقيقة (ساعتين وربع من بداية المحاضرة)
+                        if (diffMins < -15) {
+                            zoomBtnHtml = `<button class="btn-att disabled" disabled style="background:#cbd5e1; color:#475569;">يفتح في الموعد</button>`;
+                        } else if (diffMins >= -15 && diffMins <= 135) {
+                            zoomBtnHtml = `<a href="${zLink}" target="_blank" class="zoom-btn zoom-active">بدء المحاضرة</a>`;
+                        } else {
+                            zoomBtnHtml = `<button class="btn-att disabled" disabled style="background:#fee2e2; color:#991b1b;">انتهت المحاضرة</button>`;
+                        }
+                    } else {
+                        zoomBtnHtml = `<span style="color:#64748b; font-size:12px; font-weight:bold;">أوفلاين (بالمركز)</span>`;
+                    }
+                }
             }
+            
             let attStatus = String(attDet[lecKey] || "-"); let statusColor = "#64748b";
             if(attStatus === "ح" || attStatus === "حاضر") { attStatus = "حاضر ✅"; statusColor = "#065f46"; } else if(attStatus === "غ" || attStatus === "غائب") { attStatus = "غائب ❌"; statusColor = "#991b1b"; } else { attStatus = "قادمة 🕒"; }
-            scheduleTbody.innerHTML += `<tr><td style="font-weight:bold;">${lecKey}</td><td style="direction: rtl;">${displayDate}</td><td style="color:${statusColor}; font-weight:bold;">${attStatus}</td></tr>`;
+            
+            scheduleTbody.innerHTML += `<tr>
+                <td style="font-weight:bold;">${lecKey}</td>
+                <td style="direction: rtl;">${displayDate}</td>
+                <td style="color:${statusColor}; font-weight:bold;">${attStatus}</td>
+                <td>${zoomBtnHtml}</td>
+            </tr>`;
         }
         
         const isQ1Open = isS100 || (String(attDet["L4"]) === "ح" || String(attDet["L4"]) === "حاضر");
@@ -646,31 +687,54 @@
     }
     
     async function saveScheduleDate() {
-        const grp = document.getElementById('adminGroupSelect').value, lec = document.getElementById('adminLecSelect').value, dTime = document.getElementById('adminDateTime').value, msg = document.getElementById('adminMsg');
+        const grp = document.getElementById('adminGroupSelect').value, lec = document.getElementById('adminLecSelect').value, dTime = document.getElementById('adminDateTime').value;
+        const zoomLink = document.getElementById('adminZoomLink').value.trim(); // قراءة رابط زوم
+        const msg = document.getElementById('adminMsg');
+        
         if(!dTime) { msg.style.color="red"; msg.innerText = "برجاء اختيار الموعد أولاً."; return; } msg.style.color="#b45309"; msg.innerText = "جاري الحفظ بنظام (POST)...";
         try { 
             const res = await fetch(GAS_URL, {
                 method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: `action=saveSchedule&group=${encodeURIComponent(grp)}&lecture=${encodeURIComponent(lec)}&dateTime=${encodeURIComponent(dTime)}`
+                body: `action=saveSchedule&group=${encodeURIComponent(grp)}&lecture=${encodeURIComponent(lec)}&dateTime=${encodeURIComponent(dTime)}&zoomLink=${encodeURIComponent(zoomLink)}`
             });
             const d = await res.json();
-            if(d.success) { msg.style.color="green"; msg.innerText = "✅ تم حفظ وتثبيت الموعد المبرمج للطلاب!"; cachedUserData.schedule[grp.trim() + "_" + lec] = dTime; filterTeacherStudents(); } else { msg.style.color="red"; msg.innerText = "خطأ: " + d.error; }
+            if(d.success) { 
+                msg.style.color="green"; msg.innerText = "✅ تم حفظ وتثبيت الموعد المبرمج للطلاب!"; 
+                cachedUserData.schedule[grp.trim() + "_" + lec] = {date: dTime, zoom: zoomLink}; 
+                filterTeacherStudents(); 
+            } else { msg.style.color="red"; msg.innerText = "خطأ: " + d.error; }
         } catch(e) { msg.style.color="red"; msg.innerText = "خطأ اتصال."; }
     }
     
     function filterTeacherStudents() {
         const grp = document.getElementById('groupFilter').value, lec = document.getElementById('lectureSelect').value, tbody = document.getElementById('teacherStudentsList'); tbody.innerHTML = "";
-        let isLecOpen = false, statusMsg = "", isSuperAdmin = (cachedUserData.role === "superadmin"), schKey = grp.trim() + "_" + lec, schDateString = cachedUserData.schedule ? cachedUserData.schedule[schKey] : null;
-        if(isSuperAdmin) { isLecOpen = true; statusMsg = schDateString ? `👑 (أنت أدمن: أزرار التحكم مفتوحة دائماً). الموعد المبرمج: ${new Date(schDateString).toLocaleString('ar-EG')}` : "👑 (أنت أدمن). لم يتم تحديد موعد مبرمج لهذه المحاضرة بعد."; } 
-        else {
+        let isLecOpen = false, statusMsg = "", isSuperAdmin = (cachedUserData.role === "superadmin"), schKey = grp.trim() + "_" + lec;
+        
+        let schObj = cachedUserData.schedule ? cachedUserData.schedule[schKey] : null;
+        let schDateString = schObj ? schObj.date : null;
+        let zLink = schObj ? schObj.zoom : null;
+        
+        let zoomHtml = "";
+        if(zLink) {
+            zoomHtml = `<br><a href="${zLink}" target="_blank" class="zoom-btn zoom-active" style="margin-top:10px;">📹 بدء وإدارة البث المباشر (Zoom)</a>`;
+        }
+
+        if(isSuperAdmin) { 
+            isLecOpen = true; 
+            statusMsg = schDateString ? `👑 (أنت أدمن: أزرار التحكم مفتوحة دائماً). الموعد المبرمج: ${new Date(schDateString).toLocaleString('ar-EG')} ${zoomHtml}` : "👑 (أنت أدمن). لم يتم تحديد موعد مبرمج لهذه المحاضرة بعد."; 
+        } else {
             if(schDateString) {
                 const schDate = new Date(schDateString), diffHours = (new Date() - schDate) / (1000 * 60 * 60);
-                if (diffHours >= 0 && diffHours <= 24) { isLecOpen = true; statusMsg = `🟢 أزرار الحضور مفتوحة، متبقي ${Math.floor(24 - diffHours)} ساعة على الإغلاق.`; } 
-                else if (diffHours < 0) statusMsg = `🔴 مغلق (تفتح تلقائياً في موعدها: ${schDate.toLocaleString('ar-EG')})`;
+                if (diffHours >= 0 && diffHours <= 24) { 
+                    isLecOpen = true; statusMsg = `🟢 أزرار الحضور مفتوحة، متبقي ${Math.floor(24 - diffHours)} ساعة على الإغلاق. ${zoomHtml}`; 
+                } 
+                else if (diffHours < 0) statusMsg = `🔴 مغلق (تفتح أزرار الحضور تلقائياً في موعدها: ${schDate.toLocaleString('ar-EG')})`;
                 else statusMsg = `🔴 مغلق (انتهى وقت رصد غياب المحاضرة). راجع الإدارة العليا.`;
             } else statusMsg = `🔴 الحضور مغلق (لم تقم الإدارة ببرمجة موعد المحاضرة بعد).`;
         }
-        document.getElementById('lectureStatusMsg').innerText = statusMsg; document.getElementById('lectureStatusMsg').style.color = isLecOpen ? "#065f46" : "#991b1b";
+        
+        document.getElementById('lectureStatusMsg').innerHTML = statusMsg; 
+        document.getElementById('lectureStatusMsg').style.color = isLecOpen ? "#065f46" : "#991b1b";
         document.getElementById('teacherTableHead').innerHTML = `<tr><th>كود</th><th>الاسم والبروفايل</th><th>واجب ${lec}</th><th>الغياب والحضور</th>` + (lec==='L4'?'<th>رصد Q1</th>':(lec==='L6'?'<th>رصد Q2</th>':(lec==='L8'?'<th>رصد Final</th>':''))) + `<th>ملاحظات عامة</th><th>إجراء</th></tr>`;
         const filtered = teacherStudentsData.filter(s => String(s.group).trim() == String(grp).trim()); if(filtered.length === 0) { tbody.innerHTML = `<tr><td colspan="7">لا يوجد طلاب.</td></tr>`; return; }
         filtered.forEach(s => {
