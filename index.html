@@ -56,7 +56,11 @@
         .card-title { font-size: 16px; font-weight: bold; color: var(--primary); border-bottom: 2px solid #f1f5f9; padding-bottom: 5px; margin-bottom: 10px; }
         .material-item { background: #f1f5f9; margin: 8px 0; padding: 12px; border-radius: 8px; display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between; align-items: center; }
         .material-item a { color: var(--secondary); text-decoration: none; font-weight: bold; }
-        
+        // استبدل جزء عرض الماتيريال بهذا المنطق
+data.materials.forEach(m => {
+    let gameButton = m.gameLink ? `<button onclick="openGameModal('${m.gameLink}')" style="background:var(--secondary);">🎮 تحدي</button>` : "";
+    mList.innerHTML += `<div class="material-item"><span>📄 ${m.title}</span> ${gameButton} <a href="${m.link}" target="_blank">تحميل 📥</a></div>`;
+});
         .table-responsive { overflow-x: auto; background: #fff; border-radius: 8px; border: 1px solid #e2e8f0; padding: 5px; margin-top: 10px; width: 100%; box-sizing: border-box; }
         table { width: 100%; border-collapse: collapse; font-size: 13px; }
         th, td { border: 1px solid #e2e8f0; padding: 10px; text-align: center; white-space: nowrap; }
