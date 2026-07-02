@@ -6,20 +6,26 @@
 <title>English Land LMS | Integrated Learning Platform</title>
 <style>
 :root { --primary: #1e3a8a; --secondary: #10b981; --bg: #021222; --text: #1e293b; --danger: #ef4444; --locked: #cbd5e1; 
-    --game-bg: #000000; --k-red: #e21b3c; --k-blue: #1368ce; --k-yellow: #d89e00; --k-green: #26890c; }
+    /* Game Colors */
+    --game-bg: #000000; --k-red: #e21b3c; --k-blue: #1368ce; --k-yellow: #d89e00; --k-green: #26890c;
+}
+
 body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 15px; }
 .global-header { text-align: center; margin-top: 5px; margin-bottom: 20px; }
 .global-logo { max-width: 140px; border-radius: 8px; }
+
 .container { background: white; padding: 15px; margin: 15px auto; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); border-top: 5px solid var(--primary); text-align: left; box-sizing: border-box; width: 100%; max-width: 800px; }
 .landing-wrapper { display: flex; flex-direction: column; gap: 0; margin: 0 auto; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.2); width: 100%; max-width: 1000px; }
 .slider-container { position: relative; height: 220px; }
 .login-wrapper { background: white; padding: 25px 15px; text-align: center; display: flex; flex-direction: column; justify-content: center; }
+
 @media(min-width: 768px) {
 .container { padding: 30px; margin: 40px auto; box-shadow: 0 15px 30px rgba(0,0,0,0.5); }
 .landing-wrapper { flex-direction: row; align-items: stretch; gap: 20px; box-shadow: none; background: transparent; overflow: visible; margin-bottom: 40px; }
 .slider-container { flex: 1.5; height: 450px; border-radius: 12px; box-shadow: 0 15px 30px rgba(0,0,0,0.5); border-bottom: 5px solid var(--secondary); }
 .login-wrapper { flex: 1; padding: 40px 30px; border-radius: 12px; box-shadow: 0 15px 30px rgba(0,0,0,0.5); border-top: 5px solid var(--primary); }
 }
+
 .slide { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; transition: opacity 1s ease-in-out; display: flex; flex-direction: column; justify-content: flex-end; padding: 30px 20px; box-sizing: border-box; background-size: cover; background-position: center; }
 .slide::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(to top, rgba(2, 18, 34, 0.95) 0%, rgba(2, 18, 34, 0.1) 100%); z-index: 1; }
 .slide.active { opacity: 1; z-index: 2; }
@@ -27,6 +33,7 @@ body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-
 .slide-content h2 { color: var(--secondary); font-size: 22px; margin-bottom: 5px; text-shadow: 1px 1px 3px rgba(0,0,0,0.8); }
 .slide-content p { color: #f1f5f9; font-size: 14px; line-height: 1.5; text-shadow: 1px 1px 3px rgba(0,0,0,0.8); margin: 0; }
 @media(min-width: 768px) { .slide-content h2 { font-size: 28px; margin-bottom: 10px; } .slide-content p { font-size: 16px; line-height: 1.6; } }
+
 h2, h3 { color: var(--primary); margin-bottom: 5px; }
 p { color: #64748b; margin-top: 5px; font-size: 14px; }
 input, select, textarea { width: 100%; padding: 12px; margin: 10px 0; border: 2px solid #e2e8f0; border-radius: 8px; text-align: center; font-size: 16px; box-sizing: border-box; font-family: inherit; }
@@ -38,6 +45,7 @@ button:disabled { background-color: var(--locked); cursor: not-allowed; }
 #videoSplashSection { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: #021222; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
 #introVideo { width: 100%; height: 100%; object-fit: contain !important; }
 .btn-skip { position: absolute; bottom: 40px; z-index: 2; background-color: rgba(255, 255, 255, 0.1); backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.4); color: white; width: auto; padding: 12px 30px; border-radius: 25px; }
+
 .grid-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-top: 20px; }
 .info-card { background: #f1f5f9; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0; display: flex; flex-direction: column; justify-content: center; text-align: center; }
 .info-card h4 { margin: 0 0 8px 0; color: var(--primary); font-size: 13px; }
@@ -47,6 +55,7 @@ button:disabled { background-color: var(--locked); cursor: not-allowed; }
 .pay-half, .pay-percent { background-color: #fef3c7; color: #92400e; }
 .pay-none { background-color: #fee2e2; color: #991b1b; }
 .feedback-box { background: #eff6ff; border-left: 4px solid #3b82f6; padding: 15px; margin-top: 20px; border-radius: 4px; text-align: left; }
+.bar-box { background: #fef2f2; border-left: 4px solid var(--danger); padding: 15px; margin-top: 20px; border-radius: 4px; text-align: left; color: #991b1b; }
 .card-section { margin-top: 25px; text-align: left; }
 .card-title { font-size: 16px; font-weight: bold; color: var(--primary); border-bottom: 2px solid #f1f5f9; padding-bottom: 5px; margin-bottom: 10px; }
 .material-item { background: #f1f5f9; margin: 8px 0; padding: 12px; border-radius: 8px; display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between; align-items: center; }
@@ -81,7 +90,7 @@ th { background-color: #f1f5f9; color: var(--primary); }
 .zoom-active { animation: zoomPulse 1.5s infinite; }
 @keyframes zoomPulse { 0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.7); } 50% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(37, 99, 235, 0); } 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(37, 99, 235, 0); } }
 
-/* Game UI */
+/* --- Game UI (Kahoot & Duolingo Style) --- */
 .gamified-section { background: var(--bg); border-radius: 12px; padding: 20px; color: white; margin-top: 20px; text-align: center; box-shadow: 0 8px 30px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); }
 .game-modes-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px; }
 .game-mode-card { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255,255,255,0.2); padding: 20px; border-radius: 12px; cursor: pointer; transition: 0.3s all; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
@@ -94,8 +103,9 @@ th { background-color: #f1f5f9; color: var(--primary); }
 .streak-fire { color: #f97316; font-size: 18px; font-weight: bold; text-shadow: 0 0 10px rgba(249, 115, 22, 0.8); animation: pulse 1s infinite; }
 .game-score-badge { background: rgba(255,255,255,0.1); color: white; font-weight: bold; padding: 8px 15px; border-radius: 20px; font-size: 16px; border: 1px solid rgba(255,255,255,0.2); }
 .score-pop { animation: popIn 0.3s ease-out; color: #34d399; }
-.game-question-text { font-size: 22px; font-weight: bold; color: white; margin-bottom: 25px; line-height: 1.5; text-align: center; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); }
-.kahoot-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; }
+.game-question-text { font-size: 22px; font-weight: bold; color: white; margin-bottom: 25px; line-height: 1.5; text-align: center; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); direction: ltr;}
+
+.kahoot-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; direction: ltr;}
 @media(max-width: 600px) { .kahoot-grid { grid-template-columns: 1fr; } }
 .kahoot-btn { padding: 20px; font-size: 18px; border-radius: 8px; border: none; color: white; cursor: pointer; font-weight: bold; transition: transform 0.1s, filter 0.2s; box-shadow: 0 6px 0 rgba(0,0,0,0.3); position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; text-align: center; line-height: 1.3; }
 .kahoot-btn:active { transform: translateY(6px); box-shadow: none; }
@@ -104,6 +114,7 @@ th { background-color: #f1f5f9; color: var(--primary); }
 .kahoot-c2 { background-color: var(--k-blue); box-shadow: 0 6px 0 #0d468b; }
 .kahoot-c3 { background-color: var(--k-yellow); box-shadow: 0 6px 0 #8b6600; }
 .kahoot-c4 { background-color: var(--k-green); box-shadow: 0 6px 0 #175307; }
+
 .feedback-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; font-size: 28px; font-weight: bold; z-index: 10; opacity: 0; pointer-events: none; transition: opacity 0.2s; text-shadow: 2px 2px 5px rgba(0,0,0,0.5); }
 .feedback-active { opacity: 1; pointer-events: auto;}
 .feedback-correct { background: rgba(16, 185, 129, 0.95); color: white; }
@@ -120,7 +131,7 @@ th { background-color: #f1f5f9; color: var(--primary); }
 <img src="logo.png?v=18" alt="English Land Logo" class="global-logo">
 </div>
 
-<!-- Landing Page -->
+<!-- ==================== Landing Page ==================== -->
 <div id="landingPage" class="landing-wrapper">
 <div class="slider-container">
 <div class="slide active" style="background-image: url('https://images.unsplash.com/photo-1573164713988-8665fc963095?auto=format&fit=crop&w=1000&q=80');">
@@ -151,7 +162,7 @@ th { background-color: #f1f5f9; color: var(--primary); }
 <button class="btn-skip" id="skipBtn" onclick="skipIntroVideo()" disabled>Preparing...</button>
 </div>
 
-<!-- Student Dashboard -->
+<!-- ==================== Student Dashboard ==================== -->
 <div class="container hidden" id="studentDashboard">
 <div><h2 id="welcomeStudent">Welcome</h2></div>
 <div class="grid-cards">
@@ -219,9 +230,11 @@ th { background-color: #f1f5f9; color: var(--primary); }
             <div id="gameQuestionText" class="game-question-text"></div>
         </div>
         <div id="gameChoicesBox" class="kahoot-grid"></div>
-        <button onclick="exitActiveGame()" style="background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.3); margin-top:25px; width:auto; padding:8px 25px; color:#fff;">🏳️ Pause Journey & Return</button>
+        <button onclick="exitActiveGame()" style="background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.3); margin-top:25px; width:auto; padding:8px 25px; color:#fff; cursor:pointer;">🏳️ Pause Journey & Return</button>
     </div>
 </div>
+
+<div id="homeworkQuizContainer" class="hidden hw-quiz-box"></div>
 
 <div id="hwResultBox" class="hidden" style="margin-top: 20px; padding: 15px; background: #f0fdf4; border: 1px solid #10b981; border-radius: 8px;">
 <h4 style="margin: 0 0 10px 0; color: #065f46;">✅ Instructor's Evaluation:</h4>
@@ -235,7 +248,7 @@ th { background-color: #f1f5f9; color: var(--primary); }
 <div class="card-section"><div class="card-title">📚 Course Materials</div><div id="materialsList"></div></div>
 </div>
 
-<!-- Exam Interface -->
+<!-- ==================== Exam Interface ==================== -->
 <div class="container hidden" id="examTakerDashboard" style="max-width: 850px;">
 <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--primary); padding-bottom: 10px; margin-bottom: 20px;">
 <h2 id="currentExamTitle">Start Exam</h2>
@@ -245,7 +258,7 @@ th { background-color: #f1f5f9; color: var(--primary); }
 <button onclick="gradeAndSubmitExam()" style="background-color: var(--secondary); font-size: 16px; margin-top: 20px;">🏁 Submit Answers & Finish</button>
 </div>
 
-<!-- Teacher & Admin Dashboard -->
+<!-- ==================== Teacher & Admin Dashboard ==================== -->
 <div class="container hidden" id="teacherDashboard" style="max-width: 1050px;">
 <h2 id="welcomeTeacher">Welcome, Instructor</h2>
 
@@ -292,7 +305,7 @@ th { background-color: #f1f5f9; color: var(--primary); }
 </div>
 </div>
 
-<!-- Modals -->
+<!-- ==================== Modals ==================== -->
 <div id="hwModal" class="modal hidden">
 <div class="modal-content">
 <span class="close-btn" onclick="closeHomeworkModal()">&times;</span>
@@ -318,19 +331,498 @@ th { background-color: #f1f5f9; color: var(--primary); }
 </div>
 
 <script>
+// Sliders Logic
 let currentSlide = 0;
 const slides = document.querySelectorAll('.slide');
-if(slides.length > 0) { setInterval(() => { slides[currentSlide].classList.remove('active'); currentSlide = (currentSlide + 1) % slides.length; slides[currentSlide].classList.add('active'); }, 4000); }
+if(slides.length > 0) {
+    setInterval(() => {
+        slides[currentSlide].classList.remove('active');
+        currentSlide = (currentSlide + 1) % slides.length;
+        slides[currentSlide].classList.add('active');
+    }, 4000);
+}
 
 const GAS_URL = "https://script.google.com/macros/s/AKfycbxjjZmjHiv3WB8JS5CXjhYE_de3jCh9RuIlManhPRdJcgWtaoiOcsg4jYMyMWisCem7/exec";
 
+// Global Variables
 let teacherStudentsData = [], studentActiveExams = {}, currentExamQuestions = [], currentExamTypeKey = "", examTimerInterval, cachedUserData = null, splashCountdownInterval;
 let isVideoSkipped = false, isDataReady = false;
+
+// Gamification Variables
 let gameQuestionsArray = [], gameCurrentQuestionIdx = 0, gameTotalScore = 0, gameActiveStreak = 0, gameTimerEngineInterval, gameModeType = 'arena';
 const kahootColors = ['kahoot-c1', 'kahoot-c2', 'kahoot-c3', 'kahoot-c4'];
 
-// Sound Engine
-const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+// Web Audio API for Sound Effects (Inline, no external files)
+const AudioContext = window.AudioContext || window.webkitAudioContext;
+let audioCtx;
+
+function initAudio() {
+    if (!audioCtx) audioCtx = new AudioContext();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+}
+
 function playSound(type) {
-    if(audioCtx.state === 'suspended') audioCtx.resume();
-    const oscNormally I can help with things like this, but I don't seem to have access to that content. You can try again or ask me for something else.
+    initAudio();
+    const osc = audioCtx.createOscillator();
+    const gainNode = audioCtx.createGain();
+    osc.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+
+    if (type === 'correct') {
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
+        osc.frequency.exponentialRampToValueAtTime(1046.50, audioCtx.currentTime + 0.1); // C6
+        gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.5);
+    } else if (type === 'wrong') {
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.3);
+        gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.3);
+    }
+}
+
+function parseJSONSafe(str) { let safeStr = String(str); if (!safeStr || safeStr === "" || safeStr === "undefined") return {}; try { return JSON.parse(safeStr); } catch (e) { return { "L1": safeStr }; } }
+
+async function handleLogin() {
+    initAudio(); // Initialize audio context on first user interaction
+    const id = document.getElementById('universalId').value.trim();
+    const pass = document.getElementById('universalPass').value.trim();
+    if(!id || !pass) { document.getElementById('errorMsg').innerText = "Please enter both ID and Password"; return; }
+
+    document.getElementById('landingPage').classList.add('hidden');
+    document.getElementById('errorMsg').innerText = "";
+    document.getElementById('videoSplashSection').classList.remove('hidden'); 
+    document.getElementById('introVideo').play().catch(()=>{});
+
+    let timeLeft = 7; document.getElementById('skipBtn').innerText = `Skip in (${timeLeft})`; document.getElementById('skipBtn').disabled = true;
+    if(splashCountdownInterval) clearInterval(splashCountdownInterval);
+    splashCountdownInterval = setInterval(() => { 
+        timeLeft--; 
+        if (timeLeft > 0) { document.getElementById('skipBtn').innerText = `Skip in (${timeLeft})`; } 
+        else { clearInterval(splashCountdownInterval); document.getElementById('skipBtn').disabled = false; document.getElementById('skipBtn').innerText = "Skip Video ⏭️"; } 
+    }, 1000);
+
+    fetch(`${GAS_URL}?action=login&id=${id}&pass=${encodeURIComponent(pass)}`).then(res => res.json()).then(data => {
+        if(data.error) {
+            skipIntroVideo();
+            document.getElementById('loadingScreen').classList.add('hidden');
+            document.getElementById('landingPage').classList.remove('hidden');
+            document.getElementById('errorMsg').innerText = data.error;
+            return;
+        }
+        cachedUserData = data; isDataReady = true; checkAndShowDashboard();
+    }).catch(() => {
+        skipIntroVideo();
+        document.getElementById('loadingScreen').classList.add('hidden');
+        document.getElementById('landingPage').classList.remove('hidden');
+        document.getElementById('errorMsg').innerText = "Server connection failed.";
+    });
+    document.getElementById('introVideo').onended = () => { skipIntroVideo(); };
+}
+
+function skipIntroVideo() { if(splashCountdownInterval) clearInterval(splashCountdownInterval); document.getElementById('introVideo').pause(); document.getElementById('videoSplashSection').classList.add('hidden'); isVideoSkipped = true; checkAndShowDashboard(); }
+
+function checkAndShowDashboard() {
+    if (isVideoSkipped) {
+        if (isDataReady && cachedUserData) {
+            document.getElementById('loadingScreen').classList.add('hidden');
+            if (cachedUserData.role === "teacher" || cachedUserData.role === "superadmin") showTeacherDashboard(cachedUserData);
+            else if (cachedUserData.role === "student") { studentActiveExams = cachedUserData.exams; showStudentDashboard(cachedUserData); }
+        } else { document.getElementById('loadingScreen').classList.remove('hidden'); }
+    }
+}
+
+// ==================== Student Dashboard Functions ====================
+function showStudentDashboard(data) {
+    document.getElementById('studentDashboard').classList.remove('hidden');
+    document.getElementById('welcomeStudent').innerText = `Welcome, ${String(data.student.name)} 👋`;
+    document.getElementById('courseName').innerText = String(data.student.course);
+    document.getElementById('groupName').innerText = String(data.student.group);
+    document.getElementById('scheduleDetails').innerText = String(data.student.schedule);
+    document.getElementById('teacherName').innerText = String(data.student.teacher);
+    document.getElementById('instructorFeedback').innerText = String(data.student.feedback);
+
+    const att = data.attendance; const absences = att.total - att.attended;
+    document.getElementById('attendanceRate').innerText = att.total === 0 ? "No attendance recorded yet" : `${att.attended} out of ${att.total} lectures (Absences: ${absences})`;
+
+    const safeStudentId = String(data.student.id).toUpperCase();
+    const isS100 = (safeStudentId === "S100");
+
+    let isBarred = false;
+    if (absences >= 3 && !isS100) { isBarred = true; document.getElementById('barNoticeSection').classList.remove('hidden'); }
+
+    const attDet = data.attendanceDetails || {};
+    const scheduleTbody = document.getElementById('studentScheduleTableBody'); scheduleTbody.innerHTML = "";
+    const studentGrp = String(data.student.group).trim();
+
+    for(let i=1; i<=8; i++) {
+        let lecKey = "L" + i, schKey = studentGrp + "_" + lecKey;
+        let schObj = data.schedule ? data.schedule[schKey] : null;
+        let dateStr = schObj ? schObj.date : null;
+        let zLink = schObj ? schObj.zoom : null;
+        let displayDate = "Not scheduled yet ⏳";
+        let zoomBtnHtml = `<span style="color:#94a3b8; font-size:12px;">Not Available</span>`;
+
+        if(dateStr) {
+            let safeDateStr = String(dateStr).replace(/-/g, "/").replace("T", " ");
+            let d = new Date(safeDateStr);
+            if (isNaN(d.getTime())) { d = new Date(dateStr); }
+            if (!isNaN(d.getTime())) {
+                displayDate = d.toLocaleString('en-US', { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit' });
+                if (zLink) {
+                    let now = new Date(); let diffMins = (now - d) / (1000 * 60);
+                    if (diffMins < -15) zoomBtnHtml = `<button class="btn-att disabled" disabled style="background:#cbd5e1; color:#475569;">Opens on Time</button>`;
+                    else if (diffMins >= -15 && diffMins <= 135) zoomBtnHtml = `<a href="${zLink}" target="_blank" class="zoom-btn zoom-active">Start Lecture</a>`;
+                    else zoomBtnHtml = `<button class="btn-att disabled" disabled style="background:#fee2e2; color:#991b1b;">Lecture Ended</button>`;
+                } else zoomBtnHtml = `<span style="color:#64748b; font-size:12px; font-weight:bold;">Offline (Center)</span>`;
+            }
+        }
+        let attStatus = String(attDet[lecKey] || "-"); let statusColor = "#64748b";
+        if(attStatus === "ح" || attStatus === "حاضر") { attStatus = "Attended ✅"; statusColor = "#065f46"; } else if(attStatus === "غ" || attStatus === "غائب") { attStatus = "Absent ❌"; statusColor = "#991b1b"; } else { attStatus = "Upcoming 🕒"; }
+        scheduleTbody.innerHTML += `<tr><td style="font-weight:bold;">${lecKey}</td><td style="direction: ltr;">${displayDate}</td><td style="color:${statusColor}; font-weight:bold;">${attStatus}</td><td>${zoomBtnHtml}</td></tr>`;
+    }
+
+    const isQ1Open = isS100 || (String(attDet["L4"]) === "ح" || String(attDet["L4"]) === "حاضر");
+    const isQ2Open = isS100 || (String(attDet["L6"]) === "ح" || String(attDet["L6"]) === "حاضر");
+    const isFinOpen = isS100 || (String(attDet["L8"]) === "ح" || String(attDet["L8"]) === "حاضر");
+    setupExamButton('quiz1', data.grades.quiz1, isBarred, isQ1Open, "Requires L4 attendance at the center");
+    setupExamButton('quiz2', data.grades.quiz2, isBarred, isQ2Open, "Requires L6 attendance at the center");
+    setupExamButton('final', data.grades.final, isBarred, isFinOpen, "Requires L8 attendance at the center");
+
+    let pText = String(data.student.payment || "Not Paid"); let pClass = "pay-none";
+    if (pText.includes("لم يدفع") || pText.includes("Not")) pClass = "pay-none"; else if (pText.includes("نصف") || pText.includes("Half")) pClass = "pay-half"; else if (pText.includes("نسبة") || pText.includes("Percent")) { pClass = "pay-percent"; if(data.student.percentage) pText += ` (${data.student.percentage})`; } else if (pText === "دفع" || pText.includes("كامل") || pText.includes("Full")) pClass = "pay-full";
+    document.getElementById('paymentStatus').className = `payment-status ${pClass}`; document.getElementById('paymentStatus').innerText = pText;
+
+    const mList = document.getElementById('materialsList'); mList.innerHTML = "";
+    if(!data.materials || data.materials.length === 0) mList.innerHTML = "<p>No files available for this level currently.</p>";
+    else data.materials.forEach(m => mList.innerHTML += `<div class="material-item"><span>📄 ${String(m.title)}</span><a href="${String(m.link)}" target="_blank">Download 📥</a></div>`);
+
+    loadStudentHomework();
+}
+
+function loadStudentHomework() {
+    const lec = document.getElementById('studentHwLecture').value;
+    const wObj = parseJSONSafe(cachedUserData.student.homework.writing), shObj = parseJSONSafe(cachedUserData.student.homework.shadowing), gObj = parseJSONSafe(cachedUserData.student.homework.hwGrade), fObj = parseJSONSafe(cachedUserData.student.homework.hwFeedback);
+    document.getElementById('studentWriting').value = wObj[lec] || ""; document.getElementById('studentShadowing').value = shObj[lec] || ""; document.getElementById('hwSubmitMsg').innerText = "";
+    const grade = gObj[lec], fb = fObj[lec], resBox = document.getElementById('hwResultBox');
+    if (grade || fb) { resBox.classList.remove('hidden'); document.getElementById('displayHwGrade').innerText = grade || "Graded"; document.getElementById('displayHwFeedback').innerText = fb || "-"; } else resBox.classList.add('hidden');
+
+    const gamifiedArena = document.getElementById('gamifiedArena');
+    const quizKey = lec.toLowerCase() + "_hw";
+    if (!cachedUserData.exams || !cachedUserData.exams[quizKey]) {
+        gamifiedArena.classList.add('hidden'); return;
+    }
+    gamifiedArena.classList.remove('hidden');
+    document.getElementById('gameModesMenu').classList.remove('hidden');
+    document.getElementById('gamePlayEngine').classList.add('hidden');
+}
+
+// ================= Cinematic Game Engine =================
+function initGamifiedQuiz(mode) {
+    initAudio();
+    const lec = document.getElementById('studentHwLecture').value;
+    const quizKey = lec.toLowerCase() + "_hw";
+    const rawQuestions = JSON.parse(cachedUserData.exams[quizKey]);
+    
+    gameQuestionsArray = rawQuestions.filter(q => q.type === 'MCQ');
+    if (gameQuestionsArray.length === 0) { alert("No compatible MCQ questions available for this mode."); return; }
+    
+    gameModeType = mode; gameCurrentQuestionIdx = 0; gameTotalScore = 0; gameActiveStreak = 0;
+    document.getElementById('gameModesMenu').classList.add('hidden');
+    document.getElementById('gamePlayEngine').classList.remove('hidden');
+    executeGameNextQuestion();
+}
+
+function executeGameNextQuestion() {
+    if (gameTimerEngineInterval) clearInterval(gameTimerEngineInterval);
+    const board = document.getElementById('gamePlayEngine');
+    board.classList.remove('shake-animation');
+    
+    const progressPercent = (gameCurrentQuestionIdx / gameQuestionsArray.length) * 100;
+    document.getElementById('gameProgressFill').style.width = `${progressPercent}%`;
+    
+    if (gameCurrentQuestionIdx >= gameQuestionsArray.length) { finishActiveGameSession(); return; }
+    
+    const qData = gameQuestionsArray[gameCurrentQuestionIdx];
+    const scoreBadge = document.getElementById('gameScoreBadge');
+    scoreBadge.innerText = `Journey Points: ${gameTotalScore}`;
+    scoreBadge.classList.remove('score-pop'); void scoreBadge.offsetWidth;
+    
+    if (gameActiveStreak >= 3) document.getElementById('gameStreakFire').classList.remove('hidden');
+    else document.getElementById('gameStreakFire').classList.add('hidden');
+    
+    document.getElementById('gameQuestionText').innerText = qData.question;
+    const choicesBox = document.getElementById('gameChoicesBox'); choicesBox.innerHTML = "";
+    
+    let shuffledColors = [...kahootColors].sort(() => Math.random() - 0.5);
+    qData.choices.forEach((choice, i) => {
+        let colorClass = shuffledColors[i % shuffledColors.length];
+        choicesBox.innerHTML += `<button class="kahoot-btn ${colorClass}" onclick="evaluateGameAnswer(this, '${choice.replace(/'/g, "\\'")}', '${qData.answer.replace(/'/g, "\\")}')">${choice}</button>`;
+    });
+}
+
+function evaluateGameAnswer(selectedButton, chosenAnswer, correctAnswer) {
+    const buttons = document.querySelectorAll('.kahoot-btn');
+    buttons.forEach(b => b.disabled = true);
+    
+    const overlay = document.getElementById('feedbackOverlay');
+    
+    if (chosenAnswer.trim().toLowerCase() === correctAnswer.trim().toLowerCase()) {
+        playSound('correct');
+        gameActiveStreak++;
+        let addedScore = 100; if (gameActiveStreak >= 3) addedScore *= 2; 
+        gameTotalScore += addedScore;
+        document.getElementById('gameScoreBadge').classList.add('score-pop');
+        overlay.className = 'feedback-overlay feedback-active feedback-correct';
+        overlay.innerHTML = '✨ Awesome! Great narrative flow';
+    } else {
+        playSound('wrong');
+        gameActiveStreak = 0;
+        document.getElementById('gamePlayEngine').classList.add('shake-animation');
+        overlay.className = 'feedback-overlay feedback-active feedback-wrong';
+        overlay.innerHTML = '⚠️ You drifted from the story context!';
+        buttons.forEach(b => {
+            if (b.innerText.trim().toLowerCase() === correctAnswer.trim().toLowerCase()) {
+                b.style.boxShadow = "0 0 20px #fff, 0 0 40px #10b981"; b.style.transform = "scale(1.05)";
+            } else b.style.opacity = "0.3";
+        });
+    }
+    
+    setTimeout(() => { overlay.classList.remove('feedback-active'); gameCurrentQuestionIdx++; executeGameNextQuestion(); }, 1800);
+}
+
+function finishActiveGameSession() {
+    document.getElementById('gameProgressFill').style.width = `100%`;
+    const canvas = document.getElementById('gameChoicesBox');
+    document.getElementById('gameQuestionText').innerText = "🎬 Chapter Completed Successfully!";
+    document.getElementById('gameStreakFire').classList.add('hidden');
+    canvas.style.display = "block";
+    canvas.innerHTML = `
+        <div style="text-align:center; padding:20px; color:white;">
+            <p style="font-size:32px; color:#34d399; font-weight:bold; margin-bottom:10px;">Total Points: ${gameTotalScore} 🌟</p>
+            <p style="font-size:16px; margin-bottom:20px; color:#cbd5e1;">You've mastered this part of the story like a pro. Keep practicing!</p>
+            <button onclick="submitGameScoreToDB()" style="background:var(--secondary); border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:18px; padding:15px 40px; color:white;">Save Points to Profile 💾</button>
+        </div>
+    `;
+}
+
+async function submitGameScoreToDB() {
+    const sId = document.getElementById('universalId').value.trim();
+    document.getElementById('gameChoicesBox').innerHTML = "<h3 style='color:white; text-align:center;'>Saving to records...</h3>";
+    try {
+        await fetch(GAS_URL, {
+            method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `action=submitGameScore&studentId=${encodeURIComponent(sId)}&score=${encodeURIComponent(gameTotalScore)}`
+        });
+        exitActiveGame(); alert("🎉 Your points have been successfully saved!");
+    } catch(e) { alert("Network connection error occurred."); }
+}
+
+function exitActiveGame() {
+    document.getElementById('gameModesMenu').classList.remove('hidden');
+    document.getElementById('gamePlayEngine').classList.add('hidden');
+    document.getElementById('gameChoicesBox').style.display = "grid";
+}
+
+async function submitStudentHomework() {
+    const sId = document.getElementById('universalId').value.trim(), lec = document.getElementById('studentHwLecture').value, writing = document.getElementById('studentWriting').value.trim(), shadowing = document.getElementById('studentShadowing').value.trim(), msgBox = document.getElementById('hwSubmitMsg');
+    if(!writing && !shadowing) { msgBox.style.color = "red"; msgBox.innerText = "Please write your text or provide a link first."; return; }
+    msgBox.style.color = "orange"; msgBox.innerText = "Uploading homework to system (POST)...";
+    try {
+        const res = await fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: `action=submitHomework&studentId=${encodeURIComponent(sId)}&lecture=${encodeURIComponent(lec)}&writing=${encodeURIComponent(writing)}&shadowing=${encodeURIComponent(shadowing)}` });
+        const d = await res.json();
+        if(d.success) { msgBox.style.color = "green"; msgBox.innerText = "✅ Homework submitted successfully!"; let wObj = parseJSONSafe(cachedUserData.student.homework.writing); wObj[lec] = writing; cachedUserData.student.homework.writing = JSON.stringify(wObj); let shObj = parseJSONSafe(cachedUserData.student.homework.shadowing); shObj[lec] = shadowing; cachedUserData.student.homework.shadowing = JSON.stringify(shObj); } else { msgBox.style.color = "red"; msgBox.innerText = "Error: " + d.error; }
+    } catch(e) { msgBox.style.color = "red"; msgBox.innerText = "Connection failed."; }
+}
+
+// ==================== Main Exams Functions ====================
+function setupExamButton(examKey, gradeValue, isBarred, isOpen, closedMsg) {
+    const container = document.getElementById(`action-${examKey}`); const sId = String(document.getElementById('universalId').value).trim().toUpperCase(); const isS100 = (sId === "S100");
+    if (gradeValue !== undefined && gradeValue !== null && String(gradeValue).trim() !== "") {
+        if (isS100) container.innerHTML = `<b>Grade: ${gradeValue}</b> <button class="btn-att" style="background:var(--danger);color:white;padding:4px 10px;" onclick="startNativeExam('${examKey}', true)">Retake</button>`;
+        else container.innerHTML = `<b>Recorded Grade: ${gradeValue}</b>`;
+    } else if (isBarred) { container.innerHTML = `<button class="btn-att disabled" disabled>Locked (Absence Limit Exceeded)</button>`; }
+    else if (!isOpen || !studentActiveExams[examKey]) { container.innerHTML = `<button class="btn-att disabled" disabled>Locked (${!studentActiveExams[examKey] ? 'Exam not available' : closedMsg})</button>`; }
+    else { container.innerHTML = `<button class="btn-att" style="background:var(--secondary);color:white;" onclick="startNativeExam('${examKey}', false)">Start Exam 🚀</button>`; }
+}
+
+function startNativeExam(examKey, forceReset = false) {
+    currentExamTypeKey = examKey; currentExamQuestions = JSON.parse(studentActiveExams[examKey]); const sId = String(document.getElementById('universalId').value).trim().toUpperCase();
+    if (forceReset) { localStorage.removeItem(`endTime_${sId}_${examKey}`); localStorage.removeItem(`ans_${sId}_${examKey}`); }
+    document.getElementById('studentDashboard').classList.add('hidden'); document.getElementById('examTakerDashboard').classList.remove('hidden'); document.getElementById('currentExamTitle').innerText = examKey.toUpperCase();
+    const qContainer = document.getElementById('examQuestionsContainer'); qContainer.innerHTML = ""; let lastAudioUsed = "";
+    currentExamQuestions.forEach((q, idx) => {
+        let html = `<div class="q-block" data-idx="${idx}" dir="ltr" style="text-align: left;">`;
+        if (q.audio && q.audio !== "none" && q.audio !== lastAudioUsed) {
+            let audioHtml = String(q.audio).includes("drive.google.com") ? `<iframe src="https://drive.google.com/file/d/${String(q.audio).match(/id=([a-zA-Z0-9_-]+)/)[1]}/preview" width="100%" height="80" style="border:none; border-radius:8px;"></iframe>` : `<audio src="${q.audio}" controls style="width:100%;"></audio>`;
+            html += `<div style="margin:15px 0; text-align:center;">${audioHtml}</div>`; lastAudioUsed = q.audio;
+        }
+        if (q.reading && q.reading !== "none") html += `<div class="passage-box">📖 ${q.reading}</div>`;
+        html += `<p style="text-align: left;"><strong>Question ${idx + 1}:</strong></p>`;
+        if (q.type === 'MCQ') { html += `<p style="font-weight:bold;">${q.question}</p>`; q.choices.forEach(choice => { html += `<label style="display:block; margin:8px 0; cursor:pointer;"><input type="radio" name="rad-${idx}" value="${choice}"> ${choice}</label>`; }); }
+        else if (q.type === 'Cloze') { let parsedQuestion = String(q.question).replace(/\[(.*?)\]/g, (match, val) => `<input type="text" class="cloze-input-field" data-ans="${val.trim()}">`); html += `<p style="line-height:2.2;">${parsedQuestion}</p>`; }
+        html += `</div>`; qContainer.innerHTML += html;
+    });
+    const savedAnswers = JSON.parse(localStorage.getItem(`ans_${sId}_${examKey}`) || "{}");
+    currentExamQuestions.forEach((q, idx) => {
+        const block = document.querySelector(`.q-block[data-idx="${idx}"]`);
+        if (q.type === 'MCQ' && savedAnswers[idx]) { const radio = block.querySelector(`input[name="rad-${idx}"][value="${savedAnswers[idx]}"]`); if (radio) radio.checked = true; }
+        else if (q.type === 'Cloze' && savedAnswers[idx]) { const inputs = block.querySelectorAll('.cloze-input-field'); inputs.forEach((inp, sIdx) => { if (savedAnswers[idx][sIdx]) inp.value = savedAnswers[idx][sIdx]; }); }
+    });
+    qContainer.addEventListener('input', (e) => {
+        const answers = JSON.parse(localStorage.getItem(`ans_${sId}_${examKey}`) || "{}"); const block = e.target.closest('.q-block'); if(!block) return; const idx = block.getAttribute('data-idx');
+        if (currentExamQuestions[idx].type === 'MCQ') answers[idx] = e.target.value;
+        else { const inputs = block.querySelectorAll('.cloze-input-field'); answers[idx] = []; inputs.forEach((inp, sIdx) => answers[idx][sIdx] = inp.value); }
+        localStorage.setItem(`ans_${sId}_${examKey}`, JSON.stringify(answers));
+    });
+    let endTime = localStorage.getItem(`endTime_${sId}_${examKey}`);
+    if (!endTime) { let duration = (examKey === 'final' ? 60 : 30); endTime = Date.now() + (duration * 60 * 1000); localStorage.setItem(`endTime_${sId}_${examKey}`, endTime); }
+    examTimerInterval = setInterval(() => {
+        let remainingMs = endTime - Date.now();
+        if (remainingMs <= 0) { clearInterval(examTimerInterval); document.getElementById('examTimerDisplay').innerText = "00:00"; alert("Time is up! Saving your answers."); gradeAndSubmitExam(); }
+        else { let totalSecs = Math.floor(remainingMs / 1000); let m = Math.floor(totalSecs / 60); let s = totalSecs % 60; document.getElementById('examTimerDisplay').innerText = `${m < 10 ? '0'+m : m}:${s < 10 ? '0'+s : s}`; }
+    }, 1000);
+}
+
+async function gradeAndSubmitExam() {
+    clearInterval(examTimerInterval); let correctCount = 0; const total = currentExamQuestions.length;
+    currentExamQuestions.forEach((q, idx) => {
+        const block = document.querySelector(`.q-block[data-idx="${idx}"]`);
+        if (q.type === 'MCQ') { const checked = block.querySelector(`input[name="rad-${idx}"]:checked`); if (checked && String(checked.value).trim().toLowerCase() === String(q.answer).trim().toLowerCase()) correctCount++; }
+        else if (q.type === 'Cloze') { const inputs = block.querySelectorAll('.cloze-input-field'); let allTrue = true; inputs.forEach(inp => { if (String(inp.value).trim().toLowerCase() !== String(inp.dataset.ans).toLowerCase()) allTrue = false; }); if (allTrue && inputs.length > 0) correctCount++; }
+    });
+    const maxGrade = (currentExamTypeKey === 'final') ? 80 : 10; const scaledScore = Math.round((correctCount / total) * maxGrade); const sId = String(document.getElementById('universalId').value).trim().toUpperCase();
+    document.getElementById('examTakerDashboard').innerHTML = "<div style='text-align:center;color:white;'><h2>Saving your grade to the system (POST)...</h2></div>";
+    try {
+        await fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: `action=updateStudentFullInfo&studentId=${encodeURIComponent(sId)}&${currentExamTypeKey}=${scaledScore}` });
+        localStorage.removeItem(`endTime_${sId}_${currentExamTypeKey}`); localStorage.removeItem(`ans_${sId}_${currentExamTypeKey}`); alert(`Grade recorded successfully: ${scaledScore} out of ${maxGrade}`); location.reload();
+    } catch (e) { alert("Network connection error."); }
+}
+
+// ==================== Teacher & Admin Dashboard ====================
+function showTeacherDashboard(data) {
+    document.getElementById('teacherDashboard').classList.remove('hidden'); document.getElementById('welcomeTeacher').innerText = `Welcome, ${String(data.name)}`; teacherStudentsData = data.students;
+    if(data.role === "superadmin") { document.getElementById('superAdminPanel').classList.remove('hidden'); const adminGroupSel = document.getElementById('adminGroupSelect'); adminGroupSel.innerHTML = ""; data.groups.forEach(g => adminGroupSel.innerHTML += `<option value="${g}">${g}</option>`); }
+    const groups = [...new Set(teacherStudentsData.map(s => String(s.group).trim()))], groupFilter = document.getElementById('groupFilter'); groupFilter.innerHTML = ""; groups.forEach(g => groupFilter.innerHTML += `<option value="${g}">${g}</option>`);
+    filterTeacherStudents();
+}
+
+async function saveScheduleDate() {
+    const grp = document.getElementById('adminGroupSelect').value, lec = document.getElementById('adminLecSelect').value, dTime = document.getElementById('adminDateTime').value;
+    const zoomLink = document.getElementById('adminZoomLink').value.trim(); const msg = document.getElementById('adminMsg');
+    if(!dTime) { msg.style.color="red"; msg.innerText = "Please select a date first."; return; } msg.style.color="#b45309"; msg.innerText = "Saving to system (POST)...";
+    try {
+        const res = await fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: `action=saveSchedule&group=${encodeURIComponent(grp)}&lecture=${encodeURIComponent(lec)}&dateTime=${encodeURIComponent(dTime)}&zoomLink=${encodeURIComponent(zoomLink)}` });
+        const d = await res.json();
+        if(d.success) { msg.style.color="green"; msg.innerText = "✅ Schedule saved and broadcasted to students!"; cachedUserData.schedule[grp.trim() + "_" + lec] = {date: dTime, zoom: zoomLink}; filterTeacherStudents(); } else { msg.style.color="red"; msg.innerText = "Error: " + d.error; }
+    } catch(e) { msg.style.color="red"; msg.innerText = "Connection error."; }
+}
+
+function filterTeacherStudents() {
+    const grp = document.getElementById('groupFilter').value, lec = document.getElementById('lectureSelect').value, tbody = document.getElementById('teacherStudentsList'); tbody.innerHTML = "";
+    let isLecOpen = false, statusMsg = "", isSuperAdmin = (cachedUserData.role === "superadmin"), schKey = grp.trim() + "_" + lec;
+    let schObj = cachedUserData.schedule ? cachedUserData.schedule[schKey] : null; let schDateString = schObj ? schObj.date : null; let zLink = schObj ? schObj.zoom : null;
+    let zoomHtml = ""; if(zLink) zoomHtml = `<br><a href="${zLink}" target="_blank" class="zoom-btn zoom-active" style="margin-top:10px;">📹 Start/Manage Live Stream (Zoom)</a>`;
+
+    if(isSuperAdmin) {
+        isLecOpen = true; statusMsg = schDateString ? `👑 (Admin: Controls open). Scheduled Time: ${new Date(schDateString).toLocaleString('en-US')} ${zoomHtml}` : "👑 (Admin). No schedule set for this lecture yet.";
+    } else {
+        if(schDateString) {
+            const schDate = new Date(schDateString), diffHours = (new Date() - schDate) / (1000 * 60 * 60);
+            if (diffHours >= 0 && diffHours <= 24) { isLecOpen = true; statusMsg = `🟢 Attendance controls OPEN. Closes in ${Math.floor(24 - diffHours)} hours. ${zoomHtml}`; }
+            else if (diffHours < 0) statusMsg = `🔴 CLOSED (Controls open automatically at: ${schDate.toLocaleString('en-US')})`;
+            else statusMsg = `🔴 CLOSED (Attendance time expired). Contact Administration.`;
+        } else statusMsg = `🔴 Attendance CLOSED (Lecture not scheduled by Admin yet).`;
+    }
+
+    document.getElementById('lectureStatusMsg').innerHTML = statusMsg; document.getElementById('lectureStatusMsg').style.color = isLecOpen ? "#065f46" : "#991b1b";
+    document.getElementById('teacherTableHead').innerHTML = `<tr><th>ID</th><th>Name & Profile</th><th>HW ${lec}</th><th>Attendance</th>` + (lec==='L4'?'<th>Grade Q1</th>':(lec==='L6'?'<th>Grade Q2</th>':(lec==='L8'?'<th>Grade Final</th>':''))) + `<th>General Notes</th><th>Action</th></tr>`;
+    const filtered = teacherStudentsData.filter(s => String(s.group).trim() == String(grp).trim()); if(filtered.length === 0) { tbody.innerHTML = `<tr><td colspan="7">No students found.</td></tr>`; return; }
+    filtered.forEach(s => {
+        const wObj = parseJSONSafe(s.homework.writing), shObj = parseJSONSafe(s.homework.shadowing); let hwBtnColor = (wObj[lec] || shObj[lec]) ? "#2563eb" : "#94a3b8";
+        let attButtons = isLecOpen ? `<button class="btn-att btn-p" onclick="submitAttendance('${s.id}', 'ح')">Present</button><button class="btn-att btn-a" onclick="submitAttendance('${s.id}', 'غ')">Absent</button>` : `<button class="btn-att" style="background:var(--locked);cursor:not-allowed;" disabled>Locked</button>`;
+        let rowHTML = `<tr id="row-${s.id}"><td>${s.id}</td><td><strong>${s.name}</strong><br><button class="btn-att" style="background:#f1f5f9;color:var(--text);margin-top:5px;" onclick="openProfileModal('${s.id}')">👁️ View Profile</button></td><td><button class="btn-att" style="background-color:${hwBtnColor};color:white;" onclick="openHomeworkModal('${s.id}')">Grade 📝</button></td><td>${attButtons}</td>`;
+        if (lec === 'L4') rowHTML += `<td><input type="text" class="grade-input" id="q1-${s.id}" value="${s.grades.quiz1 || ''}"></td>`;
+        if (lec === 'L6') rowHTML += `<td><input type="text" class="grade-input" id="q2-${s.id}" value="${s.grades.quiz2 || ''}"></td>`;
+        if (lec === 'L8') rowHTML += `<td><input type="text" class="grade-input" id="fin-${s.id}" value="${s.grades.final || ''}"></td>`;
+        rowHTML += `<td><textarea class="fb-input" id="fb-${s.id}" rows="1" style="width:120px;">${s.feedback}</textarea></td><td><button class="btn-att" style="background:var(--secondary);color:white;" onclick="saveStudentData('${s.id}')">Save</button></td></tr>`; document.getElementById('teacherStudentsList').innerHTML += rowHTML;
+    });
+}
+
+function processAndUploadExam() {
+    const type = document.getElementById('uploadExamType').value; const course = document.getElementById('uploadExamCourse').value.trim(); const fileInput = document.getElementById('examTxtFile');
+    if (!course || fileInput.files.length === 0) { alert("⚠️ Please enter course name and select an exam file first."); return; }
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const lines = e.target.result.split('\n'); const parsedQuestions = []; let activeAudio = "none"; let activeReading = "none";
+        lines.forEach(line => {
+            let clean = line.trim(); if (!clean) return;
+            if (clean.toUpperCase().startsWith("AUDIO:")) { activeAudio = clean.substring(6).trim(); return; }
+            if (clean.toUpperCase().startsWith("READING:")) { activeReading = clean.substring(8).trim(); return; }
+            if(clean.toUpperCase().startsWith("MATCH:")) {
+                const pairs = clean.substring(6).split('|').map(p => p.trim()); const matchItems = [];
+                pairs.forEach(p => { const side = p.split('=').map(s => s.trim()); if(side.length === 2) matchItems.push({ left: side[0], right: side[1] }); });
+                if(matchItems.length > 0) parsedQuestions.push({ type: "Match", pairs: matchItems, audio: activeAudio, reading: activeReading }); return;
+            }
+            if (clean.includes("|")) {
+                const parts = clean.split('|').map(p => p.trim());
+                if (parts.length >= 3) parsedQuestions.push({ type: "MCQ", question: parts[0], choices: parts.slice(1, parts.length - 1), answer: parts[parts.length - 1], audio: activeAudio, reading: activeReading });
+            } else if (clean.includes("[") && clean.includes("]")) parsedQuestions.push({ type: "Cloze", question: clean, audio: activeAudio, reading: activeReading });
+        });
+        if (parsedQuestions.length === 0) { alert("❌ Exam file is empty or formatted incorrectly."); return; }
+        const examKey = `${course}_${type}`; const examDataString = JSON.stringify(parsedQuestions);
+        fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: `action=uploadExam&examKey=${encodeURIComponent(examKey)}&examData=${encodeURIComponent(examDataString)}` })
+        .then(res => res.json()).then(data => { if (data.success) { alert(`✅ Exam (${examKey}) uploaded and activated successfully!`); fileInput.value = ""; } else alert("❌ Error saving to server."); })
+        .catch(error => { alert("❌ Server connection failed!"); console.log(error); });
+    };
+    reader.readAsText(fileInput.files[0], "UTF-8");
+}
+
+function openProfileModal(id) { const s = teacherStudentsData.find(x => x.id == id); document.getElementById('profName').innerText = String(s.name); document.getElementById('profCourse').innerText = String(s.course); document.getElementById('profGroup').innerText = String(s.group); document.getElementById('profPayment').innerText = String(s.payment); document.getElementById('profTotalAtt').innerText = String(s.attendance.total); document.getElementById('profAttended').innerText = String(s.attendance.attended); document.getElementById('profAbsences').innerText = String(s.attendance.absences); document.getElementById('profQ1').innerText = String(s.grades.quiz1 || "-"); document.getElementById('profQ2').innerText = String(s.grades.quiz2 || "-"); document.getElementById('profFinal').innerText = String(s.grades.final || "-"); document.getElementById('profileModal').classList.remove('hidden'); }
+function closeProfileModal() { document.getElementById('profileModal').classList.add('hidden'); }
+
+function openHomeworkModal(id) {
+    const s = teacherStudentsData.find(x => x.id == id), lec = document.getElementById('lectureSelect').value;
+    const w = parseJSONSafe(s.homework.writing), sh = parseJSONSafe(s.homework.shadowing), g = parseJSONSafe(s.homework.hwGrade), f = parseJSONSafe(s.homework.hwFeedback);
+    document.getElementById('modalStudentName').innerText = `Evaluate Homework: ${s.name}`; document.getElementById('modalLectureLabel').innerText = `(For ${lec})`; document.getElementById('modalWriting').innerText = w[lec] || "Student hasn't submitted text for this lecture.";
+    if(sh[lec]) { document.getElementById('modalShadowingLink').href = sh[lec]; document.getElementById('modalShadowingLink').style.pointerEvents = "auto"; document.getElementById('modalShadowingLink').style.color = "#2563eb"; } else { document.getElementById('modalShadowingLink').href = "#"; document.getElementById('modalShadowingLink').style.pointerEvents = "none"; document.getElementById('modalShadowingLink').style.color = "#94a3b8"; }
+    document.getElementById('modalHwGrade').value = g[lec] || ""; document.getElementById('modalHwFeedback').value = f[lec] || ""; document.getElementById('saveHwBtn').onclick = () => saveHomeworkGrade(id, lec); document.getElementById('hwModal').classList.remove('hidden');
+}
+function closeHomeworkModal() { document.getElementById('hwModal').classList.add('hidden'); }
+
+async function saveHomeworkGrade(id, lec) {
+    const g = document.getElementById('modalHwGrade').value.trim(), f = document.getElementById('modalHwFeedback').value.trim(), btn = document.getElementById('saveHwBtn');
+    btn.innerText = "Saving..."; btn.disabled = true;
+    try {
+        const res = await fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: `action=gradeHomework&studentId=${encodeURIComponent(id)}&lecture=${encodeURIComponent(lec)}&hwGrade=${encodeURIComponent(g)}&hwFeedback=${encodeURIComponent(f)}` });
+        const d = await res.json();
+        if(d.success) { alert("Homework evaluation saved!"); const s = teacherStudentsData.find(x => x.id == id); let gObj = parseJSONSafe(s.homework.hwGrade); gObj[lec] = g; s.homework.hwGrade = JSON.stringify(gObj); let fObj = parseJSONSafe(s.homework.hwFeedback); fObj[lec] = f; s.homework.hwFeedback = JSON.stringify(fObj); closeHomeworkModal(); filterTeacherStudents(); }
+    } catch(e) { alert("Network Error"); } btn.innerText = "Save Evaluation 💾"; btn.disabled = false;
+}
+
+async function submitAttendance(id, status) {
+    const lec = document.getElementById('lectureSelect').value, row = document.getElementById(`row-${id}`), orig = row.style.backgroundColor; row.style.backgroundColor = "#fef3c7";
+    try {
+        const res = await fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: `action=updateAttendance&studentId=${encodeURIComponent(id)}&lecture=${encodeURIComponent(lec)}&status=${encodeURIComponent(status)}` });
+        const d = await res.json();
+        if(d.success) { row.style.backgroundColor = status === 'ح' ? '#d1fae5' : '#fee2e2'; setTimeout(() => { row.style.backgroundColor = orig; }, 1200); const s = teacherStudentsData.find(x => x.id == id); s.attendance.total++; if(status === 'ح') s.attendance.attended++; else s.attendance.absences++; }
+    } catch (e) { row.style.backgroundColor = orig; }
+}
+
+async function saveStudentData(id) {
+    const s = teacherStudentsData.find(x => x.id == id), q1 = document.getElementById(`q1-${id}`) ? document.getElementById(`q1-${id}`).value.trim() : (s.grades.quiz1 || ""), q2 = document.getElementById(`q2-${id}`) ? document.getElementById(`q2-${id}`).value.trim() : (s.grades.quiz2 || ""), fin = document.getElementById(`fin-${id}`) ? document.getElementById(`fin-${id}`).value.trim() : (s.grades.final || ""), fb = document.getElementById(`fb-${id}`) ? document.getElementById(`fb-${id}`).value.trim() : (s.feedback || ""), row = document.getElementById(`row-${id}`); row.style.backgroundColor = "#fef3c7";
+    try {
+        const res = await fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: `action=updateStudentFullInfo&studentId=${encodeURIComponent(id)}&quiz1=${encodeURIComponent(q1)}&quiz2=${encodeURIComponent(q2)}&final=${encodeURIComponent(fin)}&feedback=${encodeURIComponent(fb)}` });
+        const d = await res.json();
+        if(d.success) { row.style.backgroundColor = "#d1fae5"; s.grades.quiz1 = q1; s.grades.quiz2 = q2; s.grades.final = fin; s.feedback = fb; setTimeout(() => { row.style.backgroundColor = ""; }, 1200); }
+    } catch (e) { row.style.backgroundColor = ""; }
+}
+</script>
+</body>
+</html>
