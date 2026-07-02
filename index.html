@@ -871,5 +871,24 @@
         } catch (e) { row.style.backgroundColor = ""; }
     }
 </script>
+    <!-- نافذة اللعبة المنبثقة -->
+<div id="gameModal" class="modal hidden">
+    <div class="modal-content" style="background:#0f172a; color:white;">
+        <span class="close-btn" onclick="closeGameModal()" style="color:white;">&times;</span>
+        <div class="score-board">النقاط: <span id="currentScore">0</span></div>
+        <div id="gameContent" style="margin-top:20px;"></div>
+    </div>
+</div>
+
+<script>
+    function openGameModal(gameData) {
+        document.getElementById('gameModal').classList.remove('hidden');
+        renderGame(gameData);
+    }
+    function closeGameModal() {
+        document.getElementById('gameModal').classList.add('hidden');
+    }
+    // هنا نضع منطق تشغيل اللعبة (عرض الأسئلة داخل النافذة)
+</script>
 </body>
 </html>
