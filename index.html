@@ -893,6 +893,47 @@ data.materials.forEach(m => {
         document.getElementById('gameModal').classList.add('hidden');
     }
     // هنا نضع منطق تشغيل اللعبة (عرض الأسئلة داخل النافذة)
+// نظام الألعاب التفاعلي داخل النافذة المنبثقة
+let gameQuestions = [];
+let currentGameScore = 0;
+let currentQuestionIndex = 0;
+
+function launchGame(gameData) {
+    // gameData هنا سيستقبل الأسئلة من ملف الـ txt
+    gameQuestions = gameData;
+    currentGameScore = 0;
+    currentQuestionIndex = 0;
+    
+    document.getElementById('gameModal').classList.remove('hidden');
+    renderGameQuestion();
+}
+
+function renderGameQuestion() {
+    const container = document.getElementById('gameContent');
+    const q = gameQuestions[currentQuestionIndex];
+    
+    if (!q) {
+        container.innerHTML = `<h3>🎉 انتهت اللعبة!</h3><p>مجموع نقاطك: ${currentGameScore}</p>
+                               <button class="game-btn" onclick="closeGameModal()">إغلاق</button>`;
+        // هنا يمكنك إرسال النتيجة للسيرفر
+        return;
+    }
+    
+    let html = `<h4>${q.question}</h4>`;
+    q.choices.forEach(choice => {
+        html += `<button class="game-btn" onclick="checkGameAnswer('${choice.trim()}', '${q.answer.trim()}')">${choice}</button>`;
+    });
+    container.innerHTML = html;
+}
+
+function checkGameAnswer(choice, answer) {
+    if (choice === answer) {
+        currentGameScore += 10;
+        document.getElementById('currentScore').innerText = currentGameScore;
+    }
+    currentQuestionIndex++;
+    renderGameQuestion();
+}
 </script>
 </body>
 </html>
