@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html dir="ltr" lang="en">
+<html dir="rtl" lang="ar">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>English Land LMS</title>
+<title>English Land | إنجلش لاند</title>
 
-<!-- PWA Meta Tags (تطبيق الموبايل) -->
+<!-- PWA Meta Tags -->
 <meta name="theme-color" content="#021222">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -14,49 +14,66 @@
 <link rel="manifest" href="manifest.json">
 
 <style>
+/* ==================== المتغيرات والتنسيقات الأساسية ==================== */
 :root { 
-    --primary: #1e3a8a; --secondary: #10b981; --bg: #021222; --text: #1e293b; --danger: #ef4444; --locked: #cbd5e1; 
-    --game-bg: #0f172a; --k-red: #e21b3c; --k-blue: #1368ce; --k-yellow: #d89e00; --k-green: #26890c;
+    --primary: #1e3a8a; --secondary: #10b981; --bg: #f8fafc; --text: #1e293b; --danger: #ef4444; --locked: #cbd5e1; 
+    --game-bg: #0f172a; --nav-bg: #021222; --k-red: #e21b3c; --k-blue: #1368ce; --k-yellow: #d89e00; --k-green: #26890c;
 }
-body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 15px; }
+body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 0; overflow-x: hidden;}
+.hidden { display: none !important; }
+
+/* ==================== تنسيقات واجهة التسويق ==================== */
+.public-navbar { background: var(--nav-bg); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+.public-logo { height: 45px; border-radius: 6px; }
+.nav-actions { display: flex; gap: 10px; align-items: center; }
+.btn-lang { background: transparent; border: 1px solid #cbd5e1; color: white; padding: 6px 12px; border-radius: 20px; cursor: pointer; font-weight: bold; font-size: 14px; }
+.btn-login-nav { background: var(--secondary); color: white; padding: 8px 20px; border-radius: 20px; cursor: pointer; font-weight: bold; border: none; font-size: 14px; }
+.hero-section { background: linear-gradient(rgba(2, 18, 34, 0.8), rgba(2, 18, 34, 0.9)), url('https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1500&q=80') center/cover; color: white; text-align: center; padding: 80px 20px; }
+.hero-title { font-size: 36px; color: var(--secondary); margin-bottom: 15px; }
+.hero-subtitle { font-size: 18px; max-width: 700px; margin: 0 auto 30px auto; line-height: 1.6; color: #e2e8f0; }
+.cta-btn { background: var(--secondary); color: white; border: none; padding: 15px 35px; font-size: 18px; font-weight: bold; border-radius: 30px; cursor: pointer; box-shadow: 0 5px 15px rgba(16, 185, 129, 0.4); transition: 0.3s; text-decoration: none; display: inline-block; }
+.cta-btn:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(16, 185, 129, 0.6); }
+.features-section { padding: 60px 20px; text-align: center; background: white; }
+.section-title { font-size: 28px; color: var(--primary); margin-bottom: 40px; }
+.features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px; max-width: 1100px; margin: 0 auto; }
+.feature-card { background: #f1f5f9; padding: 30px; border-radius: 12px; border-top: 4px solid var(--primary); box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+.feature-card h3 { color: var(--primary); margin-bottom: 10px; }
+.feature-card p { color: #475569; line-height: 1.6; }
+.testimonials-section { padding: 60px 20px; background: #0f172a; color: white; text-align: center; }
+.media-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; max-width: 1000px; margin: 0 auto; }
+.media-box { background: rgba(255,255,255,0.05); padding: 10px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); }
+.media-box video, .media-box img { width: 100%; border-radius: 8px; }
+.lead-form-section { padding: 60px 20px; background: white; text-align: center; }
+.lead-form-box { max-width: 500px; margin: 0 auto; background: #f8fafc; padding: 30px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; }
+.lead-input { width: 100%; padding: 12px; margin-bottom: 15px; border: 2px solid #cbd5e1; border-radius: 8px; font-size: 16px; box-sizing: border-box; font-family: inherit; }
+.lead-input:focus { border-color: var(--primary); outline: none; }
+.footer { background: var(--nav-bg); color: #94a3b8; text-align: center; padding: 20px; font-size: 14px; }
+
+/* ==================== تنسيقات المودال لتسجيل الدخول ==================== */
+.login-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(2, 18, 34, 0.9); z-index: 2000; display: flex; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; backdrop-filter: blur(5px); }
+.login-box { background: white; padding: 40px 30px; border-radius: 15px; width: 100%; max-width: 400px; text-align: center; position: relative; box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
+.close-login { position: absolute; top: 15px; right: 20px; font-size: 24px; color: #94a3b8; cursor: pointer; font-weight: bold; }
+
+/* ==================== تنسيقات لوحة التحكم (القديمة بالكامل) ==================== */
+.dash-wrapper { padding: 15px; }
 .global-header { text-align: center; margin-top: 5px; margin-bottom: 20px; }
 .global-logo { max-width: 140px; border-radius: 8px; }
 .container { background: white; padding: 15px; margin: 15px auto; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); border-top: 5px solid var(--primary); text-align: left; box-sizing: border-box; width: 100%; max-width: 800px; }
-.landing-wrapper { display: flex; flex-direction: column; gap: 0; margin: 0 auto; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.2); width: 100%; max-width: 1000px; }
-.slider-container { position: relative; height: 220px; }
-.login-wrapper { background: white; padding: 25px 15px; text-align: center; display: flex; flex-direction: column; justify-content: center; }
-@media(min-width: 768px) {
-    .container { padding: 30px; margin: 40px auto; box-shadow: 0 15px 30px rgba(0,0,0,0.5); }
-    .landing-wrapper { flex-direction: row; align-items: stretch; gap: 20px; box-shadow: none; background: transparent; overflow: visible; margin-bottom: 40px; }
-    .slider-container { flex: 1.5; height: 450px; border-radius: 12px; box-shadow: 0 15px 30px rgba(0,0,0,0.5); border-bottom: 5px solid var(--secondary); }
-    .login-wrapper { flex: 1; padding: 40px 30px; border-radius: 12px; box-shadow: 0 15px 30px rgba(0,0,0,0.5); border-top: 5px solid var(--primary); }
-}
-.slide { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; transition: opacity 1s ease-in-out; display: flex; flex-direction: column; justify-content: flex-end; padding: 30px 20px; box-sizing: border-box; background-size: cover; background-position: center; }
-.slide::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(to top, rgba(2, 18, 34, 0.95) 0%, rgba(2, 18, 34, 0.1) 100%); z-index: 1; }
-.slide.active { opacity: 1; z-index: 2; }
-.slide-content { position: relative; z-index: 3; color: white; text-align: left; }
-.slide-content h2 { color: var(--secondary); font-size: 22px; margin-bottom: 5px; text-shadow: 1px 1px 3px rgba(0,0,0,0.8); }
-.slide-content p { color: #f1f5f9; font-size: 14px; line-height: 1.5; text-shadow: 1px 1px 3px rgba(0,0,0,0.8); margin: 0; }
-@media(min-width: 768px) { .slide-content h2 { font-size: 28px; margin-bottom: 10px; } .slide-content p { font-size: 16px; line-height: 1.6; } }
+@media(min-width: 768px) { .container { padding: 30px; margin: 40px auto; box-shadow: 0 15px 30px rgba(0,0,0,0.5); } }
 h2, h3 { color: var(--primary); margin-bottom: 5px; }
 p { color: #64748b; margin-top: 5px; font-size: 14px; }
-input, select, textarea { width: 100%; padding: 12px; margin: 10px 0; border: 2px solid #e2e8f0; border-radius: 8px; text-align: center; font-size: 16px; box-sizing: border-box; font-family: inherit; }
+input, select, textarea { width: 100%; padding: 12px; margin: 10px 0; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 16px; box-sizing: border-box; font-family: inherit; }
 input:focus, select:focus, textarea:focus { border-color: var(--primary); outline: none; }
-button { width: 100%; background-color: var(--primary); color: white; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: bold; transition: 0.3s; }
-button:hover { background-color: #152e72; }
 button:disabled { background-color: var(--locked); cursor: not-allowed; }
-.hidden { display: none !important; }
 #videoSplashSection { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: #021222; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
 #introVideo { width: 100%; height: 100%; object-fit: contain !important; }
-.btn-skip { position: absolute; bottom: 40px; z-index: 2; background-color: rgba(255, 255, 255, 0.1); backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.4); color: white; width: auto; padding: 12px 30px; border-radius: 25px; }
+.btn-skip { position: absolute; bottom: 40px; z-index: 2; background-color: rgba(255, 255, 255, 0.1); backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.4); color: white; width: auto; padding: 12px 30px; border-radius: 25px; cursor: pointer;}
 .grid-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-top: 20px; }
 .info-card { background: #f1f5f9; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0; display: flex; flex-direction: column; justify-content: center; text-align: center; }
 .info-card h4 { margin: 0 0 8px 0; color: var(--primary); font-size: 13px; }
 .info-card strong { font-size: 14px; color: var(--text); }
 .payment-status { font-weight: bold; padding: 6px 10px; border-radius: 5px; font-size: 13px; margin: auto; }
-.pay-full { background-color: #d1fae5; color: #065f46; }
-.pay-half, .pay-percent { background-color: #fef3c7; color: #92400e; }
-.pay-none { background-color: #fee2e2; color: #991b1b; }
+.pay-full { background-color: #d1fae5; color: #065f46; } .pay-half, .pay-percent { background-color: #fef3c7; color: #92400e; } .pay-none { background-color: #fee2e2; color: #991b1b; }
 .feedback-box { background: #eff6ff; border-left: 4px solid #3b82f6; padding: 15px; margin-top: 20px; border-radius: 4px; text-align: left; }
 .bar-box { background: #fef2f2; border-left: 4px solid var(--danger); padding: 15px; margin-top: 20px; border-radius: 4px; text-align: left; color: #991b1b; }
 .card-section { margin-top: 25px; text-align: left; }
@@ -69,11 +86,9 @@ th, td { border: 1px solid #e2e8f0; padding: 10px; white-space: nowrap; }
 th { background-color: #f1f5f9; color: var(--primary); }
 .teacher-tools { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
 .btn-att { padding: 6px 10px; border: none; border-radius: 4px; font-weight: bold; margin: 2px; font-size: 12px; cursor: pointer; }
-.btn-p { background-color: #10b981; color: white; }
-.btn-a { background-color: #ef4444; color: white; }
+.btn-p { background-color: #10b981; color: white; } .btn-a { background-color: #ef4444; color: white; }
 .grade-input { width: 60px; padding: 6px; text-align: center; border: 1px solid #cbd5e1; border-radius: 4px; font-weight: bold; color: var(--primary); }
 .exam-row { display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between; align-items: center; background: #f8fafc; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #e2e8f0; }
-.exam-btn { width: auto; padding: 6px 15px; background-color: var(--secondary); font-size: 13px; }
 .q-block { background: #fff; border: 1px solid #e2e8f0; padding: 20px; border-radius: 8px; margin-bottom: 20px; text-align: left; }
 .cloze-input-field { width: 130px; padding: 4px; text-align: center; border: 2px solid #cbd5e1; border-radius: 6px; font-weight: bold; color: var(--primary); margin: 0 5px; }
 .passage-box { background: #f0fdf4; border-left: 4px solid var(--secondary); padding: 15px; border-radius: 4px; margin-bottom: 15px; font-style: italic; }
@@ -93,7 +108,7 @@ th { background-color: #f1f5f9; color: var(--primary); }
 .zoom-active { animation: zoomPulse 1.5s infinite; }
 @keyframes zoomPulse { 0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.7); } 50% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(37, 99, 235, 0); } 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(37, 99, 235, 0); } }
 
-/* --- Game UI --- */
+/* --- اللعبة (Game UI) --- */
 .gamified-section { background: var(--game-bg); border-radius: 12px; padding: 20px; color: white; margin-top: 20px; text-align: center; box-shadow: 0 8px 30px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); }
 .game-modes-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px; }
 .game-mode-card { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255,255,255,0.2); padding: 20px; border-radius: 12px; cursor: pointer; transition: 0.3s all; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
@@ -127,217 +142,295 @@ th { background-color: #f1f5f9; color: var(--primary); }
 .kahoot-btn:active { transform: translateY(6px); box-shadow: none; }
 .kahoot-btn:hover { filter: brightness(1.1); }
 .kahoot-btn:disabled { cursor: not-allowed; filter: brightness(0.8); }
-.kahoot-c1 { background-color: var(--k-red); box-shadow: 0 6px 0 #8b1125; }
-.kahoot-c2 { background-color: var(--k-blue); box-shadow: 0 6px 0 #0d468b; }
-.kahoot-c3 { background-color: var(--k-yellow); box-shadow: 0 6px 0 #8b6600; }
-.kahoot-c4 { background-color: var(--k-green); box-shadow: 0 6px 0 #175307; }
+.kahoot-c1 { background-color: var(--k-red); box-shadow: 0 6px 0 #8b1125; } .kahoot-c2 { background-color: var(--k-blue); box-shadow: 0 6px 0 #0d468b; } .kahoot-c3 { background-color: var(--k-yellow); box-shadow: 0 6px 0 #8b6600; } .kahoot-c4 { background-color: var(--k-green); box-shadow: 0 6px 0 #175307; }
 .feedback-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; font-size: 28px; font-weight: bold; z-index: 10; opacity: 0; pointer-events: none; transition: opacity 0.2s; text-shadow: 2px 2px 5px rgba(0,0,0,0.5); }
 .feedback-active { opacity: 1; pointer-events: auto;}
-.feedback-correct { background: rgba(16, 185, 129, 0.95); color: white; }
-.feedback-wrong { background: rgba(239, 68, 68, 0.95); color: white; }
+.feedback-correct { background: rgba(16, 185, 129, 0.95); color: white; } .feedback-wrong { background: rgba(239, 68, 68, 0.95); color: white; }
 .leaderboard-container { background: rgba(0,0,0,0.4); border-radius: 12px; padding: 15px; max-height: 280px; overflow-y: auto; margin-top: 15px; border: 1px solid rgba(255,255,255,0.1); }
 .leaderboard-row { display: flex; justify-content: space-between; padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 16px; color: #cbd5e1; direction: rtl; } 
 .leaderboard-row:last-child { border-bottom: none; }
 .leaderboard-row:nth-child(1) { color: #fbbf24; font-weight: bold; font-size: 20px; background: rgba(251, 191, 36, 0.1); border-radius: 8px; }
 .leaderboard-row:nth-child(2) { color: #94a3b8; font-weight: bold; font-size: 18px; background: rgba(148, 163, 184, 0.1); border-radius: 8px;}
 .leaderboard-row:nth-child(3) { color: #b45309; font-weight: bold; font-size: 17px; background: rgba(180, 83, 9, 0.1); border-radius: 8px;}
+@keyframes popIn { 0% { transform: scale(0.5); opacity: 0; } 70% { transform: scale(1.1); } 100% { transform: scale(1); opacity: 1; } }
+.shake-animation { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
+@keyframes shake { 10%, 90% { transform: translate3d(-2px, 0, 0); } 20%, 80% { transform: translate3d(4px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-6px, 0, 0); } 40%, 60% { transform: translate3d(6px, 0, 0); } }
 </style>
 </head>
 <body>
 
-<div class="global-header" id="globalHeader"><img src="logo.png?v=18" alt="English Land Logo" class="global-logo"></div>
+<!-- ==================== الواجهة التسويقية (Landing Page) ==================== -->
+<div id="marketingPage">
+    <nav class="public-navbar">
+        <img src="logo.png?v=18" alt="English Land" class="public-logo">
+        <div class="nav-actions">
+            <button class="btn-lang" onclick="toggleLang()" id="langBtn">EN / عربي</button>
+            <button class="btn-login-nav translate" onclick="showLoginModal()" 
+                data-ar="دخول الطلاب" data-en="Student Login">دخول الطلاب</button>
+        </div>
+    </nav>
 
-<!-- ==================== Landing Page ==================== -->
-<div id="landingPage" class="landing-wrapper">
-    <div class="slider-container">
-        <div class="slide active" style="background-image: url('https://images.unsplash.com/photo-1573164713988-8665fc963095?auto=format&fit=crop&w=1000&q=80');"><div class="slide-content"><h2>Master English for Adults</h2><p>A professional learning environment tailored to develop your skills with complete confidence.</p></div></div>
-        <div class="slide" style="background-image: url('https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1000&q=80');"><div class="slide-content"><h2>Speak Fluently & Naturally</h2><p>Our curriculum focuses on narrative storytelling and practical application rather than traditional tasks.</p></div></div>
-        <div class="slide" style="background-image: url('https://images.unsplash.com/photo-1542744173-8e7e53415bb0?auto=format&fit=crop&w=1000&q=80');"><div class="slide-content"><h2>Continuous Assessment</h2><p>An integrated digital system that precisely tracks your progress to ensure you reach your goals.</p></div></div>
-    </div>
-    <div class="login-wrapper">
-        <h2 style="font-size: 24px;">English Land LMS</h2>
-        <p style="margin-bottom: 20px;">Enter your credentials to access your account</p>
-        <input type="text" id="universalId" placeholder="Enter your ID here" style="margin-bottom: 10px;">
-        <input type="password" id="universalPass" placeholder="Password" style="margin-bottom: 15px;">
-        <button onclick="handleLogin()" style="padding: 15px; font-size: 16px;">Secure Login <svg style="width:16px;height:16px;vertical-align:middle;fill:white;margin-left:5px;" viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM9 6c0-1.66 1.34-3 3-3s3 1.34 3 3v2H9V6zm9 14H6V10h12v10zm-6-3c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2z"/></svg></button>
+    <header class="hero-section">
+        <h1 class="hero-title translate" 
+            data-ar="أتقن الإنجليزية بطلاقة مع إنجلش لاند" 
+            data-en="Master English Fluency with English Land">أتقن الإنجليزية بطلاقة مع إنجلش لاند</h1>
+        <p class="hero-subtitle translate" 
+            data-ar="نقدم لك بيئة تعليمية احترافية تعتمد على السرد القصصي والتعلم التفاعلي للوصول بك إلى المستويات المتقدمة بثقة تامة." 
+            data-en="We provide a professional learning environment based on storytelling and gamification to help you reach advanced levels with confidence.">
+            نقدم لك بيئة تعليمية احترافية تعتمد على السرد القصصي والتعلم التفاعلي للوصول بك إلى المستويات المتقدمة بثقة تامة.
+        </p>
+        <a href="#leadFormSection" class="cta-btn translate" 
+           data-ar="احجز اختبار تحديد المستوى مجاناً" 
+           data-en="Book Your Free Placement Test">احجز اختبار تحديد المستوى مجاناً</a>
+    </header>
+
+    <section class="features-section">
+        <h2 class="section-title translate" data-ar="لماذا إنجلش لاند؟" data-en="Why English Land?">لماذا إنجلش لاند؟</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <h3 class="translate" data-ar="مستويات C1 و C2" data-en="Advanced C1 & C2">مستويات C1 و C2</h3>
+                <p class="translate" data-ar="نحن متخصصون في تأهيل البالغين لاجتياز مستويات الاحتراف العالية وإتقان الكتابة الأكاديمية والمحادثة." data-en="We specialize in qualifying adults to pass advanced professional levels and master academic writing.">نحن متخصصون في تأهيل البالغين لاجتياز مستويات الاحتراف العالية وإتقان الكتابة الأكاديمية والمحادثة.</p>
+            </div>
+            <div class="feature-card">
+                <h3 class="translate" data-ar="تعلم تفاعلي (Gamification)" data-en="Gamified Learning">تعلم تفاعلي (Gamification)</h3>
+                <p class="translate" data-ar="نظام ألعاب حصري عبر منصتنا يجعلك بطل القصة، لتختبر مفرداتك وتجمع النقاط بشكل ممتع." data-en="An exclusive gamified system on our platform makes you the hero of the story to test your vocabulary.">نظام ألعاب حصري عبر منصتنا يجعلك بطل القصة، لتختبر مفرداتك وتجمع النقاط بشكل ممتع.</p>
+            </div>
+            <div class="feature-card">
+                <h3 class="translate" data-ar="متابعة دقيقة وتقييم مستمر" data-en="Continuous Assessment">متابعة دقيقة وتقييم مستمر</h3>
+                <p class="translate" data-ar="نحلل نقاط ضعفك من خلال تقارير دورية وواجبات صوتية ومكتوبة يتم تصحيحها بدقة." data-en="We analyze your weaknesses through periodic reports and carefully graded voice/written assignments.">نحلل نقاط ضعفك من خلال تقارير دورية وواجبات صوتية ومكتوبة يتم تصحيحها بدقة.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="testimonials-section">
+        <h2 class="section-title translate" style="color:#10b981;" data-ar="آراء طلابنا" data-en="Student Feedback">آراء طلابنا</h2>
+        <div class="media-grid">
+            <div class="media-box">
+                <p class="translate" data-ar="تجربة الطالب" data-en="Student Experience">تجربة الطالب</p>
+                <video controls style="background:#000;"><source src="intro.mp4" type="video/mp4"></video>
+            </div>
+            <div class="media-box">
+                <p class="translate" data-ar="تقييمات فعلية" data-en="Real Reviews">تقييمات فعلية</p>
+                <img src="https://via.placeholder.com/400x250?text=WhatsApp+Feedback+Screenshot" alt="Feedback">
+            </div>
+        </div>
+    </section>
+
+    <section id="leadFormSection" class="lead-form-section">
+        <h2 class="section-title translate" data-ar="ابدأ رحلتك معنا الآن" data-en="Start Your Journey Now">ابدأ رحلتك معنا الآن</h2>
+        <div class="lead-form-box">
+            <p class="translate" style="margin-bottom:20px; color:#475569;" data-ar="سجل بياناتك وسيقوم فريقنا بالتواصل معك لتحديد مستواك ومناقشة أهدافك." data-en="Register your details and our team will contact you for a placement test.">سجل بياناتك وسيقوم فريقنا بالتواصل معك لتحديد مستواك ومناقشة أهدافك.</p>
+            
+            <input type="text" id="leadName" class="lead-input translate-ph" data-ar="الاسم بالكامل" data-en="Full Name" placeholder="الاسم بالكامل">
+            <input type="tel" id="leadPhone" class="lead-input translate-ph" data-ar="رقم الواتساب" data-en="WhatsApp Number" placeholder="رقم الواتساب">
+            <select id="leadProgram" class="lead-input">
+                <option value="General" class="translate" data-ar="تأسيس لغة عامة" data-en="General English">تأسيس لغة عامة</option>
+                <option value="Advanced" class="translate" data-ar="مستويات متقدمة (C1/C2)" data-en="Advanced Levels (C1/C2)">مستويات متقدمة (C1/C2)</option>
+                <option value="Conversation" class="translate" data-ar="محادثة فقط" data-en="Conversation Only">محادثة فقط</option>
+            </select>
+            <button onclick="submitLeadData()" class="cta-btn translate" style="width:100%; border-radius:8px;" id="leadSubmitBtn" data-ar="إرسال البيانات 🚀" data-en="Submit Details 🚀">إرسال البيانات 🚀</button>
+            <div id="leadMsg" style="margin-top:15px; font-weight:bold;"></div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <p>© 2026 English Land. All rights reserved.</p>
+    </footer>
+</div>
+
+<!-- ==================== نافذة تسجيل دخول الطلاب (Modal) ==================== -->
+<div id="loginModal" class="login-modal hidden">
+    <div class="login-box">
+        <span class="close-login" onclick="hideLoginModal()">&times;</span>
+        <img src="logo.png?v=18" style="height:50px; margin-bottom:15px;" alt="Logo">
+        <h2 class="translate" data-ar="تسجيل الدخول" data-en="Account Login" style="color:var(--primary); margin-top:0;">تسجيل الدخول</h2>
+        <input type="text" id="universalId" class="lead-input translate-ph" data-ar="أدخل كود الطالب (ID)" data-en="Student ID" placeholder="أدخل كود الطالب (ID)" style="text-align: center;">
+        <input type="password" id="universalPass" class="lead-input translate-ph" data-ar="كلمة المرور" data-en="Password" placeholder="كلمة المرور" style="text-align: center;">
+        <button onclick="handleLogin()" class="cta-btn translate" style="width:100%; border-radius:8px; font-size:16px;" data-ar="دخول آمن" data-en="Secure Login">دخول آمن</button>
         <div id="errorMsg" style="color:var(--danger); font-weight:bold; margin-top:15px;"></div>
     </div>
 </div>
 
-<div class="container hidden pulse" id="loadingScreen" style="margin-top: 50px;">
-    <h3 style="color: var(--primary);">Verifying Identity & Preparing Data... ⏳</h3>
-    <p style="color: #64748b;">Please wait a moment while the system synchronizes.</p>
-</div>
+<!-- ==================== لوحات التحكم الأصلية (Dashboards) ==================== -->
+<div class="dash-wrapper" id="dashWrapper" style="display: none; background: var(--bg);">
+    <div class="global-header" id="globalHeader"><img src="logo.png?v=18" alt="English Land Logo" class="global-logo"></div>
 
-<div class="hidden" id="videoSplashSection">
-    <video id="introVideo" autoplay muted playsinline><source src="intro.mp4?v=18" type="video/mp4"></video>
-    <button class="btn-skip" id="skipBtn" onclick="skipIntroVideo()" disabled>Preparing...</button>
-</div>
-
-<!-- ==================== Student Dashboard ==================== -->
-<div class="container hidden" id="studentDashboard">
-    <div><h2 id="welcomeStudent">Welcome</h2></div>
-    <div class="grid-cards">
-        <div class="info-card"><h4>Current Course</h4><strong id="courseName" style="color: var(--primary);"></strong></div>
-        <div class="info-card"><h4>Group</h4><strong id="groupName" style="color: var(--secondary);"></strong></div>
-        <div class="info-card"><h4>Schedule Details</h4><strong id="scheduleDetails"></strong></div>
-        <div class="info-card"><h4>Instructor</h4><strong id="teacherName"></strong></div>
-        <div class="info-card"><h4>Attendance Rate</h4><strong id="attendanceRate" style="color: #3b82f6;"></strong></div>
-        <div class="info-card"><h4>Financial Status</h4><span id="paymentStatus" class="payment-status"></span></div>
+    <div class="container hidden pulse" id="loadingScreen" style="margin-top: 50px;" dir="ltr">
+        <h3 style="color: var(--primary); text-align: center;">Verifying Identity & Preparing Data... ⏳</h3>
+        <p style="color: #64748b; text-align: center;">Please wait a moment while the system synchronizes.</p>
     </div>
-    
-    <div id="barNoticeSection" class="hidden"><div class="bar-box"><strong>⚠️ Academic Warning:</strong><p style="margin: 5px 0 0 0;">You have exceeded the allowed absence limit.</p></div></div>
-    <div class="feedback-box"><h4>💬 General Instructor Feedback:</h4><p id="instructorFeedback" style="margin:5px 0 0 0; color:#1e3a8a;"></p></div>
-    
-    <div class="card-section">
-        <div class="card-title">📅 Schedule (Center & Live Stream)</div>
-        <div class="table-responsive">
-            <table><thead><tr><th>Lecture</th><th>Date & Time</th><th>Status</th><th>Live Stream</th></tr></thead><tbody id="studentScheduleTableBody"><tr><td colspan="4">Fetching Schedule...</td></tr></tbody></table>
+
+    <div class="hidden" id="videoSplashSection">
+        <video id="introVideo" autoplay muted playsinline><source src="intro.mp4?v=18" type="video/mp4"></video>
+        <button class="btn-skip" id="skipBtn" onclick="skipIntroVideo()" disabled>Preparing...</button>
+    </div>
+
+    <!-- Student Dashboard -->
+    <div class="container hidden" id="studentDashboard" dir="ltr">
+        <div><h2 id="welcomeStudent">Welcome</h2></div>
+        <div class="grid-cards">
+            <div class="info-card"><h4>Current Course</h4><strong id="courseName" style="color: var(--primary);"></strong></div>
+            <div class="info-card"><h4>Group</h4><strong id="groupName" style="color: var(--secondary);"></strong></div>
+            <div class="info-card"><h4>Schedule Details</h4><strong id="scheduleDetails"></strong></div>
+            <div class="info-card"><h4>Instructor</h4><strong id="teacherName"></strong></div>
+            <div class="info-card"><h4>Attendance Rate</h4><strong id="attendanceRate" style="color: #3b82f6;"></strong></div>
+            <div class="info-card"><h4>Financial Status</h4><span id="paymentStatus" class="payment-status"></span></div>
         </div>
-    </div>
-    
-    <div class="card-section">
-        <div class="card-title">📝 Homework & Interactive Storytelling</div>
-        <div class="q-block">
-            <label class="hw-label" style="font-size:16px;">Select a lecture to submit narrative assignment or start the interactive journey:</label>
-            <select id="studentHwLecture" onchange="loadStudentHomework()" style="background:#eff6ff; color:var(--primary); font-weight:bold;">
-                <option value="L1">Lecture 1 (L1)</option><option value="L2">Lecture 2 (L2)</option><option value="L3">Lecture 3 (L3)</option>
-                <option value="L4">Lecture 4 (L4)</option><option value="L5">Lecture 5 (L5)</option><option value="L6">Lecture 6 (L6)</option>
-                <option value="L7">Lecture 7 (L7)</option><option value="L8">Lecture 8 (L8)</option>
-            </select>
-            <textarea id="studentWriting" class="en-input" rows="4" placeholder="Type your narrative storytelling assignment here..."></textarea>
-            <input type="url" id="studentShadowing" class="en-input" placeholder="Paste your audio recording link here...">
-            <button onclick="submitStudentHomework()" style="margin-top: 15px;">📤 Submit Narrative</button>
-            <div id="hwSubmitMsg" style="margin-top:10px; font-weight:bold; font-size:14px;"></div>
-            
-            <!-- Cinematic Gamified Arena -->
-            <div id="gamifiedArena" class="gamified-section hidden">
-                <h3>Interactive Story Journey</h3>
-                <p style="color:#cbd5e1; font-size:14px;">Complete the narrative and test your understanding in a fun, cinematic way to collect points.</p>
-                <div id="gameModesMenu" class="game-modes-grid">
-                    <div class="game-mode-card" onclick="initGamifiedQuiz('arena')">
-                        <svg class="game-icon" viewBox="0 0 24 24"><path d="M13 3L4 14h7v7l9-11h-7V3z"/></svg>
-                        <strong>Narrative Heroes Challenge</strong>
-                        <p style="color:#94a3b8; font-size:12px; margin-top:8px;">Timed mode! Answer quickly to keep your lives and double your points.</p>
-                    </div>
-                    <div class="game-mode-card" onclick="initGamifiedQuiz('review')">
-                        <svg class="game-icon" viewBox="0 0 24 24"><path d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 4h5v8l-2.5-1.5L6 12V4z"/></svg>
-                        <strong>Quiet Review</strong>
-                        <p style="color:#94a3b8; font-size:12px; margin-top:8px;">Enjoy reading the context and selecting answers without time pressure.</p>
-                    </div>
-                </div>
-                <div id="gamePlayEngine" class="hidden cinematic-game-board">
-                    <div id="feedbackOverlay" class="feedback-overlay"></div>
-                    <div style="width:100%;">
-                        <div class="duo-progress-container"><div id="gameProgressFill" class="duo-progress-bar"></div></div>
-                        <div id="questionTimerContainer" class="timer-container hidden"><div id="questionTimerBar" class="timer-bar"></div></div>
-                        <div class="game-top-bar">
-                            <div class="lives-container" id="livesContainer">
-                                <svg class="heart-svg" viewBox="0 0 24 24" id="life1"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
-                                <svg class="heart-svg" viewBox="0 0 24 24" id="life2"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
-                                <svg class="heart-svg" viewBox="0 0 24 24" id="life3"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
-                            </div>
-                            <div id="gameStreakFire" class="streak-fire hidden"><svg class="fire-svg" viewBox="0 0 24 24"><path d="M17.5 11.2c-.2-.3-.5-.4-.8-.2-.3.2-.4.6-.2.9 1 1.4 1.3 3.1.8 4.7-.6 1.8-2.2 3.1-4.1 3.3-2 .2-3.8-1-4.7-2.7-.4-.8-.5-1.7-.3-2.6.2-.9.7-1.7 1.4-2.3.3-.2.3-.6.1-.8-.2-.3-.6-.3-.8-.1-1 1-1.6 2.3-1.8 3.7-.2 1.4.1 2.8 1 3.9.9 1.1 2.2 1.8 3.7 1.9 1.4.1 2.8-.3 3.9-1.2 1.1-.9 1.8-2.2 1.9-3.6.2-1.4-.3-2.8-1.2-3.9zM12 2.2c-.3-.2-.8-.2-1.1 0-1.8 1.4-3.1 3.5-3.6 5.8-.3 1.3-.2 2.6.3 3.8.2.5.8.7 1.2.4.5-.3.6-.8.4-1.3-.4-.9-.4-1.9-.2-2.9.4-1.7 1.4-3.3 2.7-4.4.2-.2.3-.5.1-.8l-.8-.6z"/></svg> Streak! (X2)</div>
-                            <div id="gameScoreBadge" class="game-score-badge">XP: 0</div>
-                        </div>
-                        <div class="mascot-container">
-                            <svg id="mascotSvg" class="mascot-idle" viewBox="0 0 100 100" width="100" height="100">
-                                <ellipse cx="50" cy="55" rx="35" ry="40" fill="#10b981" id="mascotBody"/>
-                                <ellipse cx="50" cy="65" rx="20" ry="25" fill="#34d399" id="mascotBelly"/>
-                                <g id="mascotEyes"><circle cx="35" cy="45" r="10" fill="white"/><circle cx="65" cy="45" r="10" fill="white"/><circle cx="35" cy="45" r="4" fill="#021222" id="pupilL"/><circle cx="65" cy="45" r="4" fill="#021222" id="pupilR"/></g>
-                                <polygon points="45,55 55,55 50,65" fill="#f59e0b" id="mascotBeak"/>
-                                <path d="M 15 50 Q 0 60 15 80" fill="#059669" id="wingL"/><path d="M 85 50 Q 100 60 85 80" fill="#059669" id="wingR"/>
-                            </svg>
-                        </div>
-                        <div id="gameQuestionText" class="game-question-text"></div>
-                    </div>
-                    <div id="gameChoicesBox" class="kahoot-grid"></div>
-                    <button onclick="exitActiveGame()" style="background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.3); margin-top:25px; width:auto; padding:8px 25px; color:#fff; cursor:pointer;">🏳️ Pause Journey & Return</button>
-                </div>
-            </div>
-            
-            <div id="homeworkQuizContainer" class="hidden hw-quiz-box"></div>
-            <div id="hwResultBox" class="hidden" style="margin-top: 20px; padding: 15px; background: #f0fdf4; border: 1px solid #10b981; border-radius: 8px;">
-                <h4 style="margin: 0 0 10px 0; color: #065f46;">✅ Instructor's Evaluation:</h4>
-                <strong>Grade:</strong> <span id="displayHwGrade" style="color: var(--primary); font-weight: bold; font-size: 16px;"></span><br>
-                <strong style="display:block; margin-top:8px;">Feedback:</strong> <div id="displayHwFeedback" style="margin-top:5px; font-style: italic;"></div>
+        
+        <div id="barNoticeSection" class="hidden"><div class="bar-box"><strong>⚠️ Academic Warning:</strong><p style="margin: 5px 0 0 0;">You have exceeded the allowed absence limit.</p></div></div>
+        <div class="feedback-box"><h4>💬 General Instructor Feedback:</h4><p id="instructorFeedback" style="margin:5px 0 0 0; color:#1e3a8a;"></p></div>
+        
+        <div class="card-section">
+            <div class="card-title">📅 Schedule (Center & Live Stream)</div>
+            <div class="table-responsive">
+                <table><thead><tr><th>Lecture</th><th>Date & Time</th><th>Status</th><th>Live Stream</th></tr></thead><tbody id="studentScheduleTableBody"><tr><td colspan="4">Fetching Schedule...</td></tr></tbody></table>
             </div>
         </div>
-    </div>
-    <div class="card-section"><div class="card-title">💻 Digital Exams & Quizzes</div><div id="examsContainer"><div class="exam-row"><div><strong>Quiz 1 (10)</strong></div><div id="action-quiz1"></div></div><div class="exam-row"><div><strong>Quiz 2 (10)</strong></div><div id="action-quiz2"></div></div><div class="exam-row"><div><strong>Final Exam (80)</strong></div><div id="action-final"></div></div></div></div>
-    <div class="card-section"><div class="card-title">📚 Course Materials</div><div id="materialsList"></div></div>
-</div>
-
-<!-- ==================== Exam Interface ==================== -->
-<div class="container hidden" id="examTakerDashboard" style="max-width: 850px;">
-    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--primary); padding-bottom: 10px; margin-bottom: 20px;">
-        <h2 id="currentExamTitle">Start Exam</h2>
-        <div style="background: var(--danger); color: white; padding: 8px 15px; border-radius: 6px; font-weight: bold; font-size: 18px;">⏳ <span id="examTimerDisplay">00:00</span></div>
-    </div>
-    <div id="examQuestionsContainer"></div>
-    <button onclick="gradeAndSubmitExam()" style="background-color: var(--secondary); font-size: 16px; margin-top: 20px;">🏁 Submit Answers & Finish</button>
-</div>
-
-<!-- ==================== Teacher & Admin Dashboard ==================== -->
-<div class="container hidden" id="teacherDashboard" style="max-width: 1050px;">
-    <h2 id="welcomeTeacher">Welcome, Instructor</h2>
-    
-    <div id="superAdminPanel" class="admin-panel hidden">
-        <h3>Admin Control (Schedules & Zoom Links)</h3>
-        <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
-            <div style="flex: 1; min-width: 120px;"><label style="font-size: 12px; font-weight: bold;">Group:</label><select id="adminGroupSelect" style="padding: 8px; font-size: 14px; margin: 5px 0;"></select></div>
-            <div style="flex: 1; min-width: 120px;"><label style="font-size: 12px; font-weight: bold;">Lecture:</label><select id="adminLecSelect" style="padding: 8px; font-size: 14px; margin: 5px 0;"><option value="L1">L1</option><option value="L2">L2</option><option value="L3">L3</option><option value="L4">L4</option><option value="L5">L5</option><option value="L6">L6</option><option value="L7">L7</option><option value="L8">L8</option></select></div>
-            <div style="flex: 2; min-width: 180px;"><label style="font-size: 12px; font-weight: bold;">Date & Time:</label><input type="datetime-local" id="adminDateTime" style="padding: 8px; font-size: 14px; margin: 5px 0;"></div>
-            <div style="flex: 2; min-width: 180px;"><label style="font-size: 12px; font-weight: bold;">Zoom Link (Optional):</label><input type="url" id="adminZoomLink" placeholder="https://zoom.us/..." style="padding: 8px; font-size: 14px; margin: 5px 0;"></div>
-            <div style="flex: 1; min-width: 120px;"><label style="display:block; height:18px;"></label><button onclick="saveScheduleDate()" style="padding: 10px; font-size: 14px; background: #b45309; margin: 0;">Save Time</button></div>
-        </div>
-        <div id="adminMsg" style="margin-top:10px; font-weight:bold; font-size:14px;"></div>
-    </div>
-    
-    <div class="card-section" style="background: #f8fafc; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 25px;">
-        <div style="color: var(--primary); font-weight: bold; font-size: 16px; margin-bottom: 5px;">📁 Upload Center (.txt Exams & Games)</div>
-        <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
-            <div style="flex: 1; min-width: 150px;">
-                <select id="uploadExamType" style="padding: 8px; font-size: 14px; margin: 5px 0;">
-                    <option value="quiz1">Quiz 1</option><option value="quiz2">Quiz 2</option><option value="final">Final Exam</option>
-                    <option value="L1_hw">L1 Homework / Game</option><option value="L2_hw">L2 Homework / Game</option><option value="L3_hw">L3 Homework / Game</option>
-                    <option value="L4_hw">L4 Homework / Game</option><option value="L5_hw">L5 Homework / Game</option><option value="L6_hw">L6 Homework / Game</option>
-                    <option value="L7_hw">L7 Homework / Game</option><option value="L8_hw">L8 Homework / Game</option>
+        
+        <div class="card-section">
+            <div class="card-title">📝 Homework & Interactive Storytelling</div>
+            <div class="q-block">
+                <label class="hw-label" style="font-size:16px;">Select a lecture to submit narrative assignment or start the interactive journey:</label>
+                <select id="studentHwLecture" onchange="loadStudentHomework()" style="background:#eff6ff; color:var(--primary); font-weight:bold;">
+                    <option value="L1">Lecture 1 (L1)</option><option value="L2">Lecture 2 (L2)</option><option value="L3">Lecture 3 (L3)</option>
+                    <option value="L4">Lecture 4 (L4)</option><option value="L5">Lecture 5 (L5)</option><option value="L6">Lecture 6 (L6)</option>
+                    <option value="L7">Lecture 7 (L7)</option><option value="L8">Lecture 8 (L8)</option>
                 </select>
+                <textarea id="studentWriting" class="en-input" rows="4" placeholder="Type your narrative storytelling assignment here..." style="text-align: left;"></textarea>
+                <input type="url" id="studentShadowing" class="en-input" placeholder="Paste your audio recording link here..." style="text-align: left;">
+                <button onclick="submitStudentHomework()" style="margin-top: 15px;">📤 Submit Narrative</button>
+                <div id="hwSubmitMsg" style="margin-top:10px; font-weight:bold; font-size:14px;"></div>
+                
+                <!-- Cinematic Gamified Arena -->
+                <div id="gamifiedArena" class="gamified-section hidden">
+                    <h3>Interactive Story Journey</h3>
+                    <p style="color:#cbd5e1; font-size:14px;">Complete the narrative and test your understanding in a fun, cinematic way to collect points.</p>
+                    <div id="gameModesMenu" class="game-modes-grid">
+                        <div class="game-mode-card" onclick="initGamifiedQuiz('arena')">
+                            <svg class="game-icon" viewBox="0 0 24 24"><path d="M13 3L4 14h7v7l9-11h-7V3z"/></svg>
+                            <strong>Narrative Heroes Challenge</strong>
+                            <p style="color:#94a3b8; font-size:12px; margin-top:8px;">Timed mode! Answer quickly to keep your lives and double your points.</p>
+                        </div>
+                        <div class="game-mode-card" onclick="initGamifiedQuiz('review')">
+                            <svg class="game-icon" viewBox="0 0 24 24"><path d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 4h5v8l-2.5-1.5L6 12V4z"/></svg>
+                            <strong>Quiet Review</strong>
+                            <p style="color:#94a3b8; font-size:12px; margin-top:8px;">Enjoy reading the context and selecting answers without time pressure.</p>
+                        </div>
+                    </div>
+                    <div id="gamePlayEngine" class="hidden cinematic-game-board">
+                        <div id="feedbackOverlay" class="feedback-overlay"></div>
+                        <div style="width:100%;">
+                            <div class="duo-progress-container"><div id="gameProgressFill" class="duo-progress-bar"></div></div>
+                            <div id="questionTimerContainer" class="timer-container hidden"><div id="questionTimerBar" class="timer-bar"></div></div>
+                            <div class="game-top-bar">
+                                <div class="lives-container" id="livesContainer">
+                                    <svg class="heart-svg" viewBox="0 0 24 24" id="life1"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                                    <svg class="heart-svg" viewBox="0 0 24 24" id="life2"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                                    <svg class="heart-svg" viewBox="0 0 24 24" id="life3"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                                </div>
+                                <div id="gameStreakFire" class="streak-fire hidden"><svg class="fire-svg" viewBox="0 0 24 24"><path d="M17.5 11.2c-.2-.3-.5-.4-.8-.2-.3.2-.4.6-.2.9 1 1.4 1.3 3.1.8 4.7-.6 1.8-2.2 3.1-4.1 3.3-2 .2-3.8-1-4.7-2.7-.4-.8-.5-1.7-.3-2.6.2-.9.7-1.7 1.4-2.3.3-.2.3-.6.1-.8-.2-.3-.6-.3-.8-.1-1 1-1.6 2.3-1.8 3.7-.2 1.4.1 2.8 1 3.9.9 1.1 2.2 1.8 3.7 1.9 1.4.1 2.8-.3 3.9-1.2 1.1-.9 1.8-2.2 1.9-3.6.2-1.4-.3-2.8-1.2-3.9zM12 2.2c-.3-.2-.8-.2-1.1 0-1.8 1.4-3.1 3.5-3.6 5.8-.3 1.3-.2 2.6.3 3.8.2.5.8.7 1.2.4.5-.3.6-.8.4-1.3-.4-.9-.4-1.9-.2-2.9.4-1.7 1.4-3.3 2.7-4.4.2-.2.3-.5.1-.8l-.8-.6z"/></svg> Streak! (X2)</div>
+                                <div id="gameScoreBadge" class="game-score-badge">XP: 0</div>
+                            </div>
+                            <div class="mascot-container">
+                                <svg id="mascotSvg" class="mascot-idle" viewBox="0 0 100 100" width="100" height="100">
+                                    <ellipse cx="50" cy="55" rx="35" ry="40" fill="#10b981" id="mascotBody"/>
+                                    <ellipse cx="50" cy="65" rx="20" ry="25" fill="#34d399" id="mascotBelly"/>
+                                    <g id="mascotEyes"><circle cx="35" cy="45" r="10" fill="white"/><circle cx="65" cy="45" r="10" fill="white"/><circle cx="35" cy="45" r="4" fill="#021222" id="pupilL"/><circle cx="65" cy="45" r="4" fill="#021222" id="pupilR"/></g>
+                                    <polygon points="45,55 55,55 50,65" fill="#f59e0b" id="mascotBeak"/>
+                                    <path d="M 15 50 Q 0 60 15 80" fill="#059669" id="wingL"/><path d="M 85 50 Q 100 60 85 80" fill="#059669" id="wingR"/>
+                                </svg>
+                            </div>
+                            <div id="gameQuestionText" class="game-question-text"></div>
+                        </div>
+                        <div id="gameChoicesBox" class="kahoot-grid"></div>
+                        <button onclick="exitActiveGame()" style="background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.3); margin-top:25px; width:auto; padding:8px 25px; color:#fff; cursor:pointer;">🏳️ Pause Journey & Return</button>
+                    </div>
+                </div>
+                
+                <div id="homeworkQuizContainer" class="hidden hw-quiz-box"></div>
+                <div id="hwResultBox" class="hidden" style="margin-top: 20px; padding: 15px; background: #f0fdf4; border: 1px solid #10b981; border-radius: 8px;">
+                    <h4 style="margin: 0 0 10px 0; color: #065f46;">✅ Instructor's Evaluation:</h4>
+                    <strong>Grade:</strong> <span id="displayHwGrade" style="color: var(--primary); font-weight: bold; font-size: 16px;"></span><br>
+                    <strong style="display:block; margin-top:8px;">Feedback:</strong> <div id="displayHwFeedback" style="margin-top:5px; font-style: italic;"></div>
+                </div>
             </div>
-            <div style="flex: 1; min-width: 120px;"><input type="text" id="uploadExamCourse" placeholder="Course Name (e.g. Level3)" style="padding: 8px; font-size: 14px; margin: 5px 0;"></div>
-            <div style="flex: 2; min-width: 180px;"><input type="file" id="examTxtFile" accept=".txt" style="padding: 5px; font-size: 13px; margin: 5px 0; border: none;"></div>
-            <div style="flex: 1; min-width: 120px;"><button onclick="processAndUploadExam()" style="padding: 10px; font-size: 14px; background: var(--secondary); margin: 0;">Upload & Activate</button></div>
         </div>
+        <div class="card-section"><div class="card-title">💻 Digital Exams & Quizzes</div><div id="examsContainer"><div class="exam-row"><div><strong>Quiz 1 (10)</strong></div><div id="action-quiz1"></div></div><div class="exam-row"><div><strong>Quiz 2 (10)</strong></div><div id="action-quiz2"></div></div><div class="exam-row"><div><strong>Final Exam (80)</strong></div><div id="action-final"></div></div></div></div>
+        <div class="card-section"><div class="card-title">📚 Course Materials</div><div id="materialsList"></div></div>
     </div>
-    
-    <div class="teacher-tools">
-        <div style="flex: 1; min-width: 150px;"><label style="font-weight: bold; color: var(--primary);">Filter Group:</label><select id="groupFilter" onchange="filterTeacherStudents()"></select></div>
-        <div style="flex: 1; min-width: 150px;"><label style="font-weight: bold; color: var(--primary);">Lecture:</label><select id="lectureSelect" onchange="filterTeacherStudents()"><option value="L1">Lecture 1 (L1)</option><option value="L2">Lecture 2 (L2)</option><option value="L3">Lecture 3 (L3)</option><option value="L4">Lecture 4 (L4)</option><option value="L5">Lecture 5 (L5)</option><option value="L6">Lecture 6 (L6)</option><option value="L7">Lecture 7 (L7)</option><option value="L8">Lecture 8 (L8)</option></select></div>
+
+    <!-- Exam Interface -->
+    <div class="container hidden" id="examTakerDashboard" style="max-width: 850px;" dir="ltr">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--primary); padding-bottom: 10px; margin-bottom: 20px;">
+            <h2 id="currentExamTitle">Start Exam</h2>
+            <div style="background: var(--danger); color: white; padding: 8px 15px; border-radius: 6px; font-weight: bold; font-size: 18px;">⏳ <span id="examTimerDisplay">00:00</span></div>
+        </div>
+        <div id="examQuestionsContainer"></div>
+        <button onclick="gradeAndSubmitExam()" style="background-color: var(--secondary); font-size: 16px; margin-top: 20px;">🏁 Submit Answers & Finish</button>
     </div>
-    <div id="lectureStatusMsg" style="text-align:center; font-weight:bold; margin-bottom:15px; font-size:14px; line-height: 1.6;"></div>
-    
-    <div class="card-section">
-        <div class="card-title">👥 Students List</div>
-        <div class="table-responsive">
-            <table style="width: 100%; min-width: 800px;"><thead id="teacherTableHead"></thead><tbody id="teacherStudentsList"></tbody></table>
+
+    <!-- Teacher & Admin Dashboard -->
+    <div class="container hidden" id="teacherDashboard" style="max-width: 1050px;" dir="ltr">
+        <h2 id="welcomeTeacher">Welcome, Instructor</h2>
+        
+        <div id="superAdminPanel" class="admin-panel hidden">
+            <h3>Admin Control (Schedules & Zoom Links)</h3>
+            <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
+                <div style="flex: 1; min-width: 120px;"><label style="font-size: 12px; font-weight: bold;">Group:</label><select id="adminGroupSelect" style="padding: 8px; font-size: 14px; margin: 5px 0;"></select></div>
+                <div style="flex: 1; min-width: 120px;"><label style="font-size: 12px; font-weight: bold;">Lecture:</label><select id="adminLecSelect" style="padding: 8px; font-size: 14px; margin: 5px 0;"><option value="L1">L1</option><option value="L2">L2</option><option value="L3">L3</option><option value="L4">L4</option><option value="L5">L5</option><option value="L6">L6</option><option value="L7">L7</option><option value="L8">L8</option></select></div>
+                <div style="flex: 2; min-width: 180px;"><label style="font-size: 12px; font-weight: bold;">Date & Time:</label><input type="datetime-local" id="adminDateTime" style="padding: 8px; font-size: 14px; margin: 5px 0;"></div>
+                <div style="flex: 2; min-width: 180px;"><label style="font-size: 12px; font-weight: bold;">Zoom Link (Optional):</label><input type="url" id="adminZoomLink" placeholder="https://zoom.us/..." style="padding: 8px; font-size: 14px; margin: 5px 0;"></div>
+                <div style="flex: 1; min-width: 120px;"><label style="display:block; height:18px;"></label><button onclick="saveScheduleDate()" style="padding: 10px; font-size: 14px; background: #b45309; margin: 0;">Save Time</button></div>
+            </div>
+            <div id="adminMsg" style="margin-top:10px; font-weight:bold; font-size:14px;"></div>
+        </div>
+        
+        <div class="card-section" style="background: #f8fafc; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 25px;">
+            <div style="color: var(--primary); font-weight: bold; font-size: 16px; margin-bottom: 5px;">📁 Upload Center (.txt Exams & Games)</div>
+            <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
+                <div style="flex: 1; min-width: 150px;">
+                    <select id="uploadExamType" style="padding: 8px; font-size: 14px; margin: 5px 0;">
+                        <option value="quiz1">Quiz 1</option><option value="quiz2">Quiz 2</option><option value="final">Final Exam</option>
+                        <option value="L1_hw">L1 Homework / Game</option><option value="L2_hw">L2 Homework / Game</option><option value="L3_hw">L3 Homework / Game</option>
+                        <option value="L4_hw">L4 Homework / Game</option><option value="L5_hw">L5 Homework / Game</option><option value="L6_hw">L6 Homework / Game</option>
+                        <option value="L7_hw">L7 Homework / Game</option><option value="L8_hw">L8 Homework / Game</option>
+                    </select>
+                </div>
+                <div style="flex: 1; min-width: 120px;"><input type="text" id="uploadExamCourse" placeholder="Course Name (e.g. Level3)" style="padding: 8px; font-size: 14px; margin: 5px 0; text-align: center;"></div>
+                <div style="flex: 2; min-width: 180px;"><input type="file" id="examTxtFile" accept=".txt" style="padding: 5px; font-size: 13px; margin: 5px 0; border: none;"></div>
+                <div style="flex: 1; min-width: 120px;"><button onclick="processAndUploadExam()" style="padding: 10px; font-size: 14px; background: var(--secondary); margin: 0;">Upload & Activate</button></div>
+            </div>
+        </div>
+        
+        <div class="teacher-tools">
+            <div style="flex: 1; min-width: 150px;"><label style="font-weight: bold; color: var(--primary);">Filter Group:</label><select id="groupFilter" onchange="filterTeacherStudents()"></select></div>
+            <div style="flex: 1; min-width: 150px;"><label style="font-weight: bold; color: var(--primary);">Lecture:</label><select id="lectureSelect" onchange="filterTeacherStudents()"><option value="L1">Lecture 1 (L1)</option><option value="L2">Lecture 2 (L2)</option><option value="L3">Lecture 3 (L3)</option><option value="L4">Lecture 4 (L4)</option><option value="L5">Lecture 5 (L5)</option><option value="L6">Lecture 6 (L6)</option><option value="L7">Lecture 7 (L7)</option><option value="L8">Lecture 8 (L8)</option></select></div>
+        </div>
+        <div id="lectureStatusMsg" style="text-align:center; font-weight:bold; margin-bottom:15px; font-size:14px; line-height: 1.6;"></div>
+        
+        <div class="card-section">
+            <div class="card-title">👥 Students List</div>
+            <div class="table-responsive">
+                <table style="width: 100%; min-width: 800px;"><thead id="teacherTableHead"></thead><tbody id="teacherStudentsList"></tbody></table>
+            </div>
         </div>
     </div>
 </div>
 
-<!-- ==================== Modals ==================== -->
-<div id="hwModal" class="modal hidden">
+<!-- ==================== Modals (Homework & Profile) ==================== -->
+<div id="hwModal" class="modal hidden" dir="ltr">
     <div class="modal-content">
         <span class="close-btn" onclick="closeHomeworkModal()">&times;</span>
         <h3 id="modalStudentName">Evaluate Homework</h3><p style="color:var(--danger); font-weight:bold;" id="modalLectureLabel"></p>
         <label class="hw-label">✍️ Written Text:</label><div id="modalWriting" class="passage-box en-input" style="white-space: pre-wrap; min-height: 80px; background: #f8fafc; border: 1px solid #e2e8f0;"></div>
         <label class="hw-label">🎙️ Audio Link:</label><div style="margin-bottom: 20px; padding: 10px; background: #eff6ff; border-radius: 6px;"><a id="modalShadowingLink" href="#" target="_blank" style="color: #2563eb; font-weight: bold; text-decoration: none;">🔗 Listen to Voice Recording 🎧</a></div>
-        <label class="hw-label">Assigned Grade:</label><input type="text" id="modalHwGrade" placeholder="e.g. 9/10"><label class="hw-label">Feedback/Notes:</label><textarea id="modalHwFeedback" rows="3"></textarea>
+        <label class="hw-label">Assigned Grade:</label><input type="text" id="modalHwGrade" placeholder="e.g. 9/10">
+        <label class="hw-label">Feedback/Notes:</label><textarea id="modalHwFeedback" rows="3"></textarea>
         <button id="saveHwBtn" style="background-color: var(--secondary); margin-top: 15px;">Save Evaluation 💾</button>
     </div>
 </div>
 
-<div id="profileModal" class="modal hidden">
+<div id="profileModal" class="modal hidden" dir="ltr">
     <div class="modal-content">
         <span class="close-btn" onclick="closeProfileModal()">&times;</span>
         <h3 style="color:var(--primary);">👤 Profile: <span id="profName" style="color:var(--text);"></span></h3>
@@ -351,15 +444,39 @@ th { background-color: #f1f5f9; color: var(--primary); }
 </div>
 
 <script>
-let currentSlide = 0; const slides = document.querySelectorAll('.slide');
-if(slides.length > 0) setInterval(() => { slides[currentSlide].classList.remove('active'); currentSlide = (currentSlide + 1) % slides.length; slides[currentSlide].classList.add('active'); }, 4000);
+// ==================== التسويق واللغات ====================
+let currentLang = 'ar';
+function toggleLang() {
+    currentLang = (currentLang === 'ar') ? 'en' : 'ar';
+    document.documentElement.dir = (currentLang === 'ar') ? 'rtl' : 'ltr';
+    document.documentElement.lang = currentLang;
+    document.querySelectorAll('.translate').forEach(el => { if(el.getAttribute(`data-${currentLang}`)) el.innerHTML = el.getAttribute(`data-${currentLang}`); });
+    document.querySelectorAll('.translate-ph').forEach(el => { if(el.getAttribute(`data-${currentLang}`)) el.placeholder = el.getAttribute(`data-${currentLang}`); });
+}
+
+function showLoginModal() { document.getElementById('loginModal').classList.remove('hidden'); }
+function hideLoginModal() { document.getElementById('loginModal').classList.add('hidden'); document.getElementById('errorMsg').innerText = ''; }
 
 const GAS_URL = "https://script.google.com/macros/s/AKfycbxjjZmjHiv3WB8JS5CXjhYE_de3jCh9RuIlManhPRdJcgWtaoiOcsg4jYMyMWisCem7/exec";
+
+async function submitLeadData() {
+    const name = document.getElementById('leadName').value.trim(), phone = document.getElementById('leadPhone').value.trim(), program = document.getElementById('leadProgram').value, msgBox = document.getElementById('leadMsg'), btn = document.getElementById('leadSubmitBtn');
+    if(!name || !phone) { msgBox.style.color = "red"; msgBox.innerText = currentLang === 'ar' ? "يرجى إدخال الاسم ورقم الهاتف!" : "Please enter name and phone!"; return; }
+    btn.disabled = true; msgBox.style.color = "orange"; msgBox.innerText = currentLang === 'ar' ? "جاري الإرسال..." : "Sending...";
+    try {
+        const res = await fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: `action=submitLead&name=${encodeURIComponent(name)}&whatsapp=${encodeURIComponent(phone)}&program=${encodeURIComponent(program)}` });
+        const d = await res.json();
+        if(d.success) { msgBox.style.color = "green"; msgBox.innerText = currentLang === 'ar' ? "✅ تم استلام بياناتك بنجاح! سنتواصل معك قريباً." : "✅ Details received! We will contact you soon."; document.getElementById('leadName').value = ''; document.getElementById('leadPhone').value = ''; } 
+        else { msgBox.style.color = "red"; msgBox.innerText = "Error: " + d.error; }
+    } catch (e) { msgBox.style.color = "red"; msgBox.innerText = currentLang === 'ar' ? "حدث خطأ في الاتصال، حاول مجدداً." : "Connection error, try again."; }
+    btn.disabled = false;
+}
+
+// ==================== الإعدادات الأساسية والألعاب ====================
 let teacherStudentsData = [], studentActiveExams = {}, currentExamQuestions = [], currentExamTypeKey = "", examTimerInterval, cachedUserData = null, splashCountdownInterval, isVideoSkipped = false, isDataReady = false;
 let gameQuestionsArray = [], gameCurrentQuestionIdx = 0, gameTotalScore = 0, gameActiveStreak = 0, gameTimerEngineInterval, gameModeType = 'arena', gameLives = 3, questionTimeLeft = 15;
 const kahootColors = ['kahoot-c1', 'kahoot-c2', 'kahoot-c3', 'kahoot-c4'];
 const AudioContext = window.AudioContext || window.webkitAudioContext; let audioCtx;
-
 function initAudio() { if (!audioCtx) audioCtx = new AudioContext(); if (audioCtx.state === 'suspended') audioCtx.resume(); }
 
 function playSound(type) {
@@ -370,18 +487,26 @@ function playSound(type) {
 
 function parseJSONSafe(str) { let safeStr = String(str); if (!safeStr || safeStr === "" || safeStr === "undefined") return {}; try { return JSON.parse(safeStr); } catch (e) { return { "L1": safeStr }; } }
 
+// ==================== تسجيل الدخول واللوحات ====================
 async function handleLogin() {
     initAudio(); 
     const id = document.getElementById('universalId').value.trim(), pass = document.getElementById('universalPass').value.trim();
     if(!id || !pass) { document.getElementById('errorMsg').innerText = "Please enter both ID and Password"; return; }
-    document.getElementById('landingPage').classList.add('hidden'); document.getElementById('errorMsg').innerText = ""; document.getElementById('videoSplashSection').classList.remove('hidden'); document.getElementById('introVideo').play().catch(()=>{});
+    
+    hideLoginModal();
+    document.getElementById('marketingPage').classList.add('hidden');
+    document.getElementById('dashWrapper').style.display = 'block';
+    document.getElementById('videoSplashSection').classList.remove('hidden'); 
+    document.getElementById('introVideo').play().catch(()=>{});
+    
     let timeLeft = 7; document.getElementById('skipBtn').innerText = `Skip in (${timeLeft})`; document.getElementById('skipBtn').disabled = true;
     if(splashCountdownInterval) clearInterval(splashCountdownInterval);
     splashCountdownInterval = setInterval(() => { timeLeft--; if (timeLeft > 0) { document.getElementById('skipBtn').innerText = `Skip in (${timeLeft})`; } else { clearInterval(splashCountdownInterval); document.getElementById('skipBtn').disabled = false; document.getElementById('skipBtn').innerText = "Skip Video ⏭️"; } }, 1000);
+    
     fetch(`${GAS_URL}?action=login&id=${id}&pass=${encodeURIComponent(pass)}`).then(res => res.json()).then(data => {
-        if(data.error) { skipIntroVideo(); document.getElementById('loadingScreen').classList.add('hidden'); document.getElementById('landingPage').classList.remove('hidden'); document.getElementById('errorMsg').innerText = data.error; return; }
+        if(data.error) { skipIntroVideo(); document.getElementById('dashWrapper').style.display = 'none'; document.getElementById('marketingPage').classList.remove('hidden'); showLoginModal(); document.getElementById('errorMsg').innerText = data.error; return; }
         cachedUserData = data; isDataReady = true; checkAndShowDashboard();
-    }).catch(() => { skipIntroVideo(); document.getElementById('loadingScreen').classList.add('hidden'); document.getElementById('landingPage').classList.remove('hidden'); document.getElementById('errorMsg').innerText = "Server connection failed."; });
+    }).catch(() => { skipIntroVideo(); document.getElementById('dashWrapper').style.display = 'none'; document.getElementById('marketingPage').classList.remove('hidden'); showLoginModal(); document.getElementById('errorMsg').innerText = "Server connection failed."; });
     document.getElementById('introVideo').onended = () => { skipIntroVideo(); };
 }
 
@@ -419,6 +544,7 @@ function showStudentDashboard(data) {
     loadStudentHomework();
 }
 
+// ==================== الواجبات واللعبة ====================
 function loadStudentHomework() {
     const lec = document.getElementById('studentHwLecture').value, wObj = parseJSONSafe(cachedUserData.student.homework.writing), shObj = parseJSONSafe(cachedUserData.student.homework.shadowing), gObj = parseJSONSafe(cachedUserData.student.homework.hwGrade), fObj = parseJSONSafe(cachedUserData.student.homework.hwFeedback);
     document.getElementById('studentWriting').value = wObj[lec] || ""; document.getElementById('studentShadowing').value = shObj[lec] || ""; document.getElementById('hwSubmitMsg').innerText = "";
@@ -495,6 +621,7 @@ function startNativeExam(examKey, forceReset = false) { currentExamTypeKey = exa
 
 async function gradeAndSubmitExam() { clearInterval(examTimerInterval); let correctCount = 0; const total = currentExamQuestions.length; currentExamQuestions.forEach((q, idx) => { const block = document.querySelector(`.q-block[data-idx="${idx}"]`); if (q.type === 'MCQ') { const checked = block.querySelector(`input[name="rad-${idx}"]:checked`); if (checked && String(checked.value).trim().toLowerCase() === String(q.answer).trim().toLowerCase()) correctCount++; } else if (q.type === 'Cloze') { const inputs = block.querySelectorAll('.cloze-input-field'); let allTrue = true; inputs.forEach(inp => { if (String(inp.value).trim().toLowerCase() !== String(inp.dataset.ans).toLowerCase()) allTrue = false; }); if (allTrue && inputs.length > 0) correctCount++; } }); const maxGrade = (currentExamTypeKey === 'final') ? 80 : 10; const scaledScore = Math.round((correctCount / total) * maxGrade); const sId = String(document.getElementById('universalId').value).trim().toUpperCase(); document.getElementById('examTakerDashboard').innerHTML = "<div style='text-align:center;color:white;'><h2>Saving your grade to the system (POST)...</h2></div>"; try { await fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: `action=updateStudentFullInfo&studentId=${encodeURIComponent(sId)}&${currentExamTypeKey}=${scaledScore}` }); localStorage.removeItem(`endTime_${sId}_${currentExamTypeKey}`); localStorage.removeItem(`ans_${sId}_${currentExamTypeKey}`); alert(`Grade recorded successfully: ${scaledScore} out of ${maxGrade}`); location.reload(); } catch (e) { alert("Network connection error."); } }
 
+// ==================== لوحة المحاضر والمدير ====================
 function showTeacherDashboard(data) { document.getElementById('teacherDashboard').classList.remove('hidden'); document.getElementById('welcomeTeacher').innerText = `Welcome, ${String(data.name)}`; teacherStudentsData = data.students; if(data.role === "superadmin") { document.getElementById('superAdminPanel').classList.remove('hidden'); const adminGroupSel = document.getElementById('adminGroupSelect'); adminGroupSel.innerHTML = ""; data.groups.forEach(g => adminGroupSel.innerHTML += `<option value="${g}">${g}</option>`); } const groups = [...new Set(teacherStudentsData.map(s => String(s.group).trim()))], groupFilter = document.getElementById('groupFilter'); groupFilter.innerHTML = ""; groups.forEach(g => groupFilter.innerHTML += `<option value="${g}">${g}</option>`); filterTeacherStudents(); }
 
 async function saveScheduleDate() { const grp = document.getElementById('adminGroupSelect').value, lec = document.getElementById('adminLecSelect').value, dTime = document.getElementById('adminDateTime').value, zoomLink = document.getElementById('adminZoomLink').value.trim(), msg = document.getElementById('adminMsg'); if(!dTime) { msg.style.color="red"; msg.innerText = "Please select a date first."; return; } msg.style.color="#b45309"; msg.innerText = "Saving to system (POST)..."; try { const res = await fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: `action=saveSchedule&group=${encodeURIComponent(grp)}&lecture=${encodeURIComponent(lec)}&dateTime=${encodeURIComponent(dTime)}&zoomLink=${encodeURIComponent(zoomLink)}` }), d = await res.json(); if(d.success) { msg.style.color="green"; msg.innerText = "✅ Schedule saved and broadcasted to students!"; cachedUserData.schedule[grp.trim() + "_" + lec] = {date: dTime, zoom: zoomLink}; filterTeacherStudents(); } else { msg.style.color="red"; msg.innerText = "Error: " + d.error; } } catch(e) { msg.style.color="red"; msg.innerText = "Connection error."; } }
@@ -515,7 +642,6 @@ async function submitAttendance(id, status) { const lec = document.getElementByI
 
 async function saveStudentData(id) { const s = teacherStudentsData.find(x => x.id == id), q1 = document.getElementById(`q1-${id}`) ? document.getElementById(`q1-${id}`).value.trim() : (s.grades.quiz1 || ""), q2 = document.getElementById(`q2-${id}`) ? document.getElementById(`q2-${id}`).value.trim() : (s.grades.quiz2 || ""), fin = document.getElementById(`fin-${id}`) ? document.getElementById(`fin-${id}`).value.trim() : (s.grades.final || ""), fb = document.getElementById(`fb-${id}`) ? document.getElementById(`fb-${id}`).value.trim() : (s.feedback || ""), row = document.getElementById(`row-${id}`); row.style.backgroundColor = "#fef3c7"; try { const res = await fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: `action=updateStudentFullInfo&studentId=${encodeURIComponent(id)}&quiz1=${encodeURIComponent(q1)}&quiz2=${encodeURIComponent(q2)}&final=${encodeURIComponent(fin)}&feedback=${encodeURIComponent(fb)}` }), d = await res.json(); if(d.success) { row.style.backgroundColor = "#d1fae5"; s.grades.quiz1 = q1; s.grades.quiz2 = q2; s.grades.final = fin; s.feedback = fb; setTimeout(() => { row.style.backgroundColor = ""; }, 1200); } } catch (e) { row.style.backgroundColor = ""; } }
 
-// تسجيل PWA
 if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(err => console.log('SW Setup Failed', err)); }); }
 </script>
 </body>
