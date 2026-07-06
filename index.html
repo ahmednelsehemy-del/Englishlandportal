@@ -125,9 +125,19 @@ th { background-color: #f1f5f9; color: var(--primary); }
 @keyframes shake { 10%, 90% { transform: translate3d(-2px, 0, 0); } 20%, 80% { transform: translate3d(4px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-6px, 0, 0); } 40%, 60% { transform: translate3d(6px, 0, 0); } }
 
 /* ==================== Marketing / Landing Page Additions ==================== */
-.lang-switch-bar { display: flex; justify-content: center; gap: 6px; margin-bottom: 10px; }
+.lang-switch-bar { display: flex; justify-content: center; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
 .lang-btn { width: auto; padding: 6px 16px; font-size: 13px; border-radius: 20px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.25); color: #cbd5e1; font-weight: bold; }
 .lang-btn.active { background: var(--secondary); color: #021222; border-color: var(--secondary); }
+.login-nav-btn { width: auto; padding: 7px 18px; font-size: 13px; border-radius: 20px; background: var(--primary); color: #fff; font-weight: bold; border: 1px solid var(--primary); }
+.login-nav-btn:hover { background: #152e72; }
+
+.hero-cta-row { max-width: 1000px; margin: 0 auto 10px auto; padding: 0 15px; display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; box-sizing: border-box; }
+.hero-login-btn, .hero-lead-btn { width: auto; padding: 12px 22px; font-size: 14px; border-radius: 8px; }
+.hero-login-btn { background: var(--secondary); color: #021222; }
+.hero-login-btn:hover { background: #0ea371; }
+.hero-lead-btn { background: transparent; color: #fff; border: 2px solid rgba(255,255,255,0.5); }
+.hero-lead-btn:hover { background: rgba(255,255,255,0.1); }
+@media(min-width: 768px) { .hero-cta-row { margin-top: -25px; } }
 
 html[dir="rtl"] body { font-family: 'Segoe UI', Tahoma, Arial, sans-serif; }
 html[dir="rtl"] .slide-content, html[dir="rtl"] .login-wrapper, html[dir="rtl"] .info-card,
@@ -177,12 +187,13 @@ html[dir="rtl"] .lead-form label { text-align: right; }
 <div class="lang-switch-bar">
 <button type="button" class="lang-btn active" id="langBtnEn" onclick="setLanguage('en')">English</button>
 <button type="button" class="lang-btn" id="langBtnAr" onclick="setLanguage('ar')">العربية</button>
+<button type="button" class="login-nav-btn" onclick="openLoginModal()" data-i18n="login_nav_btn">🔑 Student & Teacher Login</button>
 </div>
 </div>
 
 <!-- ==================== Landing Page ==================== -->
 <div id="landingPage">
-<div class="landing-wrapper">
+<div class="landing-wrapper" style="max-width: 1000px; margin: 0 auto;">
 <div class="slider-container">
 <div class="slide active" style="background-image: url('https://images.unsplash.com/photo-1573164713988-8665fc963095?auto=format&fit=crop&w=1000&q=80');">
 <div class="slide-content"><h2 data-i18n="slide1_h">Master English for Adults</h2><p data-i18n="slide1_p">A professional learning environment tailored to develop your skills with complete confidence.</p></div></div>
@@ -191,15 +202,11 @@ html[dir="rtl"] .lead-form label { text-align: right; }
 <div class="slide" style="background-image: url('https://images.unsplash.com/photo-1542744173-8e7e53415bb0?auto=format&fit=crop&w=1000&q=80');">
 <div class="slide-content"><h2 data-i18n="slide3_h">Continuous Assessment</h2><p data-i18n="slide3_p">An integrated digital system that precisely tracks your progress to ensure you reach your goals.</p></div></div>
 </div>
-
-<div class="login-wrapper">
-<h2 style="font-size: 24px;" data-i18n="login_title">English Land LMS</h2>
-<p style="margin-bottom: 20px;" data-i18n="login_sub">Enter your credentials to access your account</p>
-<input type="text" id="universalId" data-i18n-placeholder="login_id_ph" placeholder="Enter your ID here" style="margin-bottom: 10px;">
-<input type="password" id="universalPass" data-i18n-placeholder="login_pass_ph" placeholder="Password" style="margin-bottom: 15px;">
-<button onclick="handleLogin()" style="padding: 15px; font-size: 16px;" data-i18n="login_btn">Secure Login 🔒</button>
-<div id="errorMsg" style="color:var(--danger); font-weight:bold; margin-top:15px;"></div>
 </div>
+
+<div class="hero-cta-row">
+<button type="button" class="hero-login-btn" onclick="openLoginModal()" data-i18n="login_nav_btn">🔑 Student & Teacher Login</button>
+<button type="button" class="hero-lead-btn" onclick="openLeadModal()" data-i18n="cta_btn">📋 Request Level Assessment</button>
 </div>
 
 <!-- ===== Why Choose English Land ===== -->
@@ -428,6 +435,19 @@ html[dir="rtl"] .lead-form label { text-align: right; }
 </div>
 </div>
 
+<!-- ===== Login Modal (Students & Teachers) ===== -->
+<div id="loginModal" class="modal hidden">
+<div class="modal-content" style="max-width: 400px; text-align:center;">
+<span class="close-btn" onclick="closeLoginModal()">&times;</span>
+<h2 style="font-size: 22px;" data-i18n="login_title">English Land LMS</h2>
+<p style="margin-bottom: 20px;" data-i18n="login_sub">Enter your credentials to access your account</p>
+<input type="text" id="universalId" data-i18n-placeholder="login_id_ph" placeholder="Enter your ID here" style="margin-bottom: 10px;">
+<input type="password" id="universalPass" data-i18n-placeholder="login_pass_ph" placeholder="Password" style="margin-bottom: 15px;">
+<button onclick="handleLogin()" style="padding: 15px; font-size: 16px;" data-i18n="login_btn">Secure Login 🔒</button>
+<div id="errorMsg" style="color:var(--danger); font-weight:bold; margin-top:15px;"></div>
+</div>
+</div>
+
 <!-- ===== Lead / Level Assessment Modal ===== -->
 <div id="leadModal" class="modal hidden">
 <div class="modal-content lead-form">
@@ -518,6 +538,10 @@ function playSound(type) {
 
 function parseJSONSafe(str) { let safeStr = String(str); if (!safeStr || safeStr === "" || safeStr === "undefined") return {}; try { return JSON.parse(safeStr); } catch (e) { return { "L1": safeStr }; } }
 
+/* ==================== Login Modal ==================== */
+function openLoginModal() { document.getElementById('errorMsg').innerText = ""; document.getElementById('loginModal').classList.remove('hidden'); }
+function closeLoginModal() { document.getElementById('loginModal').classList.add('hidden'); }
+
 async function handleLogin() {
     initAudio(); // Initialize audio context on first user interaction
     const id = document.getElementById('universalId').value.trim();
@@ -526,6 +550,7 @@ async function handleLogin() {
     loggedInId = id; loggedInPass = pass;
 
     document.getElementById('landingPage').classList.add('hidden');
+    document.getElementById('loginModal').classList.add('hidden');
     document.getElementById('errorMsg').innerText = "";
     document.getElementById('videoSplashSection').classList.remove('hidden'); 
     document.getElementById('introVideo').play().catch(()=>{});
@@ -543,6 +568,7 @@ async function handleLogin() {
             skipIntroVideo();
             document.getElementById('loadingScreen').classList.add('hidden');
             document.getElementById('landingPage').classList.remove('hidden');
+            document.getElementById('loginModal').classList.remove('hidden');
             document.getElementById('errorMsg').innerText = data.error;
             return;
         }
@@ -551,6 +577,7 @@ async function handleLogin() {
         skipIntroVideo();
         document.getElementById('loadingScreen').classList.add('hidden');
         document.getElementById('landingPage').classList.remove('hidden');
+        document.getElementById('loginModal').classList.remove('hidden');
         document.getElementById('errorMsg').innerText = "Server connection failed.";
     });
     document.getElementById('introVideo').onended = () => { skipIntroVideo(); };
@@ -962,6 +989,7 @@ en: {
     slide3_h: "Continuous Assessment", slide3_p: "An integrated digital system that precisely tracks your progress to ensure you reach your goals.",
     login_title: "English Land LMS", login_sub: "Enter your credentials to access your account",
     login_id_ph: "Enter your ID here", login_pass_ph: "Password", login_btn: "Secure Login 🔒",
+    login_nav_btn: "🔑 Student & Teacher Login",
     why_title: "Why Choose English Land?", why_sub: "A modern, proven approach that gets real results — whatever your starting point.",
     why1_h: "Latest Teaching Methods", why1_p: "We use the most modern, research-backed techniques to make you fluent — even if your level is zero.",
     why2_h: "From Zero to Professional", why2_p: "A clear, structured path takes you step by step from a complete beginner to a confident, professional speaker.",
@@ -986,6 +1014,7 @@ ar: {
     slide3_h: "تقييم مستمر", slide3_p: "نظام رقمي متكامل يتتبع تقدمك بدقة ليضمن وصولك لأهدافك.",
     login_title: "منصة English Land", login_sub: "أدخل بياناتك للدخول إلى حسابك",
     login_id_ph: "أدخل الـ ID هنا", login_pass_ph: "كلمة المرور", login_btn: "تسجيل دخول آمن 🔒",
+    login_nav_btn: "🔑 دخول الطلاب والمدرسين",
     why_title: "ليه تختار English Land؟", why_sub: "طريقة حديثة ومضمونة النتائج، مهما كانت نقطة بدايتك.",
     why1_h: "أحدث طرق التدريس", why1_p: "بنستخدم أحدث الأساليب المبنية على أبحاث علمية عشان نخليك محترف في اللغة حتى لو مستواك صفر.",
     why2_h: "من الصفر للاحتراف", why2_p: "مسار واضح ومنظم يوصلك خطوة بخطوة من مبتدئ تمامًا إلى متحدث واثق ومحترف.",
