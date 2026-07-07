@@ -115,6 +115,42 @@ th { background-color: #f1f5f9; color: var(--primary); }
 .kahoot-c3 { background-color: var(--k-yellow); box-shadow: 0 6px 0 #8b6600; }
 .kahoot-c4 { background-color: var(--k-green); box-shadow: 0 6px 0 #175307; }
 
+/* --- Live Multiplayer Game (Kahoot-style rooms) --- */
+.live-cta-box { background: linear-gradient(135deg, var(--primary), #10b981); color: white; border-radius: 12px; padding: 20px; text-align: center; margin-top: 20px; box-shadow: 0 8px 25px rgba(0,0,0,0.25); }
+.live-cta-box h3 { color: white; margin: 0 0 8px 0; }
+.live-cta-box p { color: #e2e8f0; margin: 0 0 15px 0; }
+.live-cta-box button { width: auto; padding: 12px 30px; background: white; color: var(--primary); font-size: 16px; }
+.live-cta-box button:hover { background: #f1f5f9; }
+.live-badge { display: inline-block; background: var(--danger); color: white; font-size: 11px; font-weight: bold; padding: 3px 10px; border-radius: 20px; letter-spacing: 1px; animation: pulse 1.5s infinite; margin-bottom: 8px; }
+.room-code-display { font-size: 46px; font-weight: 900; letter-spacing: 10px; color: var(--secondary); text-align: center; background: rgba(255,255,255,0.06); border: 2px dashed rgba(255,255,255,0.3); border-radius: 12px; padding: 15px 10px; margin: 15px 0; }
+.player-chip-grid { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 15px 0; max-height: 180px; overflow-y: auto; }
+.player-chip { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.25); color: white; padding: 8px 14px; border-radius: 20px; font-size: 13px; font-weight: bold; }
+.timer-bar-outer { width: 100%; height: 10px; background: rgba(255,255,255,0.15); border-radius: 10px; overflow: hidden; margin: 10px 0 20px 0; }
+.timer-bar-fill { height: 100%; background: var(--secondary); width: 100%; transition: width 1s linear; }
+.answered-counter { color: #cbd5e1; font-size: 14px; margin-bottom: 10px; }
+.answer-dist-row { display: flex; align-items: center; gap: 10px; margin: 8px 0; text-align: left; direction: ltr; }
+.answer-dist-label { width: 140px; font-size: 13px; color: white; font-weight: bold; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.answer-dist-bar-outer { flex: 1; background: rgba(255,255,255,0.1); border-radius: 6px; overflow: hidden; height: 22px; }
+.answer-dist-bar-fill { height: 100%; background: var(--secondary); display: flex; align-items: center; justify-content: flex-end; color: white; font-size: 12px; font-weight: bold; padding-right: 6px; min-width: 24px; transition: width 0.6s ease; }
+.answer-dist-bar-fill.correct-fill { background: #26890c; }
+.leaderboard-row { display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.06); border-radius: 8px; padding: 10px 15px; margin: 6px 0; color: white; text-align: left; direction: ltr; }
+.leaderboard-row.me-row { border: 2px solid var(--secondary); background: rgba(16,185,129,0.15); }
+.leaderboard-rank { font-weight: 900; width: 30px; }
+.podium-wrap { display: flex; justify-content: center; align-items: flex-end; gap: 12px; margin: 25px 0; }
+.podium-place { text-align: center; color: white; }
+.podium-block { border-radius: 8px 8px 0 0; display: flex; align-items: flex-start; justify-content: center; padding-top: 8px; font-weight: 900; font-size: 20px; }
+.podium-1 .podium-block { background: linear-gradient(180deg, #fde047, #b45309); height: 130px; width: 90px; }
+.podium-2 .podium-block { background: linear-gradient(180deg, #cbd5e1, #64748b); height: 95px; width: 90px; }
+.podium-3 .podium-block { background: linear-gradient(180deg, #fb923c, #9a3412); height: 70px; width: 90px; }
+.q-builder-row { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; margin-bottom: 10px; text-align: left; }
+.q-builder-row input[type="text"] { margin: 5px 0; }
+.q-builder-choice-row { display: flex; align-items: center; gap: 8px; }
+.q-builder-choice-row input[type="radio"] { width: auto; margin: 0; }
+.builder-tabs { display: flex; gap: 8px; margin-bottom: 15px; }
+.builder-tab-btn { width: auto; padding: 8px 18px; background: #e2e8f0; color: var(--text); font-size: 13px; }
+.builder-tab-btn.active-tab { background: var(--primary); color: white; }
+.host-stage-title { text-align:center; }
+
 .feedback-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; font-size: 28px; font-weight: bold; z-index: 10; opacity: 0; pointer-events: none; transition: opacity 0.2s; text-shadow: 2px 2px 5px rgba(0,0,0,0.5); }
 .feedback-active { opacity: 1; pointer-events: auto;}
 .feedback-correct { background: rgba(16, 185, 129, 0.95); color: white; }
@@ -274,6 +310,54 @@ html[dir="rtl"] .lead-form label { text-align: right; }
 </div>
 </div>
 
+<div class="live-cta-box">
+<h3>🎮 Live Class Game Room</h3>
+<p>Got a room code from your instructor? Join the live competition now!</p>
+<button onclick="openJoinGameModal()">🚀 Join a Live Game</button>
+</div>
+
+<div id="liveGameStudentStage" class="hidden cinematic-game-board" style="margin-top:15px;">
+
+  <!-- Waiting Lobby -->
+  <div id="lgStuWaiting" class="hidden" style="text-align:center;">
+    <div class="live-badge">WAITING ROOM</div>
+    <h3 id="lgStuTitle" style="color:white;"></h3>
+    <p style="color:#cbd5e1;">✅ You're in! Waiting for your instructor to start the game...</p>
+    <div class="room-code-display" id="lgStuRoomCodeShown" style="font-size:28px; letter-spacing:6px;"></div>
+    <p style="color:#94a3b8; font-size:13px;" id="lgStuPlayerCount"></p>
+    <button onclick="leaveLiveGame()" style="width:auto; padding:8px 25px; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.3); color:white;">🚪 Leave Room</button>
+  </div>
+
+  <!-- Question Phase -->
+  <div id="lgStuQuestion" class="hidden" style="width:100%;">
+    <div class="game-top-bar">
+      <div class="game-score-badge" id="lgStuScoreBadge">Score: 0</div>
+      <div class="game-score-badge" id="lgStuQNum">Question 1</div>
+    </div>
+    <div class="timer-bar-outer"><div class="timer-bar-fill" id="lgStuTimerFill"></div></div>
+    <div class="game-question-text" id="lgStuQuestionText"></div>
+    <div id="lgStuChoicesBox" class="kahoot-grid"></div>
+    <p id="lgStuLockedMsg" class="hidden" style="color:#34d399; text-align:center; font-weight:bold; margin-top:15px;">✅ Answer locked in! Waiting for other players...</p>
+  </div>
+
+  <!-- Reveal Phase -->
+  <div id="lgStuReveal" class="hidden" style="text-align:center; width:100%;">
+    <div id="lgStuRevealResult" style="font-size:22px; font-weight:bold; margin-bottom:10px;"></div>
+    <p style="color:#cbd5e1;">Correct answer: <strong id="lgStuCorrectAnswerText" style="color:#34d399;"></strong></p>
+    <div class="game-score-badge" id="lgStuTotalScoreBadge" style="margin-top:10px;"></div>
+    <p style="color:#94a3b8; font-size:13px; margin-top:5px;">Waiting for the instructor to continue...</p>
+  </div>
+
+  <!-- Final Phase -->
+  <div id="lgStuFinal" class="hidden" style="text-align:center; width:100%;">
+    <h3 style="color:#fde047;">🏆 Game Over!</h3>
+    <div id="lgStuFinalRank" style="font-size:20px; color:white; margin:10px 0;"></div>
+    <div id="lgStuLeaderboardList"></div>
+    <button onclick="leaveLiveGame()" style="width:auto; padding:10px 25px; background:var(--secondary); margin-top:15px;">Done ✅</button>
+  </div>
+
+</div>
+
 <div class="card-section">
 <div class="card-title">📝 Homework & Interactive Storytelling</div>
 <div class="q-block">
@@ -396,6 +480,12 @@ html[dir="rtl"] .lead-form label { text-align: right; }
 </div>
 </div>
 
+<div class="live-cta-box" style="margin-bottom:25px;">
+<h3>🎮 Live Class Game Room</h3>
+<p>Host a Kahoot-style live quiz. Students join with a room code and compete for the top of the leaderboard!</p>
+<button onclick="openHostBuilderModal()">🚀 Start a Live Game Room</button>
+</div>
+
 <div class="teacher-tools">
 <div style="flex: 1; min-width: 150px;"><label style="font-weight: bold; color: var(--primary);">Filter Group:</label><select id="groupFilter" onchange="filterTeacherStudents()"></select></div>
 <div style="flex: 1; min-width: 150px;"><label style="font-weight: bold; color: var(--primary);">Lecture:</label><select id="lectureSelect" onchange="filterTeacherStudents()"><option value="L1">Lecture 1 (L1)</option><option value="L2">Lecture 2 (L2)</option><option value="L3">Lecture 3 (L3)</option><option value="L4">Lecture 4 (L4)</option><option value="L5">Lecture 5 (L5)</option><option value="L6">Lecture 6 (L6)</option><option value="L7">Lecture 7 (L7)</option><option value="L8">Lecture 8 (L8)</option></select></div>
@@ -406,6 +496,79 @@ html[dir="rtl"] .lead-form label { text-align: right; }
 <div class="card-title">👥 Students List</div>
 <div class="table-responsive">
 <table style="width: 100%; min-width: 800px;"><thead id="teacherTableHead"></thead><tbody id="teacherStudentsList"></tbody></table>
+</div>
+</div>
+</div>
+
+<!-- ==================== Live Game Host Modal (Teacher) ==================== -->
+<div id="hostGameModal" class="modal hidden">
+<div class="modal-content" style="max-width: 700px;">
+<span class="close-btn" onclick="closeHostGameModal()">&times;</span>
+
+<!-- STEP 1: Builder -->
+<div id="hgBuilderStep">
+<h3 style="color:var(--primary);">🎮 Create a Live Game</h3>
+<input type="text" id="hgTitle" placeholder="Game title (e.g. Lecture 5 Review)" style="margin-bottom:15px;">
+
+<div class="builder-tabs">
+<button class="builder-tab-btn active-tab" id="hgTabManualBtn" onclick="switchBuilderTab('manual')">✍️ Build Questions</button>
+<button class="builder-tab-btn" id="hgTabUploadBtn" onclick="switchBuilderTab('upload')">📁 Upload .txt</button>
+</div>
+
+<div id="hgManualTab">
+<div id="hgQuestionsList"></div>
+<button onclick="addBuilderQuestionRow()" style="background:#e2e8f0; color:var(--text); margin-top:5px;">➕ Add Question</button>
+</div>
+
+<div id="hgUploadTab" class="hidden">
+<p style="font-size:13px; color:#64748b;">Same format as the Exam Upload Center: one question per line — <code>Question|Choice1|Choice2|Choice3|CorrectAnswer</code></p>
+<input type="file" id="hgTxtFile" accept=".txt" style="padding: 5px; font-size: 13px; border: none;">
+</div>
+
+<div id="hgBuilderMsg" style="color:var(--danger); font-weight:bold; margin:10px 0;"></div>
+<button onclick="createLiveGameRoom()" style="background:var(--secondary); margin-top:10px;">Create Room & Get Code 🚀</button>
+</div>
+
+<!-- STEP 2: Live Host Stage -->
+<div id="hgHostStage" class="hidden cinematic-game-board" style="margin:0;">
+
+  <div id="hgLobby" class="hidden" style="text-align:center; width:100%;">
+    <div class="live-badge">LOBBY OPEN</div>
+    <h3 class="host-stage-title" style="color:white;" id="hgLobbyTitle"></h3>
+    <p style="color:#cbd5e1;">Share this code with your students:</p>
+    <div class="room-code-display" id="hgRoomCodeDisplay"></div>
+    <p style="color:#94a3b8;"><span id="hgPlayerCount">0</span> student(s) joined</p>
+    <div class="player-chip-grid" id="hgPlayerChips"></div>
+    <button onclick="startLiveGameRoom()" style="background:var(--secondary); width:auto; padding:12px 35px; font-size:16px;">▶️ Start Game</button>
+  </div>
+
+  <div id="hgQuestionPhase" class="hidden" style="width:100%;">
+    <div class="game-top-bar">
+      <div class="game-score-badge" id="hgQNum">Question 1</div>
+      <div class="game-score-badge"><span id="hgAnsweredCount">0</span>/<span id="hgTotalPlayers">0</span> answered</div>
+    </div>
+    <div class="timer-bar-outer"><div class="timer-bar-fill" id="hgTimerFill"></div></div>
+    <div class="game-question-text" id="hgQuestionText"></div>
+    <div class="kahoot-grid" id="hgChoicesDisplay"></div>
+    <button onclick="revealLiveGameQuestion()" style="background:var(--danger); margin-top:20px;">⏹️ Show Answer Now</button>
+  </div>
+
+  <div id="hgRevealPhase" class="hidden" style="width:100%; text-align:center;">
+    <h3 style="color:white;">Correct Answer: <span id="hgRevealAnswer" style="color:#34d399;"></span></h3>
+    <div id="hgDistribution" style="margin:20px 0;"></div>
+    <h4 style="color:#fde047;">🏆 Top of the Leaderboard</h4>
+    <div id="hgMiniLeaderboard"></div>
+    <button onclick="nextLiveGameQuestion()" style="background:var(--secondary); margin-top:15px;">Next Question ▶️</button>
+  </div>
+
+  <div id="hgFinalPhase" class="hidden" style="width:100%; text-align:center;">
+    <h3 style="color:#fde047;">🏆 Final Results</h3>
+    <div class="podium-wrap" id="hgPodium"></div>
+    <div id="hgFullLeaderboard"></div>
+    <button onclick="closeHostGameModal()" style="background:var(--secondary); margin-top:15px;">Finish & Close ✅</button>
+    <p style="color:#94a3b8; font-size:12px; margin-top:10px;">Points have been automatically added to each student's profile.</p>
+  </div>
+
 </div>
 </div>
 </div>
@@ -432,6 +595,18 @@ html[dir="rtl"] .lead-form label { text-align: right; }
 <div><span class="profile-stat">Total: <span id="profTotalAtt"></span></span><span class="profile-stat" style="color:var(--secondary);">Attended: <span id="profAttended"></span></span><span class="profile-stat" style="color:var(--danger);">Absent: <span id="profAbsences"></span></span></div>
 <h4 style="color:var(--primary); margin-top:20px;">🎓 Quizzes</h4>
 <div><span class="profile-stat">Q1: <span id="profQ1"></span></span><span class="profile-stat">Q2: <span id="profQ2"></span></span><span class="profile-stat">Final: <span id="profFinal"></span></span></div>
+</div>
+</div>
+
+<!-- ===== Join Live Game Modal (Student) ===== -->
+<div id="joinGameModal" class="modal hidden">
+<div class="modal-content" style="max-width: 400px; text-align:center;">
+<span class="close-btn" onclick="closeJoinGameModal()">&times;</span>
+<h2 style="font-size: 22px;">🎮 Join Live Game</h2>
+<p style="margin-bottom: 20px;">Enter the room code shared by your instructor</p>
+<input type="text" id="joinRoomCodeInput" placeholder="e.g. 483920" maxlength="6" style="text-align:center; font-size:24px; letter-spacing:6px; font-weight:bold;">
+<button onclick="joinLiveGameRoom()" style="padding: 15px; font-size: 16px;">Join Room 🚀</button>
+<div id="joinGameMsg" style="color:var(--danger); font-weight:bold; margin-top:15px;"></div>
 </div>
 </div>
 
@@ -496,6 +671,12 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbxjjZmjHiv3WB8JS5CXjhYE
 let teacherStudentsData = [], studentActiveExams = {}, currentExamQuestions = [], currentExamTypeKey = "", examTimerInterval, cachedUserData = null, splashCountdownInterval;
 let isVideoSkipped = false, isDataReady = false;
 let loggedInId = "", loggedInPass = "";
+
+// Live Multiplayer Game (Kahoot-style) state
+let lgBuilderQuestions = [];
+let lgHostRoomCode = "", lgHostPollInterval = null, lgHostLastStatus = "", lgHostLastIndex = -1, lgHostTitle = "";
+let lgStuRoomCode = "", lgStuPollInterval = null, lgStuLastStatus = "", lgStuLastIndex = -1, lgStuAnsweredThisQuestion = false;
+let lgStuCountdownInterval = null, lgHostCountdownInterval = null;
 
 // Gamification Variables
 let gameQuestionsArray = [], gameCurrentQuestionIdx = 0, gameTotalScore = 0, gameActiveStreak = 0, gameTimerEngineInterval, gameModeType = 'arena';
@@ -1138,6 +1319,328 @@ async function uploadStudentFeedback() {
         if (d.success) { msg.style.color = "green"; msg.innerText = "✅ Feedback uploaded and now shown on the landing page!"; fileInput.value = ""; document.getElementById('fbStudentName').value = ""; document.getElementById('fbCaption').value = ""; loadTestimonials(); }
         else { msg.style.color = "var(--danger)"; msg.innerText = "❌ Error: " + (d.error || "Upload failed."); }
     } catch (e) { msg.style.color = "var(--danger)"; msg.innerText = "❌ Network error while uploading."; }
+}
+
+/* ==================== [جديد] Live Multiplayer Game (Kahoot-style Rooms) ==================== */
+
+// Shared parser: same pipe format used across the platform -> Question|Choice1|Choice2|Choice3|Answer
+function parseLiveGameTxt(text) {
+    const lines = text.split('\n');
+    const questions = [];
+    lines.forEach(line => {
+        const clean = line.trim();
+        if (!clean || !clean.includes('|')) return;
+        const parts = clean.split('|').map(p => p.trim());
+        if (parts.length >= 3) questions.push({ type: 'MCQ', question: parts[0], choices: parts.slice(1, parts.length - 1), answer: parts[parts.length - 1] });
+    });
+    return questions;
+}
+
+/* -------------------- STUDENT SIDE -------------------- */
+
+function openJoinGameModal() { document.getElementById('joinGameMsg').innerText = ""; document.getElementById('joinRoomCodeInput').value = ""; document.getElementById('joinGameModal').classList.remove('hidden'); }
+function closeJoinGameModal() { document.getElementById('joinGameModal').classList.add('hidden'); }
+
+async function joinLiveGameRoom() {
+    const roomCode = document.getElementById('joinRoomCodeInput').value.trim();
+    const msg = document.getElementById('joinGameMsg');
+    if (!roomCode) { msg.innerText = "⚠️ Please enter the room code."; return; }
+    msg.style.color = "#b45309"; msg.innerText = "Joining...";
+    try {
+        const res = await fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `action=joinGameRoom&roomCode=${encodeURIComponent(roomCode)}&studentId=${encodeURIComponent(loggedInId)}&studentPass=${encodeURIComponent(loggedInPass)}` });
+        const d = await res.json();
+        if (!d.success) { msg.style.color = "var(--danger)"; msg.innerText = "❌ " + (d.error || "Could not join room."); return; }
+        lgStuRoomCode = roomCode; lgStuLastStatus = ""; lgStuLastIndex = -1; lgStuAnsweredThisQuestion = false;
+        closeJoinGameModal();
+        document.getElementById('liveGameStudentStage').classList.remove('hidden');
+        if (lgStuPollInterval) clearInterval(lgStuPollInterval);
+        pollStudentGameState();
+        lgStuPollInterval = setInterval(pollStudentGameState, 2000);
+    } catch (e) { msg.style.color = "var(--danger)"; msg.innerText = "❌ Network error while joining."; }
+}
+
+function showStudentGamePhase(phaseId) {
+    ['lgStuWaiting', 'lgStuQuestion', 'lgStuReveal', 'lgStuFinal'].forEach(id => document.getElementById(id).classList.toggle('hidden', id !== phaseId));
+}
+
+async function pollStudentGameState() {
+    try {
+        const res = await fetch(`${GAS_URL}?action=getGameRoomState&roomCode=${encodeURIComponent(lgStuRoomCode)}&studentId=${encodeURIComponent(loggedInId)}`);
+        const d = await res.json();
+        if (!d.success) { leaveLiveGame(); return; }
+        renderStudentGameState(d);
+    } catch (e) { /* ignore transient network errors, next poll will retry */ }
+}
+
+function renderStudentGameState(d) {
+    document.getElementById('lgStuScoreBadge').innerText = `Score: ${d.me ? d.me.score : 0}`;
+
+    if (d.status === 'waiting') {
+        showStudentGamePhase('lgStuWaiting');
+        document.getElementById('lgStuTitle').innerText = d.title;
+        document.getElementById('lgStuRoomCodeShown').innerText = d.roomCode;
+        document.getElementById('lgStuPlayerCount').innerText = `${d.playerCount} player(s) in the room`;
+    }
+    else if (d.status === 'question') {
+        if (lgStuLastStatus !== 'question' || lgStuLastIndex !== d.currentIndex) {
+            lgStuAnsweredThisQuestion = false;
+            document.getElementById('lgStuLockedMsg').classList.add('hidden');
+            document.getElementById('lgStuQNum').innerText = `Question ${d.currentIndex + 1}/${d.totalQuestions}`;
+            document.getElementById('lgStuQuestionText').innerText = d.question.question;
+            const box = document.getElementById('lgStuChoicesBox'); box.innerHTML = "";
+            const shuffled = [...kahootColors].sort(() => Math.random() - 0.5);
+            d.question.choices.forEach((choice, i) => {
+                box.innerHTML += `<button class="kahoot-btn ${shuffled[i % shuffled.length]}" onclick="submitLiveAnswer('${String(choice).replace(/'/g, "\\'")}')">${choice}</button>`;
+            });
+        }
+        showStudentGamePhase('lgStuQuestion');
+        if (d.me && d.me.answeredCurrent) {
+            document.getElementById('lgStuLockedMsg').classList.remove('hidden');
+            document.querySelectorAll('#lgStuChoicesBox .kahoot-btn').forEach(b => b.disabled = true);
+        }
+        updateTimerBar('lgStuTimerFill', d.questionStartedAt, d.timeLimitMs);
+    }
+    else if (d.status === 'reveal') {
+        showStudentGamePhase('lgStuReveal');
+        if (lgStuCountdownInterval) clearInterval(lgStuCountdownInterval);
+        document.getElementById('lgStuCorrectAnswerText').innerText = d.question.answer;
+        const resultBox = document.getElementById('lgStuRevealResult');
+        if (d.me && d.me.answeredCurrent) {
+            if (d.me.lastCorrect) { resultBox.style.color = "#34d399"; resultBox.innerText = `✅ Correct! +${d.me.lastPoints} points`; }
+            else { resultBox.style.color = "var(--danger)"; resultBox.innerText = "❌ Incorrect"; }
+        } else { resultBox.style.color = "#94a3b8"; resultBox.innerText = "⏱️ Time's up — no answer submitted"; }
+        document.getElementById('lgStuTotalScoreBadge').innerText = `Total Score: ${d.me ? d.me.score : 0}${d.me && d.me.rank ? " • Rank #" + d.me.rank : ""}`;
+    }
+    else if (d.status === 'finished') {
+        showStudentGamePhase('lgStuFinal');
+        if (lgStuCountdownInterval) clearInterval(lgStuCountdownInterval);
+        if (lgStuPollInterval) { clearInterval(lgStuPollInterval); lgStuPollInterval = null; }
+        const myEntry = (d.leaderboard || []).find(r => normIdJs(r.studentId) === normIdJs(loggedInId));
+        document.getElementById('lgStuFinalRank').innerText = myEntry ? `You finished #${myEntry.rank} with ${myEntry.score} points! 🎉` : "Thanks for playing!";
+        const listEl = document.getElementById('lgStuLeaderboardList');
+        listEl.innerHTML = "";
+        (d.leaderboard || []).slice(0, 10).forEach(r => {
+            const isMe = normIdJs(r.studentId) === normIdJs(loggedInId);
+            listEl.innerHTML += `<div class="leaderboard-row ${isMe ? 'me-row' : ''}"><span><span class="leaderboard-rank">#${r.rank}</span> ${r.name}</span><strong>${r.score} pts</strong></div>`;
+        });
+    }
+    lgStuLastStatus = d.status; lgStuLastIndex = d.currentIndex;
+}
+
+function normIdJs(v) { return String(v == null ? '' : v).trim().toUpperCase(); }
+
+async function submitLiveAnswer(choice) {
+    if (lgStuAnsweredThisQuestion) return;
+    lgStuAnsweredThisQuestion = true;
+    document.querySelectorAll('#lgStuChoicesBox .kahoot-btn').forEach(b => b.disabled = true);
+    document.getElementById('lgStuLockedMsg').classList.remove('hidden');
+    try {
+        await fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `action=submitGameAnswer&roomCode=${encodeURIComponent(lgStuRoomCode)}&studentId=${encodeURIComponent(loggedInId)}&questionIndex=${lgStuLastIndex}&answer=${encodeURIComponent(choice)}` });
+    } catch (e) { /* the reveal phase will show the outcome regardless */ }
+}
+
+function updateTimerBar(fillId, startedAt, timeLimitMs) {
+    const fill = document.getElementById(fillId);
+    if (!fill) return;
+    const key = fillId + '_interval';
+    if (window[key]) clearInterval(window[key]);
+    const tick = () => {
+        const elapsed = Date.now() - Number(startedAt);
+        const pct = Math.max(0, Math.min(100, 100 - (elapsed / Number(timeLimitMs)) * 100));
+        fill.style.width = pct + '%';
+        if (pct <= 0) clearInterval(window[key]);
+    };
+    tick();
+    window[key] = setInterval(tick, 250);
+}
+
+function leaveLiveGame() {
+    if (lgStuPollInterval) { clearInterval(lgStuPollInterval); lgStuPollInterval = null; }
+    if (lgStuCountdownInterval) clearInterval(lgStuCountdownInterval);
+    lgStuRoomCode = ""; lgStuLastStatus = ""; lgStuLastIndex = -1;
+    document.getElementById('liveGameStudentStage').classList.add('hidden');
+}
+
+/* -------------------- TEACHER SIDE -------------------- */
+
+function openHostBuilderModal() {
+    lgBuilderQuestions = [];
+    document.getElementById('hgTitle').value = "";
+    document.getElementById('hgBuilderMsg').innerText = "";
+    document.getElementById('hgQuestionsList').innerHTML = "";
+    document.getElementById('hgTxtFile').value = "";
+    switchBuilderTab('manual');
+    addBuilderQuestionRow();
+    document.getElementById('hgBuilderStep').classList.remove('hidden');
+    document.getElementById('hgHostStage').classList.add('hidden');
+    document.getElementById('hostGameModal').classList.remove('hidden');
+}
+
+function closeHostGameModal() {
+    if (lgHostPollInterval) { clearInterval(lgHostPollInterval); lgHostPollInterval = null; }
+    if (lgHostCountdownInterval) clearInterval(lgHostCountdownInterval);
+    lgHostRoomCode = ""; lgHostLastStatus = ""; lgHostLastIndex = -1;
+    document.getElementById('hostGameModal').classList.add('hidden');
+}
+
+function switchBuilderTab(tab) {
+    document.getElementById('hgTabManualBtn').classList.toggle('active-tab', tab === 'manual');
+    document.getElementById('hgTabUploadBtn').classList.toggle('active-tab', tab === 'upload');
+    document.getElementById('hgManualTab').classList.toggle('hidden', tab !== 'manual');
+    document.getElementById('hgUploadTab').classList.toggle('hidden', tab !== 'upload');
+}
+
+function addBuilderQuestionRow() {
+    const idx = lgBuilderQuestions.length;
+    lgBuilderQuestions.push({ question: "", choices: ["", "", "", ""], correctIdx: 0 });
+    renderBuilderQuestions();
+}
+
+function removeBuilderQuestionRow(idx) {
+    lgBuilderQuestions.splice(idx, 1);
+    renderBuilderQuestions();
+}
+
+function renderBuilderQuestions() {
+    const list = document.getElementById('hgQuestionsList');
+    list.innerHTML = "";
+    lgBuilderQuestions.forEach((q, idx) => {
+        let choicesHtml = "";
+        q.choices.forEach((c, cIdx) => {
+            choicesHtml += `<div class="q-builder-choice-row">
+                <input type="radio" name="correct-${idx}" ${q.correctIdx === cIdx ? 'checked' : ''} onchange="lgBuilderQuestions[${idx}].correctIdx=${cIdx}">
+                <input type="text" placeholder="Choice ${cIdx + 1}" value="${c.replace(/"/g, '&quot;')}" oninput="lgBuilderQuestions[${idx}].choices[${cIdx}]=this.value">
+            </div>`;
+        });
+        list.innerHTML += `<div class="q-builder-row">
+            <strong>Question ${idx + 1}</strong> <button onclick="removeBuilderQuestionRow(${idx})" style="width:auto; float:right; background:var(--danger); color:white; padding:3px 10px; font-size:12px;">Remove ✕</button>
+            <input type="text" placeholder="Question text" value="${q.question.replace(/"/g, '&quot;')}" oninput="lgBuilderQuestions[${idx}].question=this.value">
+            ${choicesHtml}
+        </div>`;
+    });
+}
+
+async function createLiveGameRoom() {
+    const title = document.getElementById('hgTitle').value.trim() || "Live Game";
+    const msg = document.getElementById('hgBuilderMsg');
+    const isUploadTab = !document.getElementById('hgUploadTab').classList.contains('hidden');
+    let questions = [];
+
+    if (isUploadTab) {
+        const fileInput = document.getElementById('hgTxtFile');
+        if (fileInput.files.length === 0) { msg.innerText = "⚠️ Please choose a .txt file first."; return; }
+        const text = await fileInput.files[0].text();
+        questions = parseLiveGameTxt(text);
+        if (questions.length === 0) { msg.innerText = "❌ The file is empty or badly formatted."; return; }
+    } else {
+        questions = lgBuilderQuestions
+            .filter(q => q.question.trim() && q.choices.filter(c => c.trim()).length >= 2)
+            .map(q => ({ type: 'MCQ', question: q.question.trim(), choices: q.choices.filter(c => c.trim()), answer: q.choices[q.correctIdx] }));
+        if (questions.length === 0) { msg.innerText = "⚠️ Please add at least one complete question (text + 2 choices)."; return; }
+    }
+
+    msg.style.color = "#b45309"; msg.innerText = "Creating room...";
+    try {
+        const res = await fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `action=createGameRoom&teacherId=${encodeURIComponent(loggedInId)}&teacherPass=${encodeURIComponent(loggedInPass)}&title=${encodeURIComponent(title)}&questionsData=${encodeURIComponent(JSON.stringify(questions))}` });
+        const d = await res.json();
+        if (!d.success) { msg.style.color = "var(--danger)"; msg.innerText = "❌ " + (d.error || "Could not create room."); return; }
+
+        lgHostRoomCode = d.roomCode; lgHostTitle = title; lgHostLastStatus = ""; lgHostLastIndex = -1;
+        document.getElementById('hgBuilderStep').classList.add('hidden');
+        document.getElementById('hgHostStage').classList.remove('hidden');
+        showHostGamePhase('hgLobby');
+        document.getElementById('hgLobbyTitle').innerText = title;
+        document.getElementById('hgRoomCodeDisplay').innerText = d.roomCode;
+        if (lgHostPollInterval) clearInterval(lgHostPollInterval);
+        pollHostGameState();
+        lgHostPollInterval = setInterval(pollHostGameState, 2000);
+    } catch (e) { msg.style.color = "var(--danger)"; msg.innerText = "❌ Network error while creating the room."; }
+}
+
+function showHostGamePhase(phaseId) {
+    ['hgLobby', 'hgQuestionPhase', 'hgRevealPhase', 'hgFinalPhase'].forEach(id => document.getElementById(id).classList.toggle('hidden', id !== phaseId));
+}
+
+async function startLiveGameRoom() {
+    await fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: `action=startGameRoom&roomCode=${encodeURIComponent(lgHostRoomCode)}&teacherId=${encodeURIComponent(loggedInId)}&teacherPass=${encodeURIComponent(loggedInPass)}` });
+    pollHostGameState();
+}
+
+async function revealLiveGameQuestion() {
+    await fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: `action=revealGameQuestion&roomCode=${encodeURIComponent(lgHostRoomCode)}&teacherId=${encodeURIComponent(loggedInId)}&teacherPass=${encodeURIComponent(loggedInPass)}` });
+    pollHostGameState();
+}
+
+async function nextLiveGameQuestion() {
+    await fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: `action=nextGameQuestion&roomCode=${encodeURIComponent(lgHostRoomCode)}&teacherId=${encodeURIComponent(loggedInId)}&teacherPass=${encodeURIComponent(loggedInPass)}` });
+    pollHostGameState();
+}
+
+async function pollHostGameState() {
+    try {
+        const res = await fetch(`${GAS_URL}?action=getGameRoomState&roomCode=${encodeURIComponent(lgHostRoomCode)}&isHost=true`);
+        const d = await res.json();
+        if (!d.success) return;
+        renderHostGameState(d);
+    } catch (e) { /* ignore transient network errors, next poll will retry */ }
+}
+
+function renderHostGameState(d) {
+    if (d.status === 'waiting') {
+        showHostGamePhase('hgLobby');
+        document.getElementById('hgPlayerCount').innerText = d.playerCount;
+        const chips = document.getElementById('hgPlayerChips'); chips.innerHTML = "";
+        (d.players || []).forEach(pl => { chips.innerHTML += `<div class="player-chip">${pl.name}</div>`; });
+    }
+    else if (d.status === 'question') {
+        showHostGamePhase('hgQuestionPhase');
+        if (lgHostLastStatus !== 'question' || lgHostLastIndex !== d.currentIndex) {
+            document.getElementById('hgQNum').innerText = `Question ${d.currentIndex + 1}/${d.totalQuestions}`;
+            document.getElementById('hgQuestionText').innerText = d.question.question;
+            const box = document.getElementById('hgChoicesDisplay'); box.innerHTML = "";
+            d.question.choices.forEach((choice, i) => { box.innerHTML += `<div class="kahoot-btn ${kahootColors[i % kahootColors.length]}" style="cursor:default;">${choice}</div>`; });
+        }
+        document.getElementById('hgAnsweredCount').innerText = d.answeredCount;
+        document.getElementById('hgTotalPlayers').innerText = d.playerCount;
+        updateTimerBar('hgTimerFill', d.questionStartedAt, d.timeLimitMs);
+    }
+    else if (d.status === 'reveal') {
+        showHostGamePhase('hgRevealPhase');
+        document.getElementById('hgRevealAnswer').innerText = d.question.answer;
+        const dist = document.getElementById('hgDistribution'); dist.innerHTML = "";
+        const counts = d.choiceCounts || {};
+        const maxCount = Math.max(1, ...Object.values(counts).map(v => Number(v) || 0));
+        d.question.choices.forEach(choice => {
+            const c = Number(counts[choice]) || 0;
+            const pct = Math.round((c / maxCount) * 100);
+            const isCorrect = choice === d.question.answer;
+            dist.innerHTML += `<div class="answer-dist-row"><div class="answer-dist-label">${isCorrect ? '✅ ' : ''}${choice}</div><div class="answer-dist-bar-outer"><div class="answer-dist-bar-fill ${isCorrect ? 'correct-fill' : ''}" style="width:${pct}%;">${c}</div></div></div>`;
+        });
+        const mini = document.getElementById('hgMiniLeaderboard'); mini.innerHTML = "";
+        (d.leaderboard || []).forEach(r => { mini.innerHTML += `<div class="leaderboard-row"><span><span class="leaderboard-rank">#${r.rank}</span> ${r.name}</span><strong>${r.score} pts</strong></div>`; });
+    }
+    else if (d.status === 'finished') {
+        showHostGamePhase('hgFinalPhase');
+        if (lgHostPollInterval) { clearInterval(lgHostPollInterval); lgHostPollInterval = null; }
+        const lb = d.leaderboard || [];
+        const podium = document.getElementById('hgPodium'); podium.innerHTML = "";
+        const order = [1, 0, 2]; // 2nd, 1st, 3rd visual order
+        order.forEach(pos => {
+            const r = lb[pos];
+            if (!r) return;
+            const place = pos + 1;
+            podium.innerHTML += `<div class="podium-place podium-${place}"><div>${r.name}</div><div class="podium-block">${place === 1 ? '🥇' : place === 2 ? '🥈' : '🥉'}</div><div>${r.score} pts</div></div>`;
+        });
+        const full = document.getElementById('hgFullLeaderboard'); full.innerHTML = "";
+        lb.forEach(r => { full.innerHTML += `<div class="leaderboard-row"><span><span class="leaderboard-rank">#${r.rank}</span> ${r.name}</span><strong>${r.score} pts</strong></div>`; });
+    }
+    lgHostLastStatus = d.status; lgHostLastIndex = d.currentIndex;
 }
 </script>
 </body>
