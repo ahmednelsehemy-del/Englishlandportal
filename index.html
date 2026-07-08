@@ -1,1253 +1,1989 @@
-/***********************************************************************
- * English Land LMS - Backend (Google Apps Script)
- * يربط منصة الطلاب/المحاضرين بجوجل شيت المكوّن من 9 شيتات:
- * Students, Teachers, Schedule, Materials, Attendance, Grades, Exams, Leads, Feedback
- ***********************************************************************/
+<!DOCTYPE html>
+<html dir="ltr" lang="en" id="htmlRoot">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title id="pageTitle">English Land | Learn English the Modern Way</title>
+<style>
+:root { --primary: #1e3a8a; --secondary: #10b981; --bg: #021222; --text: #1e293b; --danger: #ef4444; --locked: #cbd5e1; 
+    /* Game Colors */
+    --game-bg: #000000; --k-red: #e21b3c; --k-blue: #1368ce; --k-yellow: #d89e00; --k-green: #26890c;
+}
 
-const SS = SpreadsheetApp.getActiveSpreadsheet();
+body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 15px; }
+.global-header { text-align: center; margin-top: 5px; margin-bottom: 20px; }
+.global-logo { max-width: 140px; border-radius: 8px; }
 
-const SHEETS = {
-  STUDENTS: 'Students',
-  TEACHERS: 'Teachers',
-  SCHEDULE: 'Schedule',
-  MATERIALS: 'Materials',
-  ATTENDANCE: 'Attendance',
-  GRADES: 'Grades',
-  EXAMS: 'Exams',
-  LEADS: 'Leads',
-  FEEDBACK: 'Feedback',
-  GAME_ROOMS: 'GameRooms',
-  GAME_PLAYERS: 'GamePlayers',
-  GAME_LIBRARY: 'GameLibrary'
-};
+.container { background: white; padding: 15px; margin: 15px auto; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); border-top: 5px solid var(--primary); text-align: left; box-sizing: border-box; width: 100%; max-width: 800px; }
+.landing-wrapper { display: flex; flex-direction: column; gap: 0; margin: 0 auto; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.2); width: 100%; max-width: 1000px; }
+.slider-container { position: relative; height: 220px; }
+.login-wrapper { background: white; padding: 25px 15px; text-align: center; display: flex; flex-direction: column; justify-content: center; }
 
-// كل "ضربة" (تخطي طالب لطالب آخر في السباق) بترجع الطالب المتخطى للخلف بمقدار كام نقطة على شريط السباق (تأثير بصري مرح فقط، ما بيأثرش على النقاط النهائية المحفوظة)
-const RACE_KNOCKBACK_AMOUNT = 150;
+@media(min-width: 768px) {
+.container { padding: 30px; margin: 40px auto; box-shadow: 0 15px 30px rgba(0,0,0,0.5); }
+.landing-wrapper { flex-direction: row; align-items: stretch; gap: 20px; box-shadow: none; background: transparent; overflow: visible; margin-bottom: 40px; }
+.slider-container { flex: 1.5; height: 450px; border-radius: 12px; box-shadow: 0 15px 30px rgba(0,0,0,0.5); border-bottom: 5px solid var(--secondary); }
+.login-wrapper { flex: 1; padding: 40px 30px; border-radius: 12px; box-shadow: 0 15px 30px rgba(0,0,0,0.5); border-top: 5px solid var(--primary); }
+}
 
-// مدة كل سؤال في اللعبة الجماعية الحية (بالمللي ثانية) - Live Game Question Timer
-const GAME_QUESTION_TIME_MS = 20000;
+.slide { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; transition: opacity 1s ease-in-out; display: flex; flex-direction: column; justify-content: flex-end; padding: 30px 20px; box-sizing: border-box; background-size: cover; background-position: center; }
+.slide::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(to top, rgba(2, 18, 34, 0.95) 0%, rgba(2, 18, 34, 0.1) 100%); z-index: 1; }
+.slide.active { opacity: 1; z-index: 2; }
+.slide-content { position: relative; z-index: 3; color: white; text-align: left; }
+.slide-content h2 { color: var(--secondary); font-size: 22px; margin-bottom: 5px; text-shadow: 1px 1px 3px rgba(0,0,0,0.8); }
+.slide-content p { color: #f1f5f9; font-size: 14px; line-height: 1.5; text-shadow: 1px 1px 3px rgba(0,0,0,0.8); margin: 0; }
+@media(min-width: 768px) { .slide-content h2 { font-size: 28px; margin-bottom: 10px; } .slide-content p { font-size: 16px; line-height: 1.6; } }
 
-// ضع هنا ID فولدر Google Drive اللي هيتخزن فيه صور وفيديوهات فيدباك الطلاب.
-// افتح/أنشئ فولدر في Drive، وانسخ الـ ID من رابطه، مثال:
-// https://drive.google.com/drive/folders/XXXXXXXXXXXXXXXXXXXX  <-- ده الـ ID
-const FEEDBACK_FOLDER_ID = '1ROWZ_I-KsRsJB47YJTbLMVJTJcZz4Ks2';
+h2, h3 { color: var(--primary); margin-bottom: 5px; }
+p { color: #64748b; margin-top: 5px; font-size: 14px; }
+input, select, textarea { width: 100%; padding: 12px; margin: 10px 0; border: 2px solid #e2e8f0; border-radius: 8px; text-align: center; font-size: 16px; box-sizing: border-box; font-family: inherit; }
+input:focus, select:focus, textarea:focus { border-color: var(--primary); outline: none; }
+button { width: 100%; background-color: var(--primary); color: white; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: bold; transition: 0.3s; }
+button:hover { background-color: #152e72; }
+button:disabled { background-color: var(--locked); cursor: not-allowed; }
+.hidden { display: none !important; }
+#videoSplashSection { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: #021222; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+#introVideo { width: 100%; height: 100%; object-fit: contain !important; }
+.btn-skip { position: absolute; bottom: 40px; z-index: 2; background-color: rgba(255, 255, 255, 0.1); backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.4); color: white; width: auto; padding: 12px 30px; border-radius: 25px; }
 
-/* ==================== نقاط الدخول (Entry Points) ==================== */
+.grid-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-top: 20px; }
+.info-card { background: #f1f5f9; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0; display: flex; flex-direction: column; justify-content: center; text-align: center; }
+.info-card h4 { margin: 0 0 8px 0; color: var(--primary); font-size: 13px; }
+.info-card strong { font-size: 14px; color: var(--text); }
+.payment-status { font-weight: bold; padding: 6px 10px; border-radius: 5px; font-size: 13px; margin: auto; }
+.pay-full { background-color: #d1fae5; color: #065f46; }
+.pay-half, .pay-percent { background-color: #fef3c7; color: #92400e; }
+.pay-none { background-color: #fee2e2; color: #991b1b; }
+.feedback-box { background: #eff6ff; border-left: 4px solid #3b82f6; padding: 15px; margin-top: 20px; border-radius: 4px; text-align: left; }
+.bar-box { background: #fef2f2; border-left: 4px solid var(--danger); padding: 15px; margin-top: 20px; border-radius: 4px; text-align: left; color: #991b1b; }
+.card-section { margin-top: 25px; text-align: left; }
+.card-title { font-size: 16px; font-weight: bold; color: var(--primary); border-bottom: 2px solid #f1f5f9; padding-bottom: 5px; margin-bottom: 10px; }
+.material-item { background: #f1f5f9; margin: 8px 0; padding: 12px; border-radius: 8px; display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between; align-items: center; }
+.material-item a { color: var(--secondary); text-decoration: none; font-weight: bold; }
+.table-responsive { overflow-x: auto; background: #fff; border-radius: 8px; border: 1px solid #e2e8f0; padding: 5px; margin-top: 10px; width: 100%; box-sizing: border-box; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; }
+th, td { border: 1px solid #e2e8f0; padding: 10px; white-space: nowrap; }
+th { background-color: #f1f5f9; color: var(--primary); }
+.teacher-tools { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
+.btn-att { padding: 6px 10px; border: none; border-radius: 4px; font-weight: bold; margin: 2px; font-size: 12px; cursor: pointer; }
+.btn-p { background-color: #10b981; color: white; }
+.btn-a { background-color: #ef4444; color: white; }
+.grade-input { width: 60px; padding: 6px; text-align: center; border: 1px solid #cbd5e1; border-radius: 4px; font-weight: bold; color: var(--primary); }
+.exam-row { display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between; align-items: center; background: #f8fafc; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #e2e8f0; }
+.exam-btn { width: auto; padding: 6px 15px; background-color: var(--secondary); font-size: 13px; }
+.q-block { background: #fff; border: 1px solid #e2e8f0; padding: 20px; border-radius: 8px; margin-bottom: 20px; text-align: left; }
+.cloze-input-field { width: 130px; padding: 4px; text-align: center; border: 2px solid #cbd5e1; border-radius: 6px; font-weight: bold; color: var(--primary); margin: 0 5px; }
+.passage-box { background: #f0fdf4; border-left: 4px solid var(--secondary); padding: 15px; border-radius: 4px; margin-bottom: 15px; font-style: italic; }
+.modal { position: fixed; z-index: 10000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.7); backdrop-filter: blur(5px); display: flex; justify-content: center; align-items: center; padding: 15px; box-sizing: border-box; }
+.modal-content { background-color: #fff; padding: 25px; border-radius: 12px; width: 100%; max-width: 600px; max-height: 90vh; overflow-y: auto; text-align: left; position: relative; box-sizing: border-box; }
+.close-btn { position: absolute; right: 20px; top: 15px; color: #94a3b8; font-size: 28px; font-weight: bold; cursor: pointer; }
+.close-btn:hover { color: var(--danger); }
+.hw-label { font-weight: bold; color: var(--primary); font-size: 14px; display: block; margin-top: 15px; }
+.profile-stat { display: inline-block; background: #f1f5f9; padding: 8px 15px; border-radius: 6px; font-weight: bold; margin: 5px; font-size: 14px;}
+.pulse { animation: pulse 1.5s infinite; text-align: center;}
+@keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+.admin-panel { background: #fffbeb; border: 2px solid #f59e0b; padding: 20px; border-radius: 10px; margin-bottom: 25px; text-align: left;}
+.admin-panel h3 { color: #b45309; margin-top: 0; }
+.hw-quiz-box { margin-top: 20px; padding: 15px; background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 8px; text-align: left; }
+.zoom-btn { background:#2563eb; color:white; text-decoration:none; padding:6px 12px; display:inline-block; border-radius:6px; font-weight:bold; }
+.zoom-btn:hover { background:#1e40af; }
+.zoom-active { animation: zoomPulse 1.5s infinite; }
+@keyframes zoomPulse { 0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.7); } 50% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(37, 99, 235, 0); } 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(37, 99, 235, 0); } }
 
-function doGet(e) {
-  try {
-    const action = e.parameter.action;
-    if (action === 'login') {
-      return jsonOut(handleLogin(e.parameter.id, e.parameter.pass));
+/* --- Game UI (Kahoot & Duolingo Style) --- */
+.gamified-section { background: var(--bg); border-radius: 12px; padding: 20px; color: white; margin-top: 20px; text-align: center; box-shadow: 0 8px 30px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); }
+.game-modes-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px; }
+.game-mode-card { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255,255,255,0.2); padding: 20px; border-radius: 12px; cursor: pointer; transition: 0.3s all; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+.game-mode-card:hover { transform: translateY(-5px); background: rgba(255, 255, 255, 0.1); border-color: var(--secondary); }
+.game-icon { font-size: 38px; margin-bottom: 10px; display: block; }
+.cinematic-game-board { background: var(--game-bg); padding: 20px; border-radius: 15px; margin-top: 15px; position: relative; overflow: hidden; box-shadow: inset 0 0 50px rgba(255,255,255,0.05); min-height: 350px; display: flex; flex-direction: column; justify-content: space-between; }
+.duo-progress-container { width: 100%; height: 12px; background: #333; border-radius: 10px; margin-bottom: 20px; overflow: hidden; box-shadow: inset 0 1px 3px rgba(0,0,0,0.5); }
+.duo-progress-bar { height: 100%; background: linear-gradient(90deg, #10b981, #34d399); width: 0%; transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+.game-top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.streak-fire { color: #f97316; font-size: 18px; font-weight: bold; text-shadow: 0 0 10px rgba(249, 115, 22, 0.8); animation: pulse 1s infinite; }
+.game-score-badge { background: rgba(255,255,255,0.1); color: white; font-weight: bold; padding: 8px 15px; border-radius: 20px; font-size: 16px; border: 1px solid rgba(255,255,255,0.2); }
+.score-pop { animation: popIn 0.3s ease-out; color: #34d399; }
+.game-question-text { font-size: 22px; font-weight: bold; color: white; margin-bottom: 25px; line-height: 1.5; text-align: center; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); direction: ltr;}
+
+.kahoot-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; direction: ltr;}
+@media(max-width: 600px) { .kahoot-grid { grid-template-columns: 1fr; } }
+.kahoot-btn { padding: 20px; font-size: 18px; border-radius: 8px; border: none; color: white; cursor: pointer; font-weight: bold; transition: transform 0.1s, filter 0.2s; box-shadow: 0 6px 0 rgba(0,0,0,0.3); position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; text-align: center; line-height: 1.3; }
+.kahoot-btn:active { transform: translateY(6px); box-shadow: none; }
+.kahoot-btn:hover { filter: brightness(1.1); }
+.kahoot-c1 { background-color: var(--k-red); box-shadow: 0 6px 0 #8b1125; }
+.kahoot-c2 { background-color: var(--k-blue); box-shadow: 0 6px 0 #0d468b; }
+.kahoot-c3 { background-color: var(--k-yellow); box-shadow: 0 6px 0 #8b6600; }
+.kahoot-c4 { background-color: var(--k-green); box-shadow: 0 6px 0 #175307; }
+
+/* --- Live Multiplayer Game (Kahoot-style rooms) --- */
+.live-cta-box { background: linear-gradient(135deg, var(--primary), #10b981); color: white; border-radius: 12px; padding: 20px; text-align: center; margin-top: 20px; box-shadow: 0 8px 25px rgba(0,0,0,0.25); }
+.live-cta-box h3 { color: white; margin: 0 0 8px 0; }
+.live-cta-box p { color: #e2e8f0; margin: 0 0 15px 0; }
+.live-cta-box button { width: auto; padding: 12px 30px; background: white; color: var(--primary); font-size: 16px; }
+.live-cta-box button:hover { background: #f1f5f9; }
+.live-badge { display: inline-block; background: var(--danger); color: white; font-size: 11px; font-weight: bold; padding: 3px 10px; border-radius: 20px; letter-spacing: 1px; animation: pulse 1.5s infinite; margin-bottom: 8px; }
+.room-code-display { font-size: 46px; font-weight: 900; letter-spacing: 10px; color: var(--secondary); text-align: center; background: rgba(255,255,255,0.06); border: 2px dashed rgba(255,255,255,0.3); border-radius: 12px; padding: 15px 10px; margin: 15px 0; }
+.player-chip-grid { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 15px 0; max-height: 180px; overflow-y: auto; }
+.player-chip { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.25); color: white; padding: 8px 14px; border-radius: 20px; font-size: 13px; font-weight: bold; }
+.timer-bar-outer { width: 100%; height: 10px; background: rgba(255,255,255,0.15); border-radius: 10px; overflow: hidden; margin: 10px 0 20px 0; }
+.timer-bar-fill { height: 100%; background: var(--secondary); width: 100%; transition: width 1s linear; }
+.answered-counter { color: #cbd5e1; font-size: 14px; margin-bottom: 10px; }
+.answer-dist-row { display: flex; align-items: center; gap: 10px; margin: 8px 0; text-align: left; direction: ltr; }
+.answer-dist-label { width: 140px; font-size: 13px; color: white; font-weight: bold; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.answer-dist-bar-outer { flex: 1; background: rgba(255,255,255,0.1); border-radius: 6px; overflow: hidden; height: 22px; }
+.answer-dist-bar-fill { height: 100%; background: var(--secondary); display: flex; align-items: center; justify-content: flex-end; color: white; font-size: 12px; font-weight: bold; padding-right: 6px; min-width: 24px; transition: width 0.6s ease; }
+.answer-dist-bar-fill.correct-fill { background: #26890c; }
+.leaderboard-row { display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.06); border-radius: 8px; padding: 10px 15px; margin: 6px 0; color: white; text-align: left; direction: ltr; }
+.leaderboard-row.me-row { border: 2px solid var(--secondary); background: rgba(16,185,129,0.15); }
+.leaderboard-rank { font-weight: 900; width: 30px; }
+.podium-wrap { display: flex; justify-content: center; align-items: flex-end; gap: 12px; margin: 25px 0; }
+.podium-place { text-align: center; color: white; }
+.podium-block { border-radius: 8px 8px 0 0; display: flex; align-items: flex-start; justify-content: center; padding-top: 8px; font-weight: 900; font-size: 20px; }
+.podium-1 .podium-block { background: linear-gradient(180deg, #fde047, #b45309); height: 130px; width: 90px; }
+.podium-2 .podium-block { background: linear-gradient(180deg, #cbd5e1, #64748b); height: 95px; width: 90px; }
+.podium-3 .podium-block { background: linear-gradient(180deg, #fb923c, #9a3412); height: 70px; width: 90px; }
+.q-builder-row { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; margin-bottom: 10px; text-align: left; }
+.q-builder-row input[type="text"] { margin: 5px 0; }
+.q-builder-choice-row { display: flex; align-items: center; gap: 8px; }
+.q-builder-choice-row input[type="radio"] { width: auto; margin: 0; }
+.builder-tabs { display: flex; gap: 8px; margin-bottom: 15px; }
+.builder-tab-btn { width: auto; padding: 8px 18px; background: #e2e8f0; color: var(--text); font-size: 13px; }
+.builder-tab-btn.active-tab { background: var(--primary); color: white; }
+.host-stage-title { text-align:center; }
+
+.feedback-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; font-size: 28px; font-weight: bold; z-index: 10; opacity: 0; pointer-events: none; transition: opacity 0.2s; text-shadow: 2px 2px 5px rgba(0,0,0,0.5); }
+.feedback-active { opacity: 1; pointer-events: auto;}
+.feedback-correct { background: rgba(16, 185, 129, 0.95); color: white; }
+.feedback-wrong { background: rgba(239, 68, 68, 0.95); color: white; }
+
+@keyframes popIn { 0% { transform: scale(0.5); opacity: 0; } 70% { transform: scale(1.1); } 100% { transform: scale(1); opacity: 1; } }
+.shake-animation { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
+@keyframes shake { 10%, 90% { transform: translate3d(-2px, 0, 0); } 20%, 80% { transform: translate3d(4px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-6px, 0, 0); } 40%, 60% { transform: translate3d(6px, 0, 0); } }
+
+/* ==================== [جديد] مكتبة الألعاب المحفوظة (Saved Games Library) ==================== */
+@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&display=swap');
+.lib-games-box { background: linear-gradient(135deg, #fef3c7, #fde68a); border: 2px dashed #b45309; border-radius: 12px; padding: 15px; margin-bottom: 20px; }
+.lib-games-box h4 { color: #92400e; margin: 0 0 10px 0; font-family: 'Baloo 2', 'Segoe UI', sans-serif; }
+.lib-game-card { background: white; border-radius: 10px; padding: 10px 14px; margin-bottom: 8px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
+.lib-game-card .lib-title { font-weight: bold; color: var(--primary); }
+.lib-game-card .lib-meta { font-size: 12px; color: #64748b; }
+.lib-launch-btn { width: auto; padding: 8px 18px; background: #26890c; font-size: 13px; }
+.lib-launch-btn:hover { background: #1c6a09; }
+.lib-empty-msg { color: #92400e; font-size: 13px; font-style: italic; }
+.lib-admin-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.lib-edit-btn { width: auto; padding: 6px 12px; background: #1368ce; font-size: 12px; }
+.lib-del-btn { width: auto; padding: 6px 12px; background: var(--danger); font-size: 12px; }
+
+/* ==================== [جديد] اختيار الأفاتار (Avatars) ==================== */
+.avatar-picker-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin: 15px 0; }
+.avatar-choice { font-size: 32px; background: #f1f5f9; border: 3px solid transparent; border-radius: 12px; padding: 8px 0; cursor: pointer; transition: 0.15s all; text-align: center; }
+.avatar-choice:hover { transform: translateY(-3px) scale(1.05); background: #e2e8f0; }
+.avatar-choice.picked { border-color: var(--secondary); background: rgba(16,185,129,0.15); transform: scale(1.1); }
+.avatar-bubble { display: inline-flex; align-items: center; justify-content: center; font-size: 20px; width: 34px; height: 34px; border-radius: 50%; background: rgba(255,255,255,0.12); margin-right: 6px; vertical-align: middle; }
+
+/* ==================== [جديد] مضمار السباق (Race Track / Elimination) ==================== */
+.race-track-wrap { background: linear-gradient(180deg, #0ea5e9 0%, #0284c7 100%); border-radius: 14px; padding: 14px 10px 10px 10px; margin-bottom: 18px; position: relative; overflow: hidden; box-shadow: inset 0 0 30px rgba(0,0,0,0.25); }
+.race-track-wrap::after { content: '🏁'; position: absolute; right: 6px; top: 50%; transform: translateY(-50%); font-size: 26px; opacity: 0.85; }
+.race-lane { position: relative; height: 34px; margin-bottom: 6px; background: rgba(255,255,255,0.12); border-radius: 8px; border-bottom: 2px dashed rgba(255,255,255,0.25); }
+.race-lane:last-child { margin-bottom: 0; }
+.race-avatar-token { position: absolute; top: -6px; transform: translateX(-50%); transition: left 0.7s cubic-bezier(.34,1.56,.64,1); text-align: center; z-index: 2; }
+.race-avatar-token .race-emoji { font-size: 26px; display: block; filter: drop-shadow(0 3px 3px rgba(0,0,0,0.4)); }
+.race-avatar-token .race-name { font-size: 9px; color: white; font-weight: bold; background: rgba(0,0,0,0.45); border-radius: 6px; padding: 0 4px; white-space: nowrap; }
+.race-avatar-token.knocked { animation: raceKnock 0.6s ease; }
+@keyframes raceKnock { 0% { transform: translateX(-50%) rotate(0deg); } 25% { transform: translateX(-50%) translateY(-6px) rotate(-25deg); } 60% { transform: translateX(-50%) translateY(4px) rotate(10deg); } 100% { transform: translateX(-50%) rotate(0deg); } }
+.race-overtake-toast { position: relative; background: linear-gradient(135deg, #f97316, #ea580c); color: white; font-weight: bold; font-family: 'Baloo 2', 'Segoe UI', sans-serif; text-align: center; padding: 10px 14px; border-radius: 10px; margin-bottom: 10px; box-shadow: 0 6px 15px rgba(0,0,0,0.3); animation: toastPop 0.4s ease-out; }
+@keyframes toastPop { 0% { transform: scale(0.7) translateY(-10px); opacity: 0; } 100% { transform: scale(1) translateY(0); opacity: 1; } }
+
+/* ==================== [جديد] طابع كوميدي خفيف للداشبورد ==================== */
+.comic-title { font-family: 'Baloo 2', 'Segoe UI', sans-serif; }
+.sound-toggle-btn { width: auto; padding: 6px 14px; font-size: 13px; background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.3); color: white; border-radius: 20px; }
+.wiggle-on-hover:hover { animation: wiggle 0.4s ease; }
+@keyframes wiggle { 0%,100% { transform: rotate(0deg); } 25% { transform: rotate(-4deg); } 75% { transform: rotate(4deg); } }
+
+/* ==================== Marketing / Landing Page Additions ==================== */
+.lang-switch-bar { display: flex; justify-content: center; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+.lang-btn { width: auto; padding: 6px 16px; font-size: 13px; border-radius: 20px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.25); color: #cbd5e1; font-weight: bold; }
+.lang-btn.active { background: var(--secondary); color: #021222; border-color: var(--secondary); }
+.login-nav-btn { width: auto; padding: 7px 18px; font-size: 13px; border-radius: 20px; background: var(--primary); color: #fff; font-weight: bold; border: 1px solid var(--primary); }
+.login-nav-btn:hover { background: #152e72; }
+
+.hero-cta-row { max-width: 1000px; margin: 0 auto 10px auto; padding: 0 15px; display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; box-sizing: border-box; }
+.hero-login-btn, .hero-lead-btn { width: auto; padding: 12px 22px; font-size: 14px; border-radius: 8px; }
+.hero-login-btn { background: var(--secondary); color: #021222; }
+.hero-login-btn:hover { background: #0ea371; }
+.hero-lead-btn { background: transparent; color: #fff; border: 2px solid rgba(255,255,255,0.5); }
+.hero-lead-btn:hover { background: rgba(255,255,255,0.1); }
+@media(min-width: 768px) { .hero-cta-row { margin-top: -25px; } }
+
+html[dir="rtl"] body { font-family: 'Segoe UI', Tahoma, Arial, sans-serif; }
+html[dir="rtl"] .slide-content, html[dir="rtl"] .login-wrapper, html[dir="rtl"] .info-card,
+html[dir="rtl"] .marketing-section, html[dir="rtl"] .feedback-box, html[dir="rtl"] .card-section { text-align: right; }
+html[dir="rtl"] .why-grid, html[dir="rtl"] .testimonial-track { direction: rtl; }
+
+.marketing-section { max-width: 1000px; margin: 30px auto; padding: 0 15px; box-sizing: border-box; text-align: center; }
+.marketing-section h2 { color: #fff; font-size: 24px; margin-bottom: 8px; }
+.marketing-section > p.section-sub { color: #cbd5e1; margin-top: 0; margin-bottom: 20px; }
+
+.why-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+.why-card { background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.25); border-top: 4px solid var(--secondary); text-align: center; }
+.why-card .why-icon { font-size: 32px; display: block; margin-bottom: 10px; }
+.why-card h4 { color: var(--primary); margin: 0 0 8px 0; font-size: 15px; }
+.why-card p { color: #64748b; font-size: 13px; margin: 0; line-height: 1.5; }
+
+.cta-level-box { background: linear-gradient(135deg, var(--primary), #152e72); border-radius: 14px; padding: 25px 20px; margin-top: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.4); }
+.cta-level-box h3 { color: #fff; margin: 0 0 8px 0; font-size: 19px; }
+.cta-level-box p { color: #dbeafe; margin: 0 0 15px 0; font-size: 14px; }
+.cta-level-box button { width: auto; padding: 12px 28px; background: var(--secondary); color: #021222; font-size: 15px; }
+.cta-level-box button:hover { background: #0ea371; }
+
+.testimonial-track { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 16px; }
+.testimonial-card { background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.25); text-align: left; }
+.testimonial-card video, .testimonial-card img { width: 100%; height: 180px; object-fit: cover; display: block; background: #000; }
+.testimonial-card .t-body { padding: 12px 14px; }
+.testimonial-card .t-name { font-weight: bold; color: var(--primary); font-size: 14px; }
+.testimonial-card .t-caption { color: #64748b; font-size: 12px; margin-top: 4px; }
+.testimonial-empty { color: #94a3b8; font-size: 13px; grid-column: 1 / -1; }
+
+.floating-btns { position: fixed; bottom: 20px; right: 20px; z-index: 500; display: flex; flex-direction: column; gap: 12px; align-items: flex-end; }
+html[dir="rtl"] .floating-btns { right: auto; left: 20px; align-items: flex-start; }
+.float-btn { width: 54px; height: 54px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 26px; box-shadow: 0 6px 18px rgba(0,0,0,0.4); text-decoration: none; color: #fff; }
+.float-btn.whatsapp { background: #25D366; }
+.float-btn.facebook { background: #1877F2; }
+
+.lead-form label { display:block; text-align:left; font-size:13px; font-weight:bold; color: var(--primary); margin-top:10px; }
+html[dir="rtl"] .lead-form label { text-align: right; }
+
+@media(max-width: 600px) { .marketing-section h2 { font-size: 20px; } }
+</style>
+</head>
+<body>
+
+<div class="global-header" id="globalHeader">
+<img src="logo.png?v=18" alt="English Land Logo" class="global-logo">
+<div class="lang-switch-bar">
+<button type="button" class="lang-btn active" id="langBtnEn" onclick="setLanguage('en')">English</button>
+<button type="button" class="lang-btn" id="langBtnAr" onclick="setLanguage('ar')">العربية</button>
+<button type="button" class="login-nav-btn" onclick="openLoginModal()" data-i18n="login_nav_btn">🔑 Student & Teacher Login</button>
+</div>
+</div>
+
+<!-- ==================== Landing Page ==================== -->
+<div id="landingPage">
+<div class="landing-wrapper" style="max-width: 1000px; margin: 0 auto;">
+<div class="slider-container">
+<div class="slide active" style="background-image: url('https://images.unsplash.com/photo-1573164713988-8665fc963095?auto=format&fit=crop&w=1000&q=80');">
+<div class="slide-content"><h2 data-i18n="slide1_h">Master English for Adults</h2><p data-i18n="slide1_p">A professional learning environment tailored to develop your skills with complete confidence.</p></div></div>
+<div class="slide" style="background-image: url('https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1000&q=80');">
+<div class="slide-content"><h2 data-i18n="slide2_h">Speak Fluently & Naturally</h2><p data-i18n="slide2_p">Our curriculum focuses on narrative storytelling and practical application rather than traditional tasks.</p></div></div>
+<div class="slide" style="background-image: url('https://images.unsplash.com/photo-1542744173-8e7e53415bb0?auto=format&fit=crop&w=1000&q=80');">
+<div class="slide-content"><h2 data-i18n="slide3_h">Continuous Assessment</h2><p data-i18n="slide3_p">An integrated digital system that precisely tracks your progress to ensure you reach your goals.</p></div></div>
+</div>
+</div>
+
+<div class="hero-cta-row">
+<button type="button" class="hero-login-btn" onclick="openLoginModal()" data-i18n="login_nav_btn">🔑 Student & Teacher Login</button>
+<button type="button" class="hero-lead-btn" onclick="openLeadModal()" data-i18n="cta_btn">📋 Request Level Assessment</button>
+</div>
+
+<!-- ===== Why Choose English Land ===== -->
+<div class="marketing-section">
+<h2 data-i18n="why_title">Why Choose English Land?</h2>
+<p class="section-sub" data-i18n="why_sub">A modern, proven approach that gets real results — whatever your starting point.</p>
+<div class="why-grid">
+<div class="why-card"><span class="why-icon">🚀</span><h4 data-i18n="why1_h">Latest Teaching Methods</h4><p data-i18n="why1_p">We use the most modern, research-backed techniques to make you fluent — even if your level is zero.</p></div>
+<div class="why-card"><span class="why-icon">🎯</span><h4 data-i18n="why2_h">From Zero to Professional</h4><p data-i18n="why2_p">A clear, structured path takes you step by step from a complete beginner to a confident, professional speaker.</p></div>
+<div class="why-card"><span class="why-icon">👨‍🏫</span><h4 data-i18n="why3_h">Expert Instructors</h4><p data-i18n="why3_p">Experienced teachers who track your progress personally and give you real feedback, not just lectures.</p></div>
+<div class="why-card"><span class="why-icon">📊</span><h4 data-i18n="why4_h">Real-Time Progress Tracking</h4><p data-i18n="why4_p">An integrated digital system tracks your attendance, grades and homework so nothing gets missed.</p></div>
+<div class="why-card"><span class="why-icon">🎮</span><h4 data-i18n="why5_h">Interactive & Fun Learning</h4><p data-i18n="why5_p">Gamified lessons and interactive storytelling keep you engaged instead of bored.</p></div>
+<div class="why-card"><span class="why-icon">💬</span><h4 data-i18n="why6_h">Ongoing Support</h4><p data-i18n="why6_p">Direct support on WhatsApp and Facebook whenever you have a question.</p></div>
+</div>
+
+<div class="cta-level-box">
+<h3 data-i18n="cta_title">Not sure what level you are?</h3>
+<p data-i18n="cta_sub">Request a free level assessment and our team will contact you to place you in the right course.</p>
+<button onclick="openLeadModal()" data-i18n="cta_btn">📋 Request Level Assessment</button>
+</div>
+</div>
+
+<!-- ===== Student Feedback / Testimonials ===== -->
+<div class="marketing-section" id="testimonialsSection">
+<h2 data-i18n="fb_title">What Our Students Say</h2>
+<p class="section-sub" data-i18n="fb_sub">Real feedback from real English Land students.</p>
+<div class="testimonial-track" id="testimonialTrack">
+<div class="testimonial-empty" data-i18n="fb_loading">Loading feedback...</div>
+</div>
+</div>
+</div>
+
+<div class="container hidden pulse" id="loadingScreen" style="margin-top: 50px;">
+<h3 style="color: var(--primary);">Verifying Identity & Preparing Data... ⏳</h3>
+<p style="color: #64748b;">Please wait a moment while the system synchronizes.</p>
+</div>
+
+<div class="hidden" id="videoSplashSection">
+<video id="introVideo" autoplay muted playsinline><source src="intro.mp4?v=18" type="video/mp4"></video>
+<button class="btn-skip" id="skipBtn" onclick="skipIntroVideo()" disabled>Preparing...</button>
+</div>
+
+<!-- ==================== Student Dashboard ==================== -->
+<div class="container hidden" id="studentDashboard">
+<div><h2 id="welcomeStudent">Welcome</h2></div>
+<div class="grid-cards">
+<div class="info-card"><h4>Current Course</h4><strong id="courseName" style="color: var(--primary);"></strong></div>
+<div class="info-card"><h4>Group</h4><strong id="groupName" style="color: var(--secondary);"></strong></div>
+<div class="info-card"><h4>Schedule Details</h4><strong id="scheduleDetails"></strong></div>
+<div class="info-card"><h4>Instructor</h4><strong id="teacherName"></strong></div>
+<div class="info-card"><h4>Attendance Rate</h4><strong id="attendanceRate" style="color: #3b82f6;"></strong></div>
+<div class="info-card"><h4>Financial Status</h4><span id="paymentStatus" class="payment-status"></span></div>
+</div>
+
+<div id="barNoticeSection" class="hidden"><div class="bar-box"><strong>⚠️ Academic Warning:</strong><p style="margin: 5px 0 0 0;">You have exceeded the allowed absence limit.</p></div></div>
+<div class="feedback-box"><h4>💬 General Instructor Feedback:</h4><p id="instructorFeedback" style="margin:5px 0 0 0; color:#1e3a8a;"></p></div>
+
+<div class="card-section">
+<div class="card-title">📅 Schedule (Center & Live Stream)</div>
+<div class="table-responsive">
+<table>
+<thead><tr><th>Lecture</th><th>Date & Time</th><th>Status</th><th>Live Stream 🔴</th></tr></thead>
+<tbody id="studentScheduleTableBody"><tr><td colspan="4">Fetching Schedule...⏳</td></tr></tbody>
+</table>
+</div>
+</div>
+
+<div class="live-cta-box">
+<h3>🎮 Live Class Game Room</h3>
+<p>Got a room code from your instructor? Join the live competition now!</p>
+<button onclick="openJoinGameModal()">🚀 Join a Live Game</button>
+</div>
+
+<div id="liveGameStudentStage" class="hidden cinematic-game-board" style="margin-top:15px;">
+
+  <div style="display:flex; justify-content:flex-end; margin-bottom:6px;"><button class="sound-toggle-btn" onclick="toggleGameSound()" id="lgStuSoundBtn">🔊 Sound On</button></div>
+  <div id="lgStuOvertakeToast"></div>
+  <div id="lgStuRaceTrack" class="race-track-wrap hidden"></div>
+
+  <!-- Waiting Lobby -->
+  <div id="lgStuWaiting" class="hidden" style="text-align:center;">
+    <div class="live-badge">WAITING ROOM</div>
+    <h3 id="lgStuTitle" style="color:white;"></h3>
+    <p style="color:#cbd5e1;">✅ You're in! Waiting for your instructor to start the game...</p>
+    <div class="room-code-display" id="lgStuRoomCodeShown" style="font-size:28px; letter-spacing:6px;"></div>
+    <p style="color:#94a3b8; font-size:13px;" id="lgStuPlayerCount"></p>
+    <button onclick="leaveLiveGame()" style="width:auto; padding:8px 25px; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.3); color:white;">🚪 Leave Room</button>
+  </div>
+
+  <!-- Question Phase -->
+  <div id="lgStuQuestion" class="hidden" style="width:100%;">
+    <div class="game-top-bar">
+      <div class="game-score-badge" id="lgStuScoreBadge">Score: 0</div>
+      <div class="game-score-badge" id="lgStuQNum">Question 1</div>
+    </div>
+    <div class="timer-bar-outer"><div class="timer-bar-fill" id="lgStuTimerFill"></div></div>
+    <div class="game-question-text" id="lgStuQuestionText"></div>
+    <div id="lgStuChoicesBox" class="kahoot-grid"></div>
+    <p id="lgStuLockedMsg" class="hidden" style="color:#34d399; text-align:center; font-weight:bold; margin-top:15px;">✅ Answer locked in! Waiting for other players...</p>
+  </div>
+
+  <!-- Reveal Phase -->
+  <div id="lgStuReveal" class="hidden" style="text-align:center; width:100%;">
+    <div id="lgStuRevealResult" style="font-size:22px; font-weight:bold; margin-bottom:10px;"></div>
+    <p style="color:#cbd5e1;">Correct answer: <strong id="lgStuCorrectAnswerText" style="color:#34d399;"></strong></p>
+    <div class="game-score-badge" id="lgStuTotalScoreBadge" style="margin-top:10px;"></div>
+    <p style="color:#94a3b8; font-size:13px; margin-top:5px;">Waiting for the instructor to continue...</p>
+  </div>
+
+  <!-- Final Phase -->
+  <div id="lgStuFinal" class="hidden" style="text-align:center; width:100%;">
+    <h3 style="color:#fde047;">🏆 Game Over!</h3>
+    <div id="lgStuFinalRank" style="font-size:20px; color:white; margin:10px 0;"></div>
+    <div id="lgStuLeaderboardList"></div>
+    <button onclick="leaveLiveGame()" style="width:auto; padding:10px 25px; background:var(--secondary); margin-top:15px;">Done ✅</button>
+  </div>
+
+</div>
+
+<div class="card-section">
+<div class="card-title">📝 Homework & Interactive Storytelling</div>
+<div class="q-block">
+<label class="hw-label" style="font-size:16px;">Select a lecture to submit narrative assignment or start the interactive journey:</label>
+<select id="studentHwLecture" onchange="loadStudentHomework()" style="background:#eff6ff; color:var(--primary); font-weight:bold;">
+<option value="L1">Lecture 1 (L1)</option><option value="L2">Lecture 2 (L2)</option><option value="L3">Lecture 3 (L3)</option>
+<option value="L4">Lecture 4 (L4)</option><option value="L5">Lecture 5 (L5)</option><option value="L6">Lecture 6 (L6)</option>
+<option value="L7">Lecture 7 (L7)</option><option value="L8">Lecture 8 (L8)</option>
+</select>
+<textarea id="studentWriting" class="en-input" rows="4" placeholder="Type your narrative storytelling assignment here..."></textarea>
+<input type="url" id="studentShadowing" class="en-input" placeholder="Paste your audio recording link here...">
+<button onclick="submitStudentHomework()" style="margin-top: 15px;">📤 Submit Narrative</button>
+<div id="hwSubmitMsg" style="margin-top:10px; font-weight:bold; font-size:14px;"></div>
+
+<!-- Cinematic Gamified Arena -->
+<div id="gamifiedArena" class="gamified-section hidden">
+    <h3>🎬 Interactive Story Journey</h3>
+    <p style="color:#cbd5e1; font-size:14px;">Complete the narrative and test your understanding in a fun, cinematic way to collect points.</p>
+    
+    <div id="gameModesMenu" class="game-modes-grid">
+        <div class="game-mode-card" onclick="initGamifiedQuiz('arena')">
+            <span class="game-icon">⚡</span>
+            <strong>Narrative Heroes Challenge</strong>
+            <p style="color:#94a3b8; font-size:12px; margin-top:8px;">Answer quickly to keep the story flowing and double your points.</p>
+        </div>
+        <div class="game-mode-card" onclick="initGamifiedQuiz('review')">
+            <span class="game-icon">📖</span>
+            <strong>Quiet Review</strong>
+            <p style="color:#94a3b8; font-size:12px; margin-top:8px;">Enjoy reading the context and selecting answers without time pressure.</p>
+        </div>
+    </div>
+
+    <div id="gamePlayEngine" class="hidden cinematic-game-board">
+        <div id="feedbackOverlay" class="feedback-overlay"></div>
+        <div style="width:100%;">
+            <div class="duo-progress-container"><div id="gameProgressFill" class="duo-progress-bar"></div></div>
+            <div class="game-top-bar">
+                <div id="gameStreakFire" class="streak-fire hidden">🔥 Story Streak! (X2)</div>
+                <div id="gameScoreBadge" class="game-score-badge">Journey Points: 0</div>
+            </div>
+            <div id="gameQuestionText" class="game-question-text"></div>
+        </div>
+        <div id="gameChoicesBox" class="kahoot-grid"></div>
+        <button onclick="exitActiveGame()" style="background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.3); margin-top:25px; width:auto; padding:8px 25px; color:#fff; cursor:pointer;">🏳️ Pause Journey & Return</button>
+    </div>
+</div>
+
+<div id="homeworkQuizContainer" class="hidden hw-quiz-box"></div>
+
+<div id="hwResultBox" class="hidden" style="margin-top: 20px; padding: 15px; background: #f0fdf4; border: 1px solid #10b981; border-radius: 8px;">
+<h4 style="margin: 0 0 10px 0; color: #065f46;">✅ Instructor's Evaluation:</h4>
+<strong>Grade:</strong> <span id="displayHwGrade" style="color: var(--primary); font-weight: bold; font-size: 16px;"></span><br>
+<strong style="display:block; margin-top:8px;">Feedback:</strong> <div id="displayHwFeedback" style="margin-top:5px; font-style: italic;"></div>
+</div>
+</div>
+</div>
+
+<div class="card-section"><div class="card-title">💻 Digital Exams & Quizzes</div><div id="examsContainer"><div class="exam-row"><div><strong>Quiz 1 (10)</strong></div><div id="action-quiz1"></div></div><div class="exam-row"><div><strong>Quiz 2 (10)</strong></div><div id="action-quiz2"></div></div><div class="exam-row"><div><strong>Final Exam (80)</strong></div><div id="action-final"></div></div></div></div>
+<div class="card-section"><div class="card-title">📚 Course Materials</div><div id="materialsList"></div></div>
+</div>
+
+<!-- ==================== Exam Interface ==================== -->
+<div class="container hidden" id="examTakerDashboard" style="max-width: 850px;">
+<div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--primary); padding-bottom: 10px; margin-bottom: 20px;">
+<h2 id="currentExamTitle">Start Exam</h2>
+<div style="background: var(--danger); color: white; padding: 8px 15px; border-radius: 6px; font-weight: bold; font-size: 18px;">⏳ <span id="examTimerDisplay">00:00</span></div>
+</div>
+<div id="examQuestionsContainer"></div>
+<button onclick="gradeAndSubmitExam()" style="background-color: var(--secondary); font-size: 16px; margin-top: 20px;">🏁 Submit Answers & Finish</button>
+</div>
+
+<!-- ==================== Teacher & Admin Dashboard ==================== -->
+<div class="container hidden" id="teacherDashboard" style="max-width: 1050px;">
+<h2 id="welcomeTeacher">Welcome, Instructor</h2>
+
+<div id="superAdminPanel" class="admin-panel hidden">
+<h3>👑 Admin Control (Schedules & Zoom Links)</h3>
+<div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
+<div style="flex: 1; min-width: 120px;"><label style="font-size: 12px; font-weight: bold;">Group:</label><select id="adminGroupSelect" style="padding: 8px; font-size: 14px; margin: 5px 0;"></select></div>
+<div style="flex: 1; min-width: 120px;"><label style="font-size: 12px; font-weight: bold;">Lecture:</label><select id="adminLecSelect" style="padding: 8px; font-size: 14px; margin: 5px 0;"><option value="L1">L1</option><option value="L2">L2</option><option value="L3">L3</option><option value="L4">L4</option><option value="L5">L5</option><option value="L6">L6</option><option value="L7">L7</option><option value="L8">L8</option></select></div>
+<div style="flex: 2; min-width: 180px;"><label style="font-size: 12px; font-weight: bold;">Date & Time:</label><input type="datetime-local" id="adminDateTime" style="padding: 8px; font-size: 14px; margin: 5px 0;"></div>
+<div style="flex: 2; min-width: 180px;"><label style="font-size: 12px; font-weight: bold;">Zoom Link (Optional):</label><input type="url" id="adminZoomLink" placeholder="https://zoom.us/..." style="padding: 8px; font-size: 14px; margin: 5px 0;"></div>
+<div style="flex: 1; min-width: 120px;"><label style="display:block; height:18px;"></label><button onclick="saveScheduleDate()" style="padding: 10px; font-size: 14px; background: #b45309; margin: 0;">Save Time ⏱️</button></div>
+</div>
+<div id="adminMsg" style="margin-top:10px; font-weight:bold; font-size:14px;"></div>
+</div>
+
+<div id="libManagerPanel" class="admin-panel hidden" style="background:#eef2ff; border-color:#4f46e5;">
+<h3 style="color:#4338ca;">🎮 Game Library Manager (Super Admin Only)</h3>
+<p style="color:#4338ca;">Prepare games once here — teachers will see them ready to launch instantly when they open the matching group & lecture.</p>
+<button onclick="openLibBuilderModal()" style="width:auto; padding:10px 25px; background:#4f46e5;">➕ Add a New Saved Game</button>
+<div id="libManagerList" style="margin-top:15px;"><p class="lib-empty-msg">Loading...</p></div>
+</div>
+
+<div id="feedbackUploadPanel" class="card-section hidden" style="background: #f0fdf4; padding: 20px; border-radius: 8px; border: 1px solid #10b981; margin-bottom: 25px;">
+<div style="color: #065f46; font-weight: bold; font-size: 16px; margin-bottom: 10px;">🌟 Upload Student Feedback (Video/Image) - Shown on Landing Page</div>
+<div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
+<div style="flex: 1; min-width: 150px;"><input type="text" id="fbStudentName" placeholder="Student name" style="padding: 8px; font-size: 14px; margin: 5px 0;"></div>
+<div style="flex: 1; min-width: 120px;">
+<select id="fbMediaType" style="padding: 8px; font-size: 14px; margin: 5px 0;">
+<option value="image">Image</option>
+<option value="video">Video</option>
+</select>
+</div>
+<div style="flex: 2; min-width: 180px;"><input type="file" id="fbMediaFile" accept="image/*,video/*" style="padding: 5px; font-size: 13px; margin: 5px 0; border: none;"></div>
+</div>
+<input type="text" id="fbCaption" placeholder="Short caption (optional), e.g. Went from zero to fluent in 6 months" style="margin-top:8px;">
+<button onclick="uploadStudentFeedback()" style="background: #10b981; margin-top: 10px;">Upload Feedback 🌟</button>
+<div id="fbUploadMsg" style="margin-top:10px; font-weight:bold; font-size:14px;"></div>
+<p style="font-size:12px; color:#065f46; margin-top:5px;">⚠️ Keep video files short (under ~20MB) since they are uploaded directly through the form.</p>
+</div>
+
+<div class="card-section" style="background: #f8fafc; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 25px;">
+<div style="color: var(--primary); font-weight: bold; font-size: 16px; margin-bottom: 5px;">📁 Upload Center (.txt Exams & Games)</div>
+<div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
+<div style="flex: 1; min-width: 150px;">
+<select id="uploadExamType" style="padding: 8px; font-size: 14px; margin: 5px 0;">
+<option value="quiz1">Quiz 1</option><option value="quiz2">Quiz 2</option><option value="final">Final Exam</option>
+<option value="L1_hw">L1 Homework / Game</option><option value="L2_hw">L2 Homework / Game</option><option value="L3_hw">L3 Homework / Game</option>
+<option value="L4_hw">L4 Homework / Game</option><option value="L5_hw">L5 Homework / Game</option><option value="L6_hw">L6 Homework / Game</option>
+<option value="L7_hw">L7 Homework / Game</option><option value="L8_hw">L8 Homework / Game</option>
+</select>
+</div>
+<div style="flex: 1; min-width: 120px;"><input type="text" id="uploadExamCourse" placeholder="Course Name (e.g. Level3)" style="padding: 8px; font-size: 14px; margin: 5px 0;"></div>
+<div style="flex: 2; min-width: 180px;"><input type="file" id="examTxtFile" accept=".txt" style="padding: 5px; font-size: 13px; margin: 5px 0; border: none;"></div>
+<div style="flex: 1; min-width: 120px;"><button onclick="processAndUploadExam()" style="padding: 10px; font-size: 14px; background: var(--secondary); margin: 0;">Upload & Activate 🚀</button></div>
+</div>
+</div>
+
+<div class="live-cta-box" style="margin-bottom:25px;">
+<h3>🎮 Live Class Game Room</h3>
+<p>Host a Kahoot-style live quiz. Students join with a room code and compete for the top of the leaderboard!</p>
+<button onclick="openHostBuilderModal()">🚀 Start a Live Game Room</button>
+</div>
+
+<div class="teacher-tools">
+<div style="flex: 1; min-width: 150px;"><label style="font-weight: bold; color: var(--primary);">Filter Group:</label><select id="groupFilter" onchange="filterTeacherStudents()"></select></div>
+<div style="flex: 1; min-width: 150px;"><label style="font-weight: bold; color: var(--primary);">Lecture:</label><select id="lectureSelect" onchange="filterTeacherStudents()"><option value="L1">Lecture 1 (L1)</option><option value="L2">Lecture 2 (L2)</option><option value="L3">Lecture 3 (L3)</option><option value="L4">Lecture 4 (L4)</option><option value="L5">Lecture 5 (L5)</option><option value="L6">Lecture 6 (L6)</option><option value="L7">Lecture 7 (L7)</option><option value="L8">Lecture 8 (L8)</option></select></div>
+</div>
+
+<div class="lib-games-box" id="libGamesBox">
+<h4>🎮 Saved Games Ready for this Lecture</h4>
+<div id="libGamesList"><p class="lib-empty-msg">Loading...</p></div>
+</div>
+<div id="lectureStatusMsg" style="text-align:center; font-weight:bold; margin-bottom:15px; font-size:14px; line-height: 1.6;"></div>
+
+<div class="card-section">
+<div class="card-title">👥 Students List</div>
+<div class="table-responsive">
+<table style="width: 100%; min-width: 800px;"><thead id="teacherTableHead"></thead><tbody id="teacherStudentsList"></tbody></table>
+</div>
+</div>
+</div>
+
+<!-- ==================== Live Game Host Modal (Teacher) ==================== -->
+<div id="hostGameModal" class="modal hidden">
+<div class="modal-content" style="max-width: 700px;">
+<span class="close-btn" onclick="closeHostGameModal()">&times;</span>
+
+<!-- STEP 1: Builder -->
+<div id="hgBuilderStep">
+<h3 style="color:var(--primary);">🎮 Create a Live Game</h3>
+<input type="text" id="hgTitle" placeholder="Game title (e.g. Lecture 5 Review)" style="margin-bottom:15px;">
+
+<div class="builder-tabs">
+<button class="builder-tab-btn active-tab" id="hgTabManualBtn" onclick="switchBuilderTab('manual')">✍️ Build Questions</button>
+<button class="builder-tab-btn" id="hgTabUploadBtn" onclick="switchBuilderTab('upload')">📁 Upload .txt</button>
+</div>
+
+<div id="hgManualTab">
+<div id="hgQuestionsList"></div>
+<button onclick="addBuilderQuestionRow()" style="background:#e2e8f0; color:var(--text); margin-top:5px;">➕ Add Question</button>
+</div>
+
+<div id="hgUploadTab" class="hidden">
+<p style="font-size:13px; color:#64748b;">Same format as the Exam Upload Center: one question per line — <code>Question|Choice1|Choice2|Choice3|CorrectAnswer</code></p>
+<input type="file" id="hgTxtFile" accept=".txt" style="padding: 5px; font-size: 13px; border: none;">
+</div>
+
+<div id="hgBuilderMsg" style="color:var(--danger); font-weight:bold; margin:10px 0;"></div>
+<button onclick="createLiveGameRoom()" style="background:var(--secondary); margin-top:10px;">Create Room & Get Code 🚀</button>
+</div>
+
+<!-- STEP 2: Live Host Stage -->
+<div id="hgHostStage" class="hidden cinematic-game-board" style="margin:0;">
+
+  <div style="display:flex; justify-content:flex-end; margin-bottom:6px; width:100%;"><button class="sound-toggle-btn" onclick="toggleGameSound()" id="hgSoundBtn">🔊 Sound On</button></div>
+  <div id="hgOvertakeToast" style="width:100%;"></div>
+  <div id="hgRaceTrack" class="race-track-wrap hidden" style="width:100%;"></div>
+
+  <div id="hgLobby" class="hidden" style="text-align:center; width:100%;">
+    <div class="live-badge">LOBBY OPEN</div>
+    <h3 class="host-stage-title" style="color:white;" id="hgLobbyTitle"></h3>
+    <p style="color:#cbd5e1;">Share this code with your students:</p>
+    <div class="room-code-display" id="hgRoomCodeDisplay"></div>
+    <p style="color:#94a3b8;"><span id="hgPlayerCount">0</span> student(s) joined</p>
+    <div class="player-chip-grid" id="hgPlayerChips"></div>
+    <button onclick="startLiveGameRoom()" style="background:var(--secondary); width:auto; padding:12px 35px; font-size:16px;">▶️ Start Game</button>
+  </div>
+
+  <div id="hgQuestionPhase" class="hidden" style="width:100%;">
+    <div class="game-top-bar">
+      <div class="game-score-badge" id="hgQNum">Question 1</div>
+      <div class="game-score-badge"><span id="hgAnsweredCount">0</span>/<span id="hgTotalPlayers">0</span> answered</div>
+    </div>
+    <div class="timer-bar-outer"><div class="timer-bar-fill" id="hgTimerFill"></div></div>
+    <div class="game-question-text" id="hgQuestionText"></div>
+    <div class="kahoot-grid" id="hgChoicesDisplay"></div>
+    <button onclick="revealLiveGameQuestion()" style="background:var(--danger); margin-top:20px;">⏹️ Show Answer Now</button>
+  </div>
+
+  <div id="hgRevealPhase" class="hidden" style="width:100%; text-align:center;">
+    <h3 style="color:white;">Correct Answer: <span id="hgRevealAnswer" style="color:#34d399;"></span></h3>
+    <div id="hgDistribution" style="margin:20px 0;"></div>
+    <h4 style="color:#fde047;">🏆 Top of the Leaderboard</h4>
+    <div id="hgMiniLeaderboard"></div>
+    <button onclick="nextLiveGameQuestion()" style="background:var(--secondary); margin-top:15px;">Next Question ▶️</button>
+  </div>
+
+  <div id="hgFinalPhase" class="hidden" style="width:100%; text-align:center;">
+    <h3 style="color:#fde047;">🏆 Final Results</h3>
+    <div class="podium-wrap" id="hgPodium"></div>
+    <div id="hgFullLeaderboard"></div>
+    <button onclick="closeHostGameModal()" style="background:var(--secondary); margin-top:15px;">Finish & Close ✅</button>
+    <p style="color:#94a3b8; font-size:12px; margin-top:10px;">Points have been automatically added to each student's profile.</p>
+  </div>
+
+</div>
+</div>
+</div>
+
+<!-- ==================== Modals ==================== -->
+<div id="hwModal" class="modal hidden">
+<div class="modal-content">
+<span class="close-btn" onclick="closeHomeworkModal()">&times;</span>
+<h3 id="modalStudentName">Evaluate Homework</h3><p style="color:var(--danger); font-weight:bold;" id="modalLectureLabel"></p>
+<label class="hw-label">✍️ Written Text:</label><div id="modalWriting" class="passage-box en-input" style="white-space: pre-wrap; min-height: 80px; background: #f8fafc; border: 1px solid #e2e8f0;"></div>
+<label class="hw-label">🎙️ Audio Link:</label><div style="margin-bottom: 20px; padding: 10px; background: #eff6ff; border-radius: 6px;"><a id="modalShadowingLink" href="#" target="_blank" style="color: #2563eb; font-weight: bold; text-decoration: none;">🔗 Listen to Voice Recording 🎧</a></div>
+<label class="hw-label">Assigned Grade:</label><input type="text" id="modalHwGrade" placeholder="e.g. 9/10"><label class="hw-label">Feedback/Notes:</label><textarea id="modalHwFeedback" rows="3"></textarea>
+<button id="saveHwBtn" style="background-color: var(--secondary); margin-top: 15px;">Save Evaluation 💾</button>
+</div>
+</div>
+
+<div id="profileModal" class="modal hidden">
+<div class="modal-content">
+<span class="close-btn" onclick="closeProfileModal()">&times;</span>
+<h3 style="color:var(--primary);">👤 Profile: <span id="profName" style="color:var(--text);"></span></h3>
+<div><span class="profile-stat">Course: <span id="profCourse"></span></span><span class="profile-stat">Group: <span id="profGroup"></span></span></div>
+<div><span class="profile-stat" style="background:#d1fae5; color:#065f46;">Payment: <span id="profPayment"></span></span></div>
+<h4 style="color:var(--primary); margin-top:20px;">📊 Attendance</h4>
+<div><span class="profile-stat">Total: <span id="profTotalAtt"></span></span><span class="profile-stat" style="color:var(--secondary);">Attended: <span id="profAttended"></span></span><span class="profile-stat" style="color:var(--danger);">Absent: <span id="profAbsences"></span></span></div>
+<h4 style="color:var(--primary); margin-top:20px;">🎓 Quizzes</h4>
+<div><span class="profile-stat">Q1: <span id="profQ1"></span></span><span class="profile-stat">Q2: <span id="profQ2"></span></span><span class="profile-stat">Final: <span id="profFinal"></span></span></div>
+</div>
+</div>
+
+<!-- ==================== Game Library Builder Modal (Super Admin) ==================== -->
+<div id="libGameModal" class="modal hidden">
+<div class="modal-content" style="max-width: 700px;">
+<span class="close-btn" onclick="closeLibBuilderModal()">&times;</span>
+<h3 style="color:#4338ca;" id="libModalHeading">🎮 Add a Saved Game to the Library</h3>
+<input type="hidden" id="lbEditingId" value="">
+<div style="display:flex; flex-wrap:wrap; gap:10px;">
+<div style="flex:1; min-width:140px;"><label style="font-size:12px; font-weight:bold;">Group:</label><select id="lbGroup" style="padding:8px; font-size:14px; margin:5px 0;"></select></div>
+<div style="flex:1; min-width:140px;"><label style="font-size:12px; font-weight:bold;">Lecture:</label><select id="lbLecture" style="padding:8px; font-size:14px; margin:5px 0;"><option value="L1">L1</option><option value="L2">L2</option><option value="L3">L3</option><option value="L4">L4</option><option value="L5">L5</option><option value="L6">L6</option><option value="L7">L7</option><option value="L8">L8</option></select></div>
+</div>
+<input type="text" id="lbTitle" placeholder="Game title (e.g. Lecture 5 Review)" style="margin-bottom:15px;">
+
+<div class="builder-tabs">
+<button class="builder-tab-btn active-tab" id="lbTabManualBtn" onclick="switchLibBuilderTab('manual')">✍️ Build Questions</button>
+<button class="builder-tab-btn" id="lbTabUploadBtn" onclick="switchLibBuilderTab('upload')">📁 Upload .txt</button>
+</div>
+
+<div id="lbManualTab">
+<div id="lbQuestionsList"></div>
+<button onclick="addLibBuilderQuestionRow()" style="background:#e2e8f0; color:var(--text); margin-top:5px;">➕ Add Question</button>
+</div>
+
+<div id="lbUploadTab" class="hidden">
+<p style="font-size:13px; color:#64748b;">One question per line — <code>Question|Choice1|Choice2|Choice3|CorrectAnswer</code></p>
+<input type="file" id="lbTxtFile" accept=".txt" style="padding: 5px; font-size: 13px; border: none;">
+</div>
+
+<div id="lbBuilderMsg" style="color:var(--danger); font-weight:bold; margin:10px 0;"></div>
+<button onclick="saveLibBuilderGame()" style="background:#4f46e5; margin-top:10px;">💾 Save to Library</button>
+</div>
+</div>
+
+<!-- ===== Join Live Game Modal (Student) ===== -->
+<div id="joinGameModal" class="modal hidden">
+<div class="modal-content" style="max-width: 400px; text-align:center;">
+<span class="close-btn" onclick="closeJoinGameModal()">&times;</span>
+<h2 style="font-size: 22px;" class="comic-title">🎮 Join Live Game</h2>
+<p style="margin-bottom: 10px;">Pick your racer 🏎️</p>
+<div class="avatar-picker-grid" id="joinAvatarGrid"></div>
+<p style="margin-bottom: 20px;">Enter the room code shared by your instructor</p>
+<input type="text" id="joinRoomCodeInput" placeholder="e.g. 483920" maxlength="6" style="text-align:center; font-size:24px; letter-spacing:6px; font-weight:bold;">
+<button onclick="joinLiveGameRoom()" style="padding: 15px; font-size: 16px;">Join Room 🚀</button>
+<div id="joinGameMsg" style="color:var(--danger); font-weight:bold; margin-top:15px;"></div>
+</div>
+</div>
+
+<!-- ===== Login Modal (Students & Teachers) ===== -->
+<div id="loginModal" class="modal hidden">
+<div class="modal-content" style="max-width: 400px; text-align:center;">
+<span class="close-btn" onclick="closeLoginModal()">&times;</span>
+<h2 style="font-size: 22px;" data-i18n="login_title">English Land LMS</h2>
+<p style="margin-bottom: 20px;" data-i18n="login_sub">Enter your credentials to access your account</p>
+<input type="text" id="universalId" data-i18n-placeholder="login_id_ph" placeholder="Enter your ID here" style="margin-bottom: 10px;">
+<input type="password" id="universalPass" data-i18n-placeholder="login_pass_ph" placeholder="Password" style="margin-bottom: 15px;">
+<button onclick="handleLogin()" style="padding: 15px; font-size: 16px;" data-i18n="login_btn">Secure Login 🔒</button>
+<div id="errorMsg" style="color:var(--danger); font-weight:bold; margin-top:15px;"></div>
+</div>
+</div>
+
+<!-- ===== Lead / Level Assessment Modal ===== -->
+<div id="leadModal" class="modal hidden">
+<div class="modal-content lead-form">
+<span class="close-btn" onclick="closeLeadModal()">&times;</span>
+<h3 style="color:var(--primary);" data-i18n="lead_modal_title">📋 Request a Free Level Assessment</h3>
+<p style="color:#64748b; font-size:13px;" data-i18n="lead_modal_sub">Fill in your details and our team will contact you shortly.</p>
+<label data-i18n="lead_name_label">Full Name</label>
+<input type="text" id="leadName" data-i18n-placeholder="lead_name_ph" placeholder="Your full name">
+<label data-i18n="lead_phone_label">Phone / WhatsApp Number</label>
+<input type="tel" id="leadPhone" data-i18n-placeholder="lead_phone_ph" placeholder="e.g. 01092389438">
+<label data-i18n="lead_level_label">Current English Level (if known)</label>
+<select id="leadLevel">
+<option value="" data-i18n="lead_level_unknown">I don't know / Zero</option>
+<option value="Beginner">Beginner</option>
+<option value="Intermediate">Intermediate</option>
+<option value="Advanced">Advanced</option>
+</select>
+<label data-i18n="lead_notes_label">Notes (Optional)</label>
+<textarea id="leadNotes" rows="3" data-i18n-placeholder="lead_notes_ph" placeholder="Anything else you'd like us to know..."></textarea>
+<button onclick="submitLead()" style="margin-top:15px;" data-i18n="lead_submit_btn">Send Request 🚀</button>
+<div id="leadMsg" style="margin-top:10px; font-weight:bold; font-size:14px; text-align:center;"></div>
+</div>
+</div>
+
+<!-- ===== Floating Contact Buttons ===== -->
+<div class="floating-btns">
+<a class="float-btn whatsapp" href="https://wa.me/201092389438" target="_blank" rel="noopener" title="WhatsApp">💬</a>
+<a class="float-btn facebook" href="https://www.facebook.com/English.land00/" target="_blank" rel="noopener" title="Facebook">📘</a>
+</div>
+
+<script>
+// Sliders Logic
+let currentSlide = 0;
+const slides = document.querySelectorAll('.slide');
+if(slides.length > 0) {
+    setInterval(() => {
+        slides[currentSlide].classList.remove('active');
+        currentSlide = (currentSlide + 1) % slides.length;
+        slides[currentSlide].classList.add('active');
+    }, 4000);
+}
+
+const GAS_URL = "https://script.google.com/macros/s/AKfycbxjjZmjHiv3WB8JS5CXjhYE_de3jCh9RuIlManhPRdJcgWtaoiOcsg4jYMyMWisCem7/exec";
+
+// Global Variables
+let teacherStudentsData = [], studentActiveExams = {}, currentExamQuestions = [], currentExamTypeKey = "", examTimerInterval, cachedUserData = null, splashCountdownInterval;
+let isVideoSkipped = false, isDataReady = false;
+let loggedInId = "", loggedInPass = "";
+
+// Live Multiplayer Game (Kahoot-style) state
+let lgBuilderQuestions = [];
+let lgHostRoomCode = "", lgHostPollInterval = null, lgHostLastStatus = "", lgHostLastIndex = -1, lgHostTitle = "";
+let lgStuRoomCode = "", lgStuPollInterval = null, lgStuLastStatus = "", lgStuLastIndex = -1, lgStuAnsweredThisQuestion = false;
+// [جديد] الأفاتار + الصوت + مضمار السباق + مكتبة الألعاب المحفوظة
+const AVATAR_LIST = ['🦸','🐵','🤖','🦊','🐸','🥷','🧙','🐯','🦄','👽','🐼','🦖','🐙','🐧','🦁','🐝'];
+let pickedAvatar = AVATAR_LIST[0];
+let soundEnabled = true;
+let lgStuSeenEventCount = 0, hgSeenEventCount = 0;
+let libBuilderQuestions = [];
+let lgStuCountdownInterval = null, lgHostCountdownInterval = null;
+
+// Gamification Variables
+let gameQuestionsArray = [], gameCurrentQuestionIdx = 0, gameTotalScore = 0, gameActiveStreak = 0, gameTimerEngineInterval, gameModeType = 'arena';
+const kahootColors = ['kahoot-c1', 'kahoot-c2', 'kahoot-c3', 'kahoot-c4'];
+
+// Web Audio API for Sound Effects (Inline, no external files)
+const AudioContext = window.AudioContext || window.webkitAudioContext;
+let audioCtx;
+
+function initAudio() {
+    if (!audioCtx) audioCtx = new AudioContext();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+}
+
+function playSound(type) {
+    if (!soundEnabled) return;
+    initAudio();
+    const osc = audioCtx.createOscillator();
+    const gainNode = audioCtx.createGain();
+    osc.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+
+    if (type === 'correct') {
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
+        osc.frequency.exponentialRampToValueAtTime(1046.50, audioCtx.currentTime + 0.1); // C6
+        gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.5);
+    } else if (type === 'wrong') {
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.3);
+        gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.3);
+    } else if (type === 'overtake') {
+        // [جديد] صوت "الضرب/التخطي" في السباق
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(240, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(110, audioCtx.currentTime + 0.25);
+        gainNode.gain.setValueAtTime(0.4, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.25);
+    } else if (type === 'join') {
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(660, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.15);
+        gainNode.gain.setValueAtTime(0.35, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.25);
+    } else if (type === 'gamestart') {
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(523, audioCtx.currentTime);
+        osc.frequency.setValueAtTime(659, audioCtx.currentTime + 0.13);
+        osc.frequency.setValueAtTime(784, audioCtx.currentTime + 0.26);
+        gainNode.gain.setValueAtTime(0.4, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.45);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.45);
     }
-    if (action === 'getFeedback') {
-      return jsonOut(handleGetFeedback());
-    }
-    if (action === 'getGameRoomState') {
-      return jsonOut(handleGetGameRoomState(e.parameter));
-    }
-    if (action === 'listLibraryGames') {
-      return jsonOut(handleListLibraryGames(e.parameter));
-    }
-    if (action === 'listAllLibraryGames') {
-      return jsonOut(handleListAllLibraryGames(e.parameter));
-    }
-    return jsonOut({ error: 'إجراء (action) غير معروف' });
-  } catch (err) {
-    return jsonOut({ error: 'خطأ في السيرفر: ' + err.message });
-  }
 }
 
-function doPost(e) {
-  try {
-    const p = e.parameter;
-    const action = p.action;
-    let result;
-    switch (action) {
-      case 'submitHomework':        result = handleSubmitHomework(p); break;
-      case 'submitGameScore':       result = handleSubmitGameScore(p); break;
-      case 'saveSchedule':          result = handleSaveSchedule(p); break;
-      case 'uploadExam':            result = handleUploadExam(p); break;
-      case 'gradeHomework':         result = handleGradeHomework(p); break;
-      case 'updateAttendance':      result = handleUpdateAttendance(p); break;
-      case 'updateStudentFullInfo': result = handleUpdateStudentFullInfo(p); break;
-      case 'submitLead':            result = handleSubmitLead(p); break;
-      case 'uploadFeedback':        result = handleUploadFeedback(p); break;
-      case 'createGameRoom':        result = handleCreateGameRoom(p); break;
-      case 'joinGameRoom':          result = handleJoinGameRoom(p); break;
-      case 'startGameRoom':         result = handleStartGameRoom(p); break;
-      case 'submitGameAnswer':      result = handleSubmitLiveGameAnswer(p); break;
-      case 'revealGameQuestion':    result = handleRevealGameQuestion(p); break;
-      case 'nextGameQuestion':      result = handleNextGameQuestion(p); break;
-      case 'endGameRoom':           result = handleEndGameRoom(p); break;
-      case 'saveLibraryGame':       result = handleSaveLibraryGame(p); break;
-      case 'updateLibraryGame':     result = handleUpdateLibraryGame(p); break;
-      case 'deleteLibraryGame':     result = handleDeleteLibraryGame(p); break;
-      default: result = { error: 'إجراء (action) غير معروف' };
-    }
-    return jsonOut(result);
-  } catch (err) {
-    return jsonOut({ error: 'خطأ في السيرفر: ' + err.message });
-  }
+// [جديد] تشغيل/كتم صوت اللعبة
+function toggleGameSound() {
+    soundEnabled = !soundEnabled;
+    document.querySelectorAll('.sound-toggle-btn').forEach(b => b.innerText = soundEnabled ? '🔊 Sound On' : '🔇 Sound Off');
+    if (soundEnabled) initAudio();
 }
 
-function jsonOut(obj) {
-  return ContentService.createTextOutput(JSON.stringify(obj))
-    .setMimeType(ContentService.MimeType.JSON);
-}
-
-/* ==================== أدوات عامة لقراءة/كتابة الشيتات ==================== */
-
-// يقرأ أي شيت بالاعتماد على صف الهيدر الأول، ويرجع الصفوف ككائنات
-// مع رقم الصف الحقيقي (__row) عشان نقدر نكتب فيه لاحقاً
-function getSheetData(sheetName) {
-  const sheet = SS.getSheetByName(sheetName);
-  if (!sheet) throw new Error('الشيت غير موجود: ' + sheetName);
-  const values = sheet.getDataRange().getValues();
-  const headers = values[0];
-  const rows = [];
-  for (let i = 1; i < values.length; i++) {
-    const rowArr = values[i];
-    const isEmpty = rowArr.every(c => c === '' || c === null || c === undefined);
-    if (isEmpty) continue;
-    const obj = { __row: i + 1 };
-    headers.forEach((h, idx) => { if (h) obj[h] = rowArr[idx]; });
-    rows.push(obj);
-  }
-  return { sheet, headers, rows };
-}
-
-function setCell(sheet, headers, rowNum, headerName, value) {
-  const colIdx = headers.indexOf(headerName) + 1;
-  if (colIdx > 0) sheet.getRange(rowNum, colIdx).setValue(value);
-}
-
-function parseJsonSafe(val) {
-  if (!val) return {};
-  try {
-    const parsed = JSON.parse(val);
-    return (parsed && typeof parsed === 'object') ? parsed : {};
-  } catch (e) {
-    return {};
-  }
-}
-
-function normId(v) {
-  return String(v == null ? '' : v).trim().toUpperCase();
-}
-
-function parseJsonArraySafe(val) {
-  if (!val) return [];
-  try {
-    const parsed = JSON.parse(val);
-    return Array.isArray(parsed) ? parsed : [];
-  } catch (e) {
-    return [];
-  }
-}
-
-// يضيف أعمدة جديدة لشيت موجود بالفعل من غير ما يمسح أي بيانات (عشان التحديثات القديمة تشتغل تلقائي)
-function ensureSheetHasColumns(sheet, requiredHeaders) {
-  const lastCol = Math.max(1, sheet.getLastColumn());
-  const headers = sheet.getRange(1, 1, 1, lastCol).getValues()[0];
-  requiredHeaders.forEach(h => {
-    if (headers.indexOf(h) === -1) {
-      sheet.getRange(1, headers.length + 1).setValue(h);
-      headers.push(h);
-    }
-  });
-}
-
-/* ==================== تسجيل الدخول ==================== */
-
-function handleLogin(id, pass) {
-  if (!id || !pass) return { error: 'برجاء إدخال الـ ID وكلمة المرور' };
-  id = String(id).trim();
-  pass = String(pass).trim();
-
-  // 1) تحقق أولاً من المحاضرين
-  const { rows: teacherRows } = getSheetData(SHEETS.TEACHERS);
-  const teacher = teacherRows.find(t => normId(t['ID']) === normId(id));
-  if (teacher) {
-    if (String(teacher['كلمة المرور'] || '').trim() !== pass) {
-      return { error: 'كلمة المرور غير صحيحة' };
-    }
-    return buildTeacherResponse(teacher);
-  }
-
-  // 2) تحقق من الطلاب
-  const { rows: studentRows } = getSheetData(SHEETS.STUDENTS);
-  const student = studentRows.find(s => normId(s['Student ID']) === normId(id));
-  if (!student) return { error: 'الـ ID غير موجود، تأكد من كتابته بشكل صحيح' };
-  if (String(student['كلمة المرور'] || '').trim() !== pass) {
-    return { error: 'كلمة المرور غير صحيحة' };
-  }
-  return buildStudentResponse(student);
-}
-
-/* ==================== بناء استجابة الطالب ==================== */
-
-function buildStudentResponse(student) {
-  const sid = String(student['Student ID']).trim();
-  const course = String(student['Course'] || '').trim();
-  const group = (student['Group'] !== undefined && student['Group'] !== null)
-    ? String(student['Group']).trim() : '';
-
-  // الحضور
-  const { rows: attRows } = getSheetData(SHEETS.ATTENDANCE);
-  const attRow = attRows.find(a => normId(a['ID']) === normId(sid));
-  const attCounts = countAttendance(attRow);
-  const attendanceDetails = {};
-  for (let i = 1; i <= 8; i++) {
-    attendanceDetails['L' + i] = attRow ? (attRow['L' + i] || '') : '';
-  }
-
-  // الدرجات
-  const { rows: gradeRows } = getSheetData(SHEETS.GRADES);
-  const gradeRow = gradeRows.find(g => normId(g['ID']) === normId(sid)) || {};
-
-  // الماتيريال (حسب الكورس)
-  const { rows: materialRows } = getSheetData(SHEETS.MATERIALS);
-  const materials = materialRows
-    .filter(m => String(m['Course'] || '').trim().toLowerCase() === course.toLowerCase())
-    .map(m => ({ title: m['Title'] || '', link: m['Link'] || '' }));
-
-  // الامتحانات المتاحة لهذا الكورس
-  const exams = buildStudentExamsMap(course);
-
-  return {
-    role: 'student',
-    student: {
-      id: sid,
-      name: String(student['Name'] || ''),
-      course: course,
-      group: group,
-      schedule: String(student['Schedule'] || ''),
-      teacher: String(student['Teacher'] || ''),
-      feedback: String(student['Feedback'] || ''),
-      payment: String(student['Payment'] || ''),
-      percentage: formatPercentage(student['Percentage']),
-      homework: {
-        writing: student['Writing'] || '',
-        shadowing: student['Shadowing'] || '',
-        hwGrade: student['HW_Grade'] || '',
-        hwFeedback: student['HW_Feedback'] || ''
-      }
-    },
-    attendance: attCounts,
-    attendanceDetails: attendanceDetails,
-    grades: {
-      quiz1: gradeRow['Quiz1'] !== undefined ? gradeRow['Quiz1'] : '',
-      quiz2: gradeRow['Quiz2'] !== undefined ? gradeRow['Quiz2'] : '',
-      final: gradeRow['Final'] !== undefined ? gradeRow['Final'] : ''
-    },
-    materials: materials,
-    exams: exams,
-    schedule: buildScheduleMap()
-  };
-}
-
-function formatPercentage(val) {
-  if (val === undefined || val === null || val === '') return '';
-  if (typeof val === 'number') return Math.round(val * 100) + '%';
-  return String(val);
-}
-
-function countAttendance(attRow) {
-  let total = 0, attended = 0;
-  if (attRow) {
-    for (let i = 1; i <= 8; i++) {
-      const val = attRow['L' + i];
-      if (val === 'ح' || val === 'حاضر' || val === 'غ' || val === 'غائب') {
-        total++;
-        if (val === 'ح' || val === 'حاضر') attended++;
-      }
-    }
-  }
-  return { total: total, attended: attended, absences: total - attended };
-}
-
-// يبني خريطة امتحانات الطالب: quiz1/quiz2/final/l1_hw..l8_hw
-// اعتماداً على Examkey بصيغة  Course_Type  في شيت Exams
-function buildStudentExamsMap(course) {
-  const { rows } = getSheetData(SHEETS.EXAMS);
-  const examMap = {};
-  const prefix = course + '_';
-  rows.forEach(r => {
-    const key = String(r['Examkey'] || '').trim();
-    if (!key) return;
-    if (key.toLowerCase().indexOf(prefix.toLowerCase()) === 0) {
-      const typePart = key.substring(prefix.length); // quiz1 / L5_hw ...
-      const normalizedKey = typePart.toLowerCase();   // quiz1 / l5_hw
-      examMap[normalizedKey] = r['Examdata'];
-    }
-  });
-  return examMap;
-}
-
-/* ==================== جدول المواعيد (Schedule) ====================
-   الشيت ده بدون هيدرز حقيقية للأعمدة A/B/C، فبنقرأه بالوضع الثابت:
-   A = Group, B = Lecture, C = DateTime, D = Zoom link
-   وبنتخطى الصف الأول دايماً (سطر العناوين) */
-
-function getScheduleRows() {
-  const sheet = SS.getSheetByName(SHEETS.SCHEDULE);
-  const values = sheet.getDataRange().getValues();
-  const rows = [];
-  for (let i = 1; i < values.length; i++) {
-    const [group, lecture, dateTime, zoom] = values[i];
-    if (!group && !lecture) continue;
-    rows.push({ row: i + 1, group: group, lecture: lecture, dateTime: dateTime, zoom: zoom });
-  }
-  return rows;
-}
-
-function buildScheduleMap() {
-  const rows = getScheduleRows();
-  const map = {};
-  rows.forEach(r => {
-    if (!r.group || !r.lecture) return;
-    const key = String(r.group).trim() + '_' + String(r.lecture).trim();
-    let dateStr = '';
-    if (r.dateTime instanceof Date) {
-      dateStr = Utilities.formatDate(r.dateTime, Session.getScriptTimeZone(), "yyyy-MM-dd'T'HH:mm:ss");
-    } else if (r.dateTime) {
-      dateStr = String(r.dateTime);
-    }
-    map[key] = { date: dateStr, zoom: r.zoom ? String(r.zoom) : '' };
-  });
-  return map;
-}
-
-/* ==================== بناء استجابة المحاضر / السوبر أدمن ==================== */
-
-function getTeacherRole(teacher) {
-  if (teacher['Role']) {
-    const r = String(teacher['Role']).trim().toLowerCase();
-    return (r.indexOf('admin') > -1) ? 'superadmin' : 'teacher';
-  }
-  // لو معملتش عمود Role: T101 يعتبر سوبر أدمن افتراضياً (زي وضعك الحالي)
-  return normId(teacher['ID']) === 'T101' ? 'superadmin' : 'teacher';
-}
-
-function buildTeacherResponse(teacher) {
-  const teacherName = String(teacher['Name'] || '').trim();
-  const role = getTeacherRole(teacher);
-
-  const { rows: studentRows } = getSheetData(SHEETS.STUDENTS);
-  const { rows: attRows } = getSheetData(SHEETS.ATTENDANCE);
-  const { rows: gradeRows } = getSheetData(SHEETS.GRADES);
-
-  const attMap = {};
-  attRows.forEach(a => { attMap[normId(a['ID'])] = a; });
-  const gradeMap = {};
-  gradeRows.forEach(g => { gradeMap[normId(g['ID'])] = g; });
-
-  let filteredStudents = studentRows;
-  if (role !== 'superadmin') {
-    filteredStudents = studentRows.filter(s => String(s['Teacher'] || '').trim() === teacherName);
-  }
-
-  const students = filteredStudents.map(s => buildStudentSummary(s, attMap, gradeMap));
-
-  const result = {
-    role: role,
-    name: teacherName,
-    students: students,
-    schedule: buildScheduleMap()
-  };
-
-  if (role === 'superadmin') {
-    const groupsSet = new Set();
-    studentRows.forEach(s => {
-      if (s['Group'] !== undefined && s['Group'] !== null && s['Group'] !== '') {
-        groupsSet.add(String(s['Group']).trim());
-      }
-    });
-    result.groups = Array.from(groupsSet);
-  }
-
-  return result;
-}
-
-function buildStudentSummary(s, attMap, gradeMap) {
-  const sid = String(s['Student ID']).trim();
-  const attRow = attMap[normId(sid)];
-  const attCounts = countAttendance(attRow);
-  const gradeRow = gradeMap[normId(sid)] || {};
-
-  return {
-    id: sid,
-    name: String(s['Name'] || ''),
-    group: (s['Group'] !== undefined && s['Group'] !== null) ? String(s['Group']) : '',
-    course: String(s['Course'] || ''),
-    payment: String(s['Payment'] || ''),
-    feedback: String(s['Feedback'] || ''),
-    homework: {
-      writing: s['Writing'] || '',
-      shadowing: s['Shadowing'] || '',
-      hwGrade: s['HW_Grade'] || '',
-      hwFeedback: s['HW_Feedback'] || ''
-    },
-    attendance: attCounts,
-    grades: {
-      quiz1: gradeRow['Quiz1'] !== undefined ? gradeRow['Quiz1'] : '',
-      quiz2: gradeRow['Quiz2'] !== undefined ? gradeRow['Quiz2'] : '',
-      final: gradeRow['Final'] !== undefined ? gradeRow['Final'] : ''
-    }
-  };
-}
-
-/* ==================== تسليم واجب الطالب ==================== */
-
-function handleSubmitHomework(p) {
-  const { sheet, headers, rows } = getSheetData(SHEETS.STUDENTS);
-  const row = rows.find(r => normId(r['Student ID']) === normId(p.studentId));
-  if (!row) return { error: 'الطالب غير موجود' };
-
-  const writingObj = parseJsonSafe(row['Writing']);
-  writingObj[p.lecture] = p.writing || '';
-  const shadowingObj = parseJsonSafe(row['Shadowing']);
-  shadowingObj[p.lecture] = p.shadowing || '';
-
-  setCell(sheet, headers, row.__row, 'Writing', JSON.stringify(writingObj));
-  setCell(sheet, headers, row.__row, 'Shadowing', JSON.stringify(shadowingObj));
-
-  return { success: true };
-}
-
-/* ==================== حفظ نقاط اللعبة (Game points) ==================== */
-
-function handleSubmitGameScore(p) {
-  const { sheet, headers, rows } = getSheetData(SHEETS.STUDENTS);
-  const row = rows.find(r => normId(r['Student ID']) === normId(p.studentId));
-  if (!row) return { error: 'الطالب غير موجود' };
-
-  const current = Number(row['Game points']) || 0;
-  const added = Number(p.score) || 0;
-  setCell(sheet, headers, row.__row, 'Game points', current + added);
-
-  return { success: true };
-}
-
-/* ==================== حفظ موعد محاضرة (Admin) ==================== */
-
-function handleSaveSchedule(p) {
-  const sheet = SS.getSheetByName(SHEETS.SCHEDULE);
-  const values = sheet.getDataRange().getValues();
-  let foundRow = -1;
-  for (let i = 1; i < values.length; i++) {
-    const g = values[i][0], l = values[i][1];
-    if (String(g).trim() === String(p.group).trim() && String(l).trim() === String(p.lecture).trim()) {
-      foundRow = i + 1;
-      break;
-    }
-  }
-  const dateObj = new Date(p.dateTime);
-  if (foundRow > 0) {
-    sheet.getRange(foundRow, 3).setValue(dateObj);
-    sheet.getRange(foundRow, 4).setValue(p.zoomLink || '');
-  } else {
-    sheet.appendRow([p.group, p.lecture, dateObj, p.zoomLink || '']);
-  }
-  return { success: true };
-}
-
-/* ==================== رفع امتحان / كويز واجب ==================== */
-
-function handleUploadExam(p) {
-  const sheet = SS.getSheetByName(SHEETS.EXAMS);
-  const values = sheet.getDataRange().getValues();
-  let foundRow = -1;
-  for (let i = 1; i < values.length; i++) {
-    if (String(values[i][0]).trim().toLowerCase() === String(p.examKey).trim().toLowerCase()) {
-      foundRow = i + 1;
-      break;
-    }
-  }
-  if (foundRow > 0) {
-    sheet.getRange(foundRow, 2).setValue(p.examData);
-  } else {
-    sheet.appendRow([p.examKey, p.examData]);
-  }
-  return { success: true };
-}
-
-/* ==================== تقييم واجب الطالب (المحاضر) ==================== */
-
-function handleGradeHomework(p) {
-  const { sheet, headers, rows } = getSheetData(SHEETS.STUDENTS);
-  const row = rows.find(r => normId(r['Student ID']) === normId(p.studentId));
-  if (!row) return { error: 'الطالب غير موجود' };
-
-  const gradeObj = parseJsonSafe(row['HW_Grade']);
-  gradeObj[p.lecture] = p.hwGrade || '';
-  const fbObj = parseJsonSafe(row['HW_Feedback']);
-  fbObj[p.lecture] = p.hwFeedback || '';
-
-  setCell(sheet, headers, row.__row, 'HW_Grade', JSON.stringify(gradeObj));
-  setCell(sheet, headers, row.__row, 'HW_Feedback', JSON.stringify(fbObj));
-
-  return { success: true };
-}
-
-/* ==================== رصد الحضور/الغياب (المحاضر) ==================== */
-
-function handleUpdateAttendance(p) {
-  const { sheet, headers, rows } = getSheetData(SHEETS.ATTENDANCE);
-  const row = rows.find(r => normId(r['ID']) === normId(p.studentId));
-
-  if (!row) {
-    // لو الطالب مش موجود في شيت Attendance، بنضيفه بصف جديد
-    const { rows: studentRows } = getSheetData(SHEETS.STUDENTS);
-    const student = studentRows.find(s => normId(s['Student ID']) === normId(p.studentId));
-    const name = student ? student['Name'] : '';
-    sheet.appendRow([p.studentId, name]);
-    const newRowNum = sheet.getLastRow();
-    const colIdx = headers.indexOf(p.lecture) + 1;
-    if (colIdx > 0) sheet.getRange(newRowNum, colIdx).setValue(p.status);
-    return { success: true };
-  }
-
-  setCell(sheet, headers, row.__row, p.lecture, p.status);
-  return { success: true };
-}
-
-/* ==================== تحديث الدرجات/الملاحظات (المحاضر + تسليم الامتحان) ==================== */
-
-function handleUpdateStudentFullInfo(p) {
-  const sid = String(p.studentId).trim();
-
-  // تحديث شيت Grades لو فيه quiz1/quiz2/final
-  if (p.quiz1 !== undefined || p.quiz2 !== undefined || p.final !== undefined) {
-    const { sheet, headers, rows } = getSheetData(SHEETS.GRADES);
-    let row = rows.find(r => normId(r['ID']) === normId(sid));
-    if (!row) {
-      sheet.appendRow([sid, '', '', '']);
-      row = { __row: sheet.getLastRow() };
-    }
-    if (p.quiz1 !== undefined) setCell(sheet, headers, row.__row, 'Quiz1', p.quiz1);
-    if (p.quiz2 !== undefined) setCell(sheet, headers, row.__row, 'Quiz2', p.quiz2);
-    if (p.final !== undefined) setCell(sheet, headers, row.__row, 'Final', p.final);
-  }
-
-  // تحديث ملاحظات الطالب في شيت Students لو موجودة
-  if (p.feedback !== undefined) {
-    const { sheet, headers, rows } = getSheetData(SHEETS.STUDENTS);
-    const srow = rows.find(r => normId(r['Student ID']) === normId(sid));
-    if (srow) setCell(sheet, headers, srow.__row, 'Feedback', p.feedback);
-  }
-
-  return { success: true };
-}
-
-/* ==================== [جديد] استقبال طلبات تحديد المستوى (Leads) ====================
-   شيت "Leads" لازم يكون بالهيدرز التالية بالترتيب:
-   Timestamp | Name | Phone | Level | Notes | Language | Status                    */
-
-function handleSubmitLead(p) {
-  const name = String(p.name || '').trim();
-  const phone = String(p.phone || '').trim();
-  if (!name || !phone) return { error: 'الاسم ورقم الموبايل مطلوبين' };
-
-  let sheet = SS.getSheetByName(SHEETS.LEADS);
-  if (!sheet) {
-    // لو الشيت مش موجود، هنعمله تلقائياً بالهيدرز الصحيحة
-    sheet = SS.insertSheet(SHEETS.LEADS);
-    sheet.appendRow(['Timestamp', 'Name', 'Phone', 'Level', 'Notes', 'Language', 'Status']);
-  }
-
-  sheet.appendRow([
-    new Date(),
-    name,
-    phone,
-    String(p.level || ''),
-    String(p.notes || ''),
-    String(p.lang || ''),
-    'جديد'
-  ]);
-
-  return { success: true };
-}
-
-/* ==================== [جديد] رفع فيدباك الطلاب (فيديو/صورة) - للسوبر أدمن T101 فقط ====================
-   شيت "Feedback" لازم يكون بالهيدرز التالية بالترتيب:
-   Timestamp | Name | Type | Url | Caption                                          */
-
-function handleUploadFeedback(p) {
-  // تحقق إن اللي بيرفع فعلاً سوبر أدمن (T101) عن طريق نفس بيانات تسجيل الدخول
-  const adminId = String(p.adminId || '').trim();
-  const adminPass = String(p.adminPass || '').trim();
-  const { rows: teacherRows } = getSheetData(SHEETS.TEACHERS);
-  const teacher = teacherRows.find(t => normId(t['ID']) === normId(adminId));
-  if (!teacher || String(teacher['كلمة المرور'] || '').trim() !== adminPass) {
-    return { error: 'بيانات الدخول غير صحيحة' };
-  }
-  if (getTeacherRole(teacher) !== 'superadmin') {
-    return { error: 'مسموح فقط للسوبر أدمن (T101) برفع الفيدباك' };
-  }
-
-  if (FEEDBACK_FOLDER_ID === 'PUT_YOUR_DRIVE_FOLDER_ID_HERE') {
-    return { error: 'لازم تحط FEEDBACK_FOLDER_ID الأول في الكود (ID فولدر Drive)' };
-  }
-
-  const name = String(p.name || '').trim();
-  const type = (String(p.type || 'image').trim().toLowerCase() === 'video') ? 'video' : 'image';
-  const caption = String(p.caption || '').trim();
-  const fileName = String(p.fileName || ('feedback_' + Date.now()));
-  const mimeType = String(p.mimeType || (type === 'video' ? 'video/mp4' : 'image/jpeg'));
-  const fileData = p.fileData;
-
-  if (!name || !fileData) return { error: 'اسم الطالب والملف مطلوبين' };
-
-  try {
-    const folder = DriveApp.getFolderById(FEEDBACK_FOLDER_ID);
-    const bytes = Utilities.base64Decode(fileData);
-    const blob = Utilities.newBlob(bytes, mimeType, fileName);
-    const file = folder.createFile(blob);
-    file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
-
-    // رابط مباشر للعرض (image/video) داخل صفحة الـ HTML
-    const directUrl = 'https://drive.google.com/uc?export=view&id=' + file.getId();
-
-    let sheet = SS.getSheetByName(SHEETS.FEEDBACK);
-    if (!sheet) {
-      sheet = SS.insertSheet(SHEETS.FEEDBACK);
-      sheet.appendRow(['Timestamp', 'Name', 'Type', 'Url', 'Caption']);
-    }
-    sheet.appendRow([new Date(), name, type, directUrl, caption]);
-
-    return { success: true, url: directUrl };
-  } catch (err) {
-    return { error: 'فشل رفع الملف على Drive: ' + err.message };
-  }
-}
-
-/* ==================== [جديد] جلب فيدباك الطلاب لعرضه في صفحة الهبوط (عام لأي زائر) ==================== */
-
-function handleGetFeedback() {
-  const sheet = SS.getSheetByName(SHEETS.FEEDBACK);
-  if (!sheet) return { feedback: [] };
-  const values = sheet.getDataRange().getValues();
-  const feedback = [];
-  for (let i = 1; i < values.length; i++) {
-    const [timestamp, name, type, url, caption] = values[i];
-    if (!url) continue;
-    feedback.push({ name: String(name || ''), type: String(type || 'image'), url: String(url), caption: String(caption || '') });
-  }
-  // الأحدث أولاً
-  return { feedback: feedback.reverse() };
-}
-
-
-/* ==================== [جديد] اللعبة الجماعية الحية (Live Game - Kahoot Style) ====================
-
-   شيت "GameRooms" (بيتعمل تلقائياً لو مش موجود) بالهيدرز:
-   RoomCode | TeacherId | TeacherName | Title | QuestionsJSON | Status | CurrentIndex | QuestionStartedAt | ChoiceCounts | CreatedAt
-   Status: waiting -> question -> reveal -> (question ...) -> finished
-
-   شيت "GamePlayers" (بيتعمل تلقائياً لو مش موجود) بالهيدرز:
-   RoomCode | StudentId | Name | Score | LastAnsweredIndex | LastAnswerCorrect | LastPointsEarned | Streak | JoinedAt
-   ==================== */
-
-function getOrCreateGameSheet(name, headers) {
-  let sheet = SS.getSheetByName(name);
-  if (!sheet) {
-    sheet = SS.insertSheet(name);
-    sheet.appendRow(headers);
-  }
-  return sheet;
-}
-
-function getGameRoomsSheet() {
-  const sheet = getOrCreateGameSheet(SHEETS.GAME_ROOMS,
-    ['RoomCode', 'TeacherId', 'TeacherName', 'Title', 'QuestionsJSON', 'Status', 'CurrentIndex', 'QuestionStartedAt', 'ChoiceCounts', 'CreatedAt']);
-  ensureSheetHasColumns(sheet, ['RaceEvents']); // سجل أحداث "الضرب/التخطي" في السباق
-  return sheet;
-}
-
-function getGamePlayersSheet() {
-  const sheet = getOrCreateGameSheet(SHEETS.GAME_PLAYERS,
-    ['RoomCode', 'StudentId', 'Name', 'Score', 'LastAnsweredIndex', 'LastAnswerCorrect', 'LastPointsEarned', 'Streak', 'JoinedAt']);
-  ensureSheetHasColumns(sheet, ['Avatar', 'TrackPos', 'StunnedAt']); // الأفاتار + موضع السباق + وقت آخر ضربة اتعرض لها
-  return sheet;
-}
-
-function getGameLibrarySheet() {
-  return getOrCreateGameSheet(SHEETS.GAME_LIBRARY,
-    ['LibraryId', 'Group', 'Lecture', 'Title', 'QuestionsJSON', 'CreatedBy', 'CreatedAt', 'UpdatedAt']);
-}
-
-function findRoomRow(roomCode) {
-  const sheet = getGameRoomsSheet();
-  const values = sheet.getDataRange().getValues();
-  const headers = values[0];
-  for (let i = 1; i < values.length; i++) {
-    if (String(values[i][0]).trim() === String(roomCode).trim()) {
-      const obj = { __row: i + 1, __sheet: sheet, __headers: headers };
-      headers.forEach((h, idx) => { obj[h] = values[i][idx]; });
-      return obj;
-    }
-  }
-  return null;
-}
-
-function findPlayerRow(roomCode, studentId) {
-  const sheet = getGamePlayersSheet();
-  const values = sheet.getDataRange().getValues();
-  const headers = values[0];
-  for (let i = 1; i < values.length; i++) {
-    if (String(values[i][0]).trim() === String(roomCode).trim() && normId(values[i][1]) === normId(studentId)) {
-      const obj = { __row: i + 1, __sheet: sheet, __headers: headers };
-      headers.forEach((h, idx) => { obj[h] = values[i][idx]; });
-      return obj;
-    }
-  }
-  return null;
-}
-
-function getRoomPlayers(roomCode) {
-  const sheet = getGamePlayersSheet();
-  const values = sheet.getDataRange().getValues();
-  const headers = values[0];
-  const idx = {};
-  headers.forEach((h, i) => { idx[h] = i; });
-  const players = [];
-  for (let i = 1; i < values.length; i++) {
-    const row = values[i];
-    if (String(row[idx['RoomCode']]).trim() === String(roomCode).trim()) {
-      const lastAns = row[idx['LastAnsweredIndex']];
-      players.push({
-        studentId: String(row[idx['StudentId']] || ''),
-        name: String(row[idx['Name']] || ''),
-        score: Number(row[idx['Score']]) || 0,
-        lastAnsweredIndex: (lastAns === '' || lastAns === null || lastAns === undefined) ? -1 : Number(lastAns),
-        streak: Number(row[idx['Streak']]) || 0,
-        avatar: (idx['Avatar'] !== undefined && row[idx['Avatar']]) ? String(row[idx['Avatar']]) : '🙂',
-        trackPos: (idx['TrackPos'] !== undefined && row[idx['TrackPos']] !== '') ? (Number(row[idx['TrackPos']]) || 0) : 0,
-        stunnedAt: (idx['StunnedAt'] !== undefined && row[idx['StunnedAt']]) ? (Number(row[idx['StunnedAt']]) || 0) : 0,
-        __row: i + 1
-      });
-    }
-  }
-  return players;
-}
-
-function buildLeaderboard(roomCode) {
-  const players = getRoomPlayers(roomCode);
-  players.sort((a, b) => b.score - a.score);
-  return players.map((p, idx) => ({ rank: idx + 1, studentId: p.studentId, name: p.name, score: p.score, avatar: p.avatar }));
-}
-
-function verifyTeacherCreds(id, pass) {
-  const { rows } = getSheetData(SHEETS.TEACHERS);
-  const t = rows.find(r => normId(r['ID']) === normId(id));
-  if (!t) return null;
-  if (String(t['كلمة المرور'] || '').trim() !== String(pass || '').trim()) return null;
-  return t;
-}
-
-function generateUniqueRoomCode() {
-  const sheet = getGameRoomsSheet();
-  const values = sheet.getDataRange().getValues();
-  const active = new Set();
-  for (let i = 1; i < values.length; i++) {
-    if (String(values[i][5]) !== 'finished') active.add(String(values[i][0]).trim());
-  }
-  let code;
-  let tries = 0;
-  do {
-    code = String(Math.floor(100000 + Math.random() * 900000));
-    tries++;
-  } while (active.has(code) && tries < 50);
-  return code;
-}
-
-/* -------- إنشاء غرفة لعب جديدة (المحاضر) -------- */
-function handleCreateGameRoom(p) {
-  const teacher = verifyTeacherCreds(p.teacherId, p.teacherPass);
-  if (!teacher) return { error: 'بيانات دخول المحاضر غير صحيحة' };
-
-  let questions;
-  let title = String(p.title || '').trim();
-
-  if (p.libraryId) {
-    // إنشاء الغرفة من لعبة محفوظة في المكتبة (بدون رفع أسئلة يدوي)
-    const libSheet = getGameLibrarySheet();
-    const values = libSheet.getDataRange().getValues();
-    const headers = values[0];
-    const idx = {}; headers.forEach((h, i) => { idx[h] = i; });
-    let found = null;
-    for (let i = 1; i < values.length; i++) {
-      if (String(values[i][idx['LibraryId']]).trim() === String(p.libraryId).trim()) { found = values[i]; break; }
-    }
-    if (!found) return { error: 'اللعبة المحفوظة غير موجودة، ممكن تكون اتمسحت' };
-    try {
-      questions = JSON.parse(found[idx['QuestionsJSON']]);
-    } catch (e) {
-      return { error: 'خطأ في بيانات اللعبة المحفوظة' };
-    }
-    if (!title) title = String(found[idx['Title']] || 'Live Game');
-  } else {
-    try {
-      questions = JSON.parse(p.questionsData);
-    } catch (e) {
-      return { error: 'صيغة الأسئلة غير صحيحة' };
-    }
-    if (!title) title = 'Live Game';
-  }
-
-  if (!Array.isArray(questions) || questions.length === 0) return { error: 'لازم سؤال واحد على الأقل' };
-
-  const lock = LockService.getScriptLock();
-  lock.waitLock(30000);
-  try {
-    const sheet = getGameRoomsSheet();
-    const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
-    const roomCode = generateUniqueRoomCode();
-    const rowObj = {
-      RoomCode: roomCode,
-      TeacherId: String(p.teacherId).trim(),
-      TeacherName: String(teacher['Name'] || ''),
-      Title: title,
-      QuestionsJSON: JSON.stringify(questions),
-      Status: 'waiting',
-      CurrentIndex: -1,
-      QuestionStartedAt: '',
-      ChoiceCounts: '{}',
-      CreatedAt: new Date(),
-      RaceEvents: '[]'
-    };
-    sheet.appendRow(headers.map(h => (rowObj[h] !== undefined ? rowObj[h] : '')));
-    return { success: true, roomCode: roomCode, totalQuestions: questions.length };
-  } finally {
-    lock.releaseLock();
-  }
-}
-
-/* -------- انضمام طالب لغرفة عن طريق الكود -------- */
-function handleJoinGameRoom(p) {
-  const sid = String(p.studentId || '').trim();
-  const spass = String(p.studentPass || '').trim();
-  const roomCode = String(p.roomCode || '').trim();
-  if (!sid || !spass || !roomCode) return { error: 'برجاء إدخال بيانات الدخول وكود الغرفة' };
-
-  const { rows: studentRows } = getSheetData(SHEETS.STUDENTS);
-  const student = studentRows.find(s => normId(s['Student ID']) === normId(sid));
-  if (!student) return { error: 'الـ ID غير موجود' };
-  if (String(student['كلمة المرور'] || '').trim() !== spass) return { error: 'كلمة المرور غير صحيحة' };
-
-  const room = findRoomRow(roomCode);
-  if (!room) return { error: 'كود الغرفة غير صحيح' };
-  if (room['Status'] === 'finished') return { error: 'اللعبة دي خلصت بالفعل' };
-
-  const avatar = String(p.avatar || '🙂').trim() || '🙂';
-
-  const lock = LockService.getScriptLock();
-  lock.waitLock(30000);
-  try {
-    const existing = findPlayerRow(roomCode, sid);
-    if (!existing) {
-      const sheet = getGamePlayersSheet();
-      const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
-      const rowObj = {
-        RoomCode: roomCode, StudentId: sid, Name: String(student['Name'] || ''),
-        Score: 0, LastAnsweredIndex: -1, LastAnswerCorrect: '', LastPointsEarned: 0,
-        Streak: 0, JoinedAt: new Date(), Avatar: avatar, TrackPos: 0, StunnedAt: 0
-      };
-      sheet.appendRow(headers.map(h => (rowObj[h] !== undefined ? rowObj[h] : '')));
-    } else {
-      // لو الطالب داخل تاني (مثلاً بعد فصل النت)، يقدر يغيّر الأفاتار
-      setCell(existing.__sheet, existing.__headers, existing.__row, 'Avatar', avatar);
-    }
-    return { success: true, roomCode: roomCode, title: String(room['Title'] || '') };
-  } finally {
-    lock.releaseLock();
-  }
-}
-
-/* -------- بدء اللعبة (المحاضر) -------- */
-function handleStartGameRoom(p) {
-  const teacher = verifyTeacherCreds(p.teacherId, p.teacherPass);
-  if (!teacher) return { error: 'بيانات دخول المحاضر غير صحيحة' };
-  const room = findRoomRow(p.roomCode);
-  if (!room) return { error: 'الغرفة غير موجودة' };
-  if (room['TeacherId'] !== String(p.teacherId).trim()) return { error: 'الغرفة دي مش بتاعتك' };
-
-  const sheet = room.__sheet, headers = room.__headers, rowNum = room.__row;
-  setCell(sheet, headers, rowNum, 'Status', 'question');
-  setCell(sheet, headers, rowNum, 'CurrentIndex', 0);
-  setCell(sheet, headers, rowNum, 'QuestionStartedAt', Date.now());
-  setCell(sheet, headers, rowNum, 'ChoiceCounts', '{}');
-  return { success: true };
-}
-
-/* -------- تسليم إجابة سؤال حي (الطالب) -------- */
-function handleSubmitLiveGameAnswer(p) {
-  const lock = LockService.getScriptLock();
-  lock.waitLock(30000);
-  try {
-    const roomCode = String(p.roomCode || '').trim();
-    const sid = String(p.studentId || '').trim();
-    const room = findRoomRow(roomCode);
-    if (!room) return { error: 'الغرفة غير موجودة' };
-    if (room['Status'] !== 'question') return { error: 'مفيش سؤال نشط دلوقتي' };
-
-    const currentIndex = Number(room['CurrentIndex']);
-    const qIndex = Number(p.questionIndex);
-    if (qIndex !== currentIndex) return { error: 'السؤال ده خلص بالفعل' };
-
-    const questions = JSON.parse(room['QuestionsJSON']);
-    const question = questions[currentIndex];
-    if (!question) return { error: 'خطأ في بيانات السؤال' };
-
-    const player = findPlayerRow(roomCode, sid);
-    if (!player) return { error: 'أنت مش منضم للغرفة دي' };
-    if (Number(player['LastAnsweredIndex']) === currentIndex) return { error: 'لقد أجبت على هذا السؤال بالفعل' };
-
-    const chosen = String(p.answer || '').trim();
-    const correct = chosen.toLowerCase() === String(question.answer || '').trim().toLowerCase();
-
-    const startedAt = Number(room['QuestionStartedAt']) || Date.now();
-    const elapsed = Math.max(0, Date.now() - startedAt);
-    let points = 0;
-    let newStreak = 0;
-    if (correct) {
-      const ratio = Math.max(0, Math.min(1, 1 - (elapsed / GAME_QUESTION_TIME_MS)));
-      points = Math.round(300 + 700 * ratio);
-      newStreak = (Number(player['Streak']) || 0) + 1;
-      if (newStreak >= 2) points += Math.min(300, (newStreak - 1) * 50); // مكافأة تتابع الإجابات الصحيحة
-    } else {
-      newStreak = 0;
-    }
-
-    const pSheet = player.__sheet, pHeaders = player.__headers, pRow = player.__row;
-    const newScore = (Number(player['Score']) || 0) + points;
-    setCell(pSheet, pHeaders, pRow, 'Score', newScore);
-    setCell(pSheet, pHeaders, pRow, 'LastAnsweredIndex', currentIndex);
-    setCell(pSheet, pHeaders, pRow, 'LastAnswerCorrect', correct ? 'yes' : 'no');
-    setCell(pSheet, pHeaders, pRow, 'LastPointsEarned', points);
-    setCell(pSheet, pHeaders, pRow, 'Streak', newStreak);
-
-    // ---- سباق المضمار: تقدّم الطالب للأمام عند الإجابة الصح، وأي طالب كان قدامه ويتخطاه يترجع للخلف ----
-    let newTrackPos = Number(player['TrackPos']) || 0;
-    if (correct) {
-      const beforeAll = getRoomPlayers(roomCode); // مواضع كل اللاعبين قبل التحديث
-      const meBefore = beforeAll.find(pl => normId(pl.studentId) === normId(sid));
-      const oldPos = meBefore ? meBefore.trackPos : 0;
-      newTrackPos = oldPos + points;
-      setCell(pSheet, pHeaders, pRow, 'TrackPos', newTrackPos);
-
-      const raceEvents = [];
-      beforeAll.forEach(op => {
-        if (normId(op.studentId) === normId(sid)) return;
-        // كان قدامي أو مساوي لي، ودلوقتي بقيت قدامه = تخطّيته
-        if (oldPos <= op.trackPos && newTrackPos > op.trackPos) {
-          const victimNewPos = Math.max(0, op.trackPos - RACE_KNOCKBACK_AMOUNT);
-          const vRow = findPlayerRow(roomCode, op.studentId);
-          if (vRow) {
-            setCell(vRow.__sheet, vRow.__headers, vRow.__row, 'TrackPos', victimNewPos);
-            setCell(vRow.__sheet, vRow.__headers, vRow.__row, 'StunnedAt', Date.now());
-          }
-          raceEvents.push({ ts: Date.now(), actorId: sid, actorName: String(player['Name'] || ''), victimId: op.studentId, victimName: op.name });
+function parseJSONSafe(str) { let safeStr = String(str); if (!safeStr || safeStr === "" || safeStr === "undefined") return {}; try { return JSON.parse(safeStr); } catch (e) { return { "L1": safeStr }; } }
+
+/* ==================== Login Modal ==================== */
+function openLoginModal() { document.getElementById('errorMsg').innerText = ""; document.getElementById('loginModal').classList.remove('hidden'); }
+function closeLoginModal() { document.getElementById('loginModal').classList.add('hidden'); }
+
+async function handleLogin() {
+    initAudio(); // Initialize audio context on first user interaction
+    const id = document.getElementById('universalId').value.trim();
+    const pass = document.getElementById('universalPass').value.trim();
+    if(!id || !pass) { document.getElementById('errorMsg').innerText = "Please enter both ID and Password"; return; }
+    loggedInId = id; loggedInPass = pass;
+
+    document.getElementById('landingPage').classList.add('hidden');
+    document.getElementById('loginModal').classList.add('hidden');
+    document.getElementById('errorMsg').innerText = "";
+    document.getElementById('videoSplashSection').classList.remove('hidden'); 
+    document.getElementById('introVideo').play().catch(()=>{});
+
+    let timeLeft = 7; document.getElementById('skipBtn').innerText = `Skip in (${timeLeft})`; document.getElementById('skipBtn').disabled = true;
+    if(splashCountdownInterval) clearInterval(splashCountdownInterval);
+    splashCountdownInterval = setInterval(() => { 
+        timeLeft--; 
+        if (timeLeft > 0) { document.getElementById('skipBtn').innerText = `Skip in (${timeLeft})`; } 
+        else { clearInterval(splashCountdownInterval); document.getElementById('skipBtn').disabled = false; document.getElementById('skipBtn').innerText = "Skip Video ⏭️"; } 
+    }, 1000);
+
+    fetch(`${GAS_URL}?action=login&id=${id}&pass=${encodeURIComponent(pass)}`).then(res => res.json()).then(data => {
+        if(data.error) {
+            skipIntroVideo();
+            document.getElementById('loadingScreen').classList.add('hidden');
+            document.getElementById('landingPage').classList.remove('hidden');
+            document.getElementById('loginModal').classList.remove('hidden');
+            document.getElementById('errorMsg').innerText = data.error;
+            return;
         }
-      });
-      if (raceEvents.length) {
-        const events = parseJsonArraySafe(room['RaceEvents']);
-        raceEvents.forEach(ev => events.push(ev));
-        while (events.length > 30) events.shift();
-        setCell(room.__sheet, room.__headers, room.__row, 'RaceEvents', JSON.stringify(events));
-      }
-    }
-
-    // تحديث توزيع الإجابات (لعرضه للمحاضر بعد كشف الإجابة)
-    const counts = parseJsonSafe(room['ChoiceCounts']);
-    counts[chosen] = (counts[chosen] || 0) + 1;
-    setCell(room.__sheet, room.__headers, room.__row, 'ChoiceCounts', JSON.stringify(counts));
-
-    return { success: true, correct: correct, pointsEarned: points, totalScore: newScore, streak: newStreak, trackPos: newTrackPos };
-  } finally {
-    lock.releaseLock();
-  }
-}
-
-/* -------- كشف إجابة السؤال الحالي (المحاضر) -------- */
-function handleRevealGameQuestion(p) {
-  const teacher = verifyTeacherCreds(p.teacherId, p.teacherPass);
-  if (!teacher) return { error: 'بيانات دخول المحاضر غير صحيحة' };
-  const room = findRoomRow(p.roomCode);
-  if (!room) return { error: 'الغرفة غير موجودة' };
-  if (room['TeacherId'] !== String(p.teacherId).trim()) return { error: 'الغرفة دي مش بتاعتك' };
-  setCell(room.__sheet, room.__headers, room.__row, 'Status', 'reveal');
-  return { success: true };
-}
-
-/* -------- الانتقال للسؤال التالي (أو إنهاء اللعبة) - المحاضر -------- */
-function handleNextGameQuestion(p) {
-  const teacher = verifyTeacherCreds(p.teacherId, p.teacherPass);
-  if (!teacher) return { error: 'بيانات دخول المحاضر غير صحيحة' };
-  const room = findRoomRow(p.roomCode);
-  if (!room) return { error: 'الغرفة غير موجودة' };
-  if (room['TeacherId'] !== String(p.teacherId).trim()) return { error: 'الغرفة دي مش بتاعتك' };
-
-  const questions = JSON.parse(room['QuestionsJSON']);
-  const nextIndex = Number(room['CurrentIndex']) + 1;
-  const sheet = room.__sheet, headers = room.__headers, rowNum = room.__row;
-
-  if (nextIndex >= questions.length) {
-    setCell(sheet, headers, rowNum, 'Status', 'finished');
-    return { success: true, finished: true, leaderboard: buildLeaderboard(String(p.roomCode).trim()) };
-  }
-  setCell(sheet, headers, rowNum, 'CurrentIndex', nextIndex);
-  setCell(sheet, headers, rowNum, 'Status', 'question');
-  setCell(sheet, headers, rowNum, 'QuestionStartedAt', Date.now());
-  setCell(sheet, headers, rowNum, 'ChoiceCounts', '{}');
-  return { success: true, finished: false };
-}
-
-/* -------- إنهاء الغرفة يدوياً وحفظ النقاط في بروفايل الطلاب (المحاضر) -------- */
-function handleEndGameRoom(p) {
-  const teacher = verifyTeacherCreds(p.teacherId, p.teacherPass);
-  if (!teacher) return { error: 'بيانات دخول المحاضر غير صحيحة' };
-  const roomCode = String(p.roomCode || '').trim();
-  const room = findRoomRow(roomCode);
-  if (!room) return { error: 'الغرفة غير موجودة' };
-  if (room['TeacherId'] !== String(p.teacherId).trim()) return { error: 'الغرفة دي مش بتاعتك' };
-
-  setCell(room.__sheet, room.__headers, room.__row, 'Status', 'finished');
-
-  // حفظ نقاط كل طالب في عمود "Game points" بشيت Students (تراكمي، بدون فقد بيانات)
-  const players = getRoomPlayers(roomCode);
-  const { sheet: stSheet, headers: stHeaders, rows: stRows } = getSheetData(SHEETS.STUDENTS);
-  players.forEach(pl => {
-    const srow = stRows.find(r => normId(r['Student ID']) === normId(pl.studentId));
-    if (srow) {
-      const current = Number(srow['Game points']) || 0;
-      setCell(stSheet, stHeaders, srow.__row, 'Game points', current + pl.score);
-    }
-  });
-
-  return { success: true, leaderboard: buildLeaderboard(roomCode) };
-}
-
-/* -------- استعلام دوري (Polling) عن حالة الغرفة - للمحاضر والطالب -------- */
-function handleGetGameRoomState(params) {
-  const roomCode = String(params.roomCode || '').trim();
-  const room = findRoomRow(roomCode);
-  if (!room) return { error: 'الغرفة غير موجودة' };
-
-  const questions = JSON.parse(room['QuestionsJSON']);
-  const status = String(room['Status']);
-  const currentIndex = Number(room['CurrentIndex']);
-  const players = getRoomPlayers(roomCode);
-  const isHost = String(params.isHost) === 'true';
-  const studentId = String(params.studentId || '').trim();
-
-  const result = {
-    success: true,
-    roomCode: roomCode,
-    title: String(room['Title'] || ''),
-    status: status,
-    currentIndex: currentIndex,
-    totalQuestions: questions.length,
-    playerCount: players.length,
-    timeLimitMs: GAME_QUESTION_TIME_MS
-  };
-
-  if (status === 'question') {
-    const q = questions[currentIndex];
-    result.question = { question: q.question, choices: q.choices };
-    result.questionStartedAt = Number(room['QuestionStartedAt']);
-    result.answeredCount = players.filter(pl => pl.lastAnsweredIndex === currentIndex).length;
-  }
-
-  if (status === 'reveal') {
-    const q = questions[currentIndex];
-    result.question = { question: q.question, choices: q.choices, answer: q.answer };
-    result.choiceCounts = parseJsonSafe(room['ChoiceCounts']);
-    result.leaderboard = buildLeaderboard(roomCode).slice(0, 5);
-  }
-
-  if (status === 'finished') {
-    result.leaderboard = buildLeaderboard(roomCode);
-  }
-
-  // بيانات مضمار السباق: ترتيب اللاعبين حسب موضعهم على المضمار + سجل أحداث "الضرب/التخطي"
-  result.race = players
-    .map(pl => ({ studentId: pl.studentId, name: pl.name, avatar: pl.avatar, trackPos: pl.trackPos, stunnedAt: pl.stunnedAt }))
-    .sort((a, b) => b.trackPos - a.trackPos);
-  result.raceEvents = parseJsonArraySafe(room['RaceEvents']);
-
-  if (isHost) {
-    result.players = players.map(pl => ({ name: pl.name, score: pl.score, avatar: pl.avatar, trackPos: pl.trackPos }));
-  }
-
-  if (studentId) {
-    const me = players.find(pl => normId(pl.studentId) === normId(studentId));
-    if (me) {
-      result.me = {
-        score: me.score,
-        streak: me.streak,
-        avatar: me.avatar,
-        trackPos: me.trackPos,
-        stunnedAt: me.stunnedAt,
-        answeredCurrent: me.lastAnsweredIndex === currentIndex,
-        rank: (buildLeaderboard(roomCode).find(r => normId(r.studentId) === normId(studentId)) || {}).rank || null
-      };
-      if (status === 'reveal' && me.lastAnsweredIndex === currentIndex) {
-        const pRow = findPlayerRow(roomCode, studentId);
-        result.me.lastCorrect = String(pRow['LastAnswerCorrect']) === 'yes';
-        result.me.lastPoints = Number(pRow['LastPointsEarned']) || 0;
-      }
-    }
-  }
-
-  return result;
-}
-
-/* ==================== [جديد] مكتبة الألعاب المحفوظة (Game Library) ====================
-   الأدمن الرئيسي بس هو اللي يقدر يضيف/يعدل/يمسح لعبة في المكتبة.
-   المحاضر بمجرد ما يفتح مجموعة ومحاضرة معينة، بيلاقي الألعاب المحفوظة ليها جاهزة يفتح بيها الغرفة فورًا
-   من غير ما يرفع أي أسئلة بنفسه. ==================== */
-
-function isSuperAdminCreds(id, pass) {
-  const t = verifyTeacherCreds(id, pass);
-  if (!t) return null;
-  return (getTeacherRole(t) === 'superadmin') ? t : null;
-}
-
-// يستخدمها المحاضر (أي محاضر): يجيب الألعاب المحفوظة لمجموعة+محاضرة معينة بس (بدون بيانات دخول - قراءة فقط)
-function handleListLibraryGames(params) {
-  const group = String(params.group || '').trim();
-  const lecture = String(params.lecture || '').trim();
-  const sheet = getGameLibrarySheet();
-  const values = sheet.getDataRange().getValues();
-  const headers = values[0];
-  const idx = {}; headers.forEach((h, i) => { idx[h] = i; });
-  const games = [];
-  for (let i = 1; i < values.length; i++) {
-    const row = values[i];
-    if (!row[idx['LibraryId']]) continue;
-    if (group && String(row[idx['Group']] || '').trim() !== group) continue;
-    if (lecture && String(row[idx['Lecture']] || '').trim() !== lecture) continue;
-    let qCount = 0;
-    try { qCount = JSON.parse(row[idx['QuestionsJSON']]).length; } catch (e) { /* ignore */ }
-    games.push({
-      libraryId: String(row[idx['LibraryId']]),
-      group: String(row[idx['Group']] || ''),
-      lecture: String(row[idx['Lecture']] || ''),
-      title: String(row[idx['Title']] || ''),
-      questionCount: qCount
+        cachedUserData = data; isDataReady = true; checkAndShowDashboard();
+    }).catch(() => {
+        skipIntroVideo();
+        document.getElementById('loadingScreen').classList.add('hidden');
+        document.getElementById('landingPage').classList.remove('hidden');
+        document.getElementById('loginModal').classList.remove('hidden');
+        document.getElementById('errorMsg').innerText = "Server connection failed.";
     });
-  }
-  return { success: true, games: games };
+    document.getElementById('introVideo').onended = () => { skipIntroVideo(); };
 }
 
-// يستخدمها الأدمن الرئيسي بس: يجيب كل الألعاب المحفوظة بكامل تفاصيلها (لوحة إدارة المكتبة)
-function handleListAllLibraryGames(params) {
-  const admin = isSuperAdminCreds(params.teacherId, params.teacherPass);
-  if (!admin) return { error: 'الصفحة دي للأدمن الرئيسي بس' };
-  const sheet = getGameLibrarySheet();
-  const values = sheet.getDataRange().getValues();
-  const headers = values[0];
-  const idx = {}; headers.forEach((h, i) => { idx[h] = i; });
-  const games = [];
-  for (let i = 1; i < values.length; i++) {
-    const row = values[i];
-    if (!row[idx['LibraryId']]) continue;
+function skipIntroVideo() { if(splashCountdownInterval) clearInterval(splashCountdownInterval); document.getElementById('introVideo').pause(); document.getElementById('videoSplashSection').classList.add('hidden'); isVideoSkipped = true; checkAndShowDashboard(); }
+
+function checkAndShowDashboard() {
+    if (isVideoSkipped) {
+        if (isDataReady && cachedUserData) {
+            document.getElementById('loadingScreen').classList.add('hidden');
+            if (cachedUserData.role === "teacher" || cachedUserData.role === "superadmin") showTeacherDashboard(cachedUserData);
+            else if (cachedUserData.role === "student") { studentActiveExams = cachedUserData.exams; showStudentDashboard(cachedUserData); }
+        } else { document.getElementById('loadingScreen').classList.remove('hidden'); }
+    }
+}
+
+// ==================== Student Dashboard Functions ====================
+function showStudentDashboard(data) {
+    document.getElementById('studentDashboard').classList.remove('hidden');
+    document.getElementById('welcomeStudent').innerText = `Welcome, ${String(data.student.name)} 👋`;
+    document.getElementById('courseName').innerText = String(data.student.course);
+    document.getElementById('groupName').innerText = String(data.student.group);
+    document.getElementById('scheduleDetails').innerText = String(data.student.schedule);
+    document.getElementById('teacherName').innerText = String(data.student.teacher);
+    document.getElementById('instructorFeedback').innerText = String(data.student.feedback);
+
+    const att = data.attendance; const absences = att.total - att.attended;
+    document.getElementById('attendanceRate').innerText = att.total === 0 ? "No attendance recorded yet" : `${att.attended} out of ${att.total} lectures (Absences: ${absences})`;
+
+    const safeStudentId = String(data.student.id).toUpperCase();
+    const isS100 = (safeStudentId === "S100");
+
+    let isBarred = false;
+    if (absences >= 3 && !isS100) { isBarred = true; document.getElementById('barNoticeSection').classList.remove('hidden'); }
+
+    const attDet = data.attendanceDetails || {};
+    const scheduleTbody = document.getElementById('studentScheduleTableBody'); scheduleTbody.innerHTML = "";
+    const studentGrp = String(data.student.group).trim();
+
+    for(let i=1; i<=8; i++) {
+        let lecKey = "L" + i, schKey = studentGrp + "_" + lecKey;
+        let schObj = data.schedule ? data.schedule[schKey] : null;
+        let dateStr = schObj ? schObj.date : null;
+        let zLink = schObj ? schObj.zoom : null;
+        let displayDate = "Not scheduled yet ⏳";
+        let zoomBtnHtml = `<span style="color:#94a3b8; font-size:12px;">Not Available</span>`;
+
+        if(dateStr) {
+            let safeDateStr = String(dateStr).replace(/-/g, "/").replace("T", " ");
+            let d = new Date(safeDateStr);
+            if (isNaN(d.getTime())) { d = new Date(dateStr); }
+            if (!isNaN(d.getTime())) {
+                displayDate = d.toLocaleString('en-US', { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit' });
+                if (zLink) {
+                    let now = new Date(); let diffMins = (now - d) / (1000 * 60);
+                    if (diffMins < -15) zoomBtnHtml = `<button class="btn-att disabled" disabled style="background:#cbd5e1; color:#475569;">Opens on Time</button>`;
+                    else if (diffMins >= -15 && diffMins <= 135) zoomBtnHtml = `<a href="${zLink}" target="_blank" class="zoom-btn zoom-active">Start Lecture</a>`;
+                    else zoomBtnHtml = `<button class="btn-att disabled" disabled style="background:#fee2e2; color:#991b1b;">Lecture Ended</button>`;
+                } else zoomBtnHtml = `<span style="color:#64748b; font-size:12px; font-weight:bold;">Offline (Center)</span>`;
+            }
+        }
+        let attStatus = String(attDet[lecKey] || "-"); let statusColor = "#64748b";
+        if(attStatus === "ح" || attStatus === "حاضر") { attStatus = "Attended ✅"; statusColor = "#065f46"; } else if(attStatus === "غ" || attStatus === "غائب") { attStatus = "Absent ❌"; statusColor = "#991b1b"; } else { attStatus = "Upcoming 🕒"; }
+        scheduleTbody.innerHTML += `<tr><td style="font-weight:bold;">${lecKey}</td><td style="direction: ltr;">${displayDate}</td><td style="color:${statusColor}; font-weight:bold;">${attStatus}</td><td>${zoomBtnHtml}</td></tr>`;
+    }
+
+    const isQ1Open = isS100 || (String(attDet["L4"]) === "ح" || String(attDet["L4"]) === "حاضر");
+    const isQ2Open = isS100 || (String(attDet["L6"]) === "ح" || String(attDet["L6"]) === "حاضر");
+    const isFinOpen = isS100 || (String(attDet["L8"]) === "ح" || String(attDet["L8"]) === "حاضر");
+    setupExamButton('quiz1', data.grades.quiz1, isBarred, isQ1Open, "Requires L4 attendance at the center");
+    setupExamButton('quiz2', data.grades.quiz2, isBarred, isQ2Open, "Requires L6 attendance at the center");
+    setupExamButton('final', data.grades.final, isBarred, isFinOpen, "Requires L8 attendance at the center");
+
+    let pText = String(data.student.payment || "Not Paid"); let pClass = "pay-none";
+    if (pText.includes("لم يدفع") || pText.includes("Not")) pClass = "pay-none"; else if (pText.includes("نصف") || pText.includes("Half")) pClass = "pay-half"; else if (pText.includes("نسبة") || pText.includes("Percent")) { pClass = "pay-percent"; if(data.student.percentage) pText += ` (${data.student.percentage})`; } else if (pText === "دفع" || pText.includes("كامل") || pText.includes("Full")) pClass = "pay-full";
+    document.getElementById('paymentStatus').className = `payment-status ${pClass}`; document.getElementById('paymentStatus').innerText = pText;
+
+    const mList = document.getElementById('materialsList'); mList.innerHTML = "";
+    if(!data.materials || data.materials.length === 0) mList.innerHTML = "<p>No files available for this level currently.</p>";
+    else data.materials.forEach(m => mList.innerHTML += `<div class="material-item"><span>📄 ${String(m.title)}</span><a href="${String(m.link)}" target="_blank">Download 📥</a></div>`);
+
+    loadStudentHomework();
+}
+
+function loadStudentHomework() {
+    const lec = document.getElementById('studentHwLecture').value;
+    const wObj = parseJSONSafe(cachedUserData.student.homework.writing), shObj = parseJSONSafe(cachedUserData.student.homework.shadowing), gObj = parseJSONSafe(cachedUserData.student.homework.hwGrade), fObj = parseJSONSafe(cachedUserData.student.homework.hwFeedback);
+    document.getElementById('studentWriting').value = wObj[lec] || ""; document.getElementById('studentShadowing').value = shObj[lec] || ""; document.getElementById('hwSubmitMsg').innerText = "";
+    const grade = gObj[lec], fb = fObj[lec], resBox = document.getElementById('hwResultBox');
+    if (grade || fb) { resBox.classList.remove('hidden'); document.getElementById('displayHwGrade').innerText = grade || "Graded"; document.getElementById('displayHwFeedback').innerText = fb || "-"; } else resBox.classList.add('hidden');
+
+    const gamifiedArena = document.getElementById('gamifiedArena');
+    const quizKey = lec.toLowerCase() + "_hw";
+    if (!cachedUserData.exams || !cachedUserData.exams[quizKey]) {
+        gamifiedArena.classList.add('hidden'); return;
+    }
+    gamifiedArena.classList.remove('hidden');
+    document.getElementById('gameModesMenu').classList.remove('hidden');
+    document.getElementById('gamePlayEngine').classList.add('hidden');
+}
+
+// ================= Cinematic Game Engine =================
+function initGamifiedQuiz(mode) {
+    initAudio();
+    const lec = document.getElementById('studentHwLecture').value;
+    const quizKey = lec.toLowerCase() + "_hw";
+    const rawQuestions = JSON.parse(cachedUserData.exams[quizKey]);
+    
+    gameQuestionsArray = rawQuestions.filter(q => q.type === 'MCQ');
+    if (gameQuestionsArray.length === 0) { alert("No compatible MCQ questions available for this mode."); return; }
+    
+    gameModeType = mode; gameCurrentQuestionIdx = 0; gameTotalScore = 0; gameActiveStreak = 0;
+    document.getElementById('gameModesMenu').classList.add('hidden');
+    document.getElementById('gamePlayEngine').classList.remove('hidden');
+    executeGameNextQuestion();
+}
+
+function executeGameNextQuestion() {
+    if (gameTimerEngineInterval) clearInterval(gameTimerEngineInterval);
+    const board = document.getElementById('gamePlayEngine');
+    board.classList.remove('shake-animation');
+    
+    const progressPercent = (gameCurrentQuestionIdx / gameQuestionsArray.length) * 100;
+    document.getElementById('gameProgressFill').style.width = `${progressPercent}%`;
+    
+    if (gameCurrentQuestionIdx >= gameQuestionsArray.length) { finishActiveGameSession(); return; }
+    
+    const qData = gameQuestionsArray[gameCurrentQuestionIdx];
+    const scoreBadge = document.getElementById('gameScoreBadge');
+    scoreBadge.innerText = `Journey Points: ${gameTotalScore}`;
+    scoreBadge.classList.remove('score-pop'); void scoreBadge.offsetWidth;
+    
+    if (gameActiveStreak >= 3) document.getElementById('gameStreakFire').classList.remove('hidden');
+    else document.getElementById('gameStreakFire').classList.add('hidden');
+    
+    document.getElementById('gameQuestionText').innerText = qData.question;
+    const choicesBox = document.getElementById('gameChoicesBox'); choicesBox.innerHTML = "";
+    
+    let shuffledColors = [...kahootColors].sort(() => Math.random() - 0.5);
+    qData.choices.forEach((choice, i) => {
+        let colorClass = shuffledColors[i % shuffledColors.length];
+        choicesBox.innerHTML += `<button class="kahoot-btn ${colorClass}" onclick="evaluateGameAnswer(this, '${choice.replace(/'/g, "\\'")}', '${qData.answer.replace(/'/g, "\\")}')">${choice}</button>`;
+    });
+}
+
+function evaluateGameAnswer(selectedButton, chosenAnswer, correctAnswer) {
+    const buttons = document.querySelectorAll('.kahoot-btn');
+    buttons.forEach(b => b.disabled = true);
+    
+    const overlay = document.getElementById('feedbackOverlay');
+    
+    if (chosenAnswer.trim().toLowerCase() === correctAnswer.trim().toLowerCase()) {
+        playSound('correct');
+        gameActiveStreak++;
+        let addedScore = 100; if (gameActiveStreak >= 3) addedScore *= 2; 
+        gameTotalScore += addedScore;
+        document.getElementById('gameScoreBadge').classList.add('score-pop');
+        overlay.className = 'feedback-overlay feedback-active feedback-correct';
+        overlay.innerHTML = '✨ Awesome! Great narrative flow';
+    } else {
+        playSound('wrong');
+        gameActiveStreak = 0;
+        document.getElementById('gamePlayEngine').classList.add('shake-animation');
+        overlay.className = 'feedback-overlay feedback-active feedback-wrong';
+        overlay.innerHTML = '⚠️ You drifted from the story context!';
+        buttons.forEach(b => {
+            if (b.innerText.trim().toLowerCase() === correctAnswer.trim().toLowerCase()) {
+                b.style.boxShadow = "0 0 20px #fff, 0 0 40px #10b981"; b.style.transform = "scale(1.05)";
+            } else b.style.opacity = "0.3";
+        });
+    }
+    
+    setTimeout(() => { overlay.classList.remove('feedback-active'); gameCurrentQuestionIdx++; executeGameNextQuestion(); }, 1800);
+}
+
+function finishActiveGameSession() {
+    document.getElementById('gameProgressFill').style.width = `100%`;
+    const canvas = document.getElementById('gameChoicesBox');
+    document.getElementById('gameQuestionText').innerText = "🎬 Chapter Completed Successfully!";
+    document.getElementById('gameStreakFire').classList.add('hidden');
+    canvas.style.display = "block";
+    canvas.innerHTML = `
+        <div style="text-align:center; padding:20px; color:white;">
+            <p style="font-size:32px; color:#34d399; font-weight:bold; margin-bottom:10px;">Total Points: ${gameTotalScore} 🌟</p>
+            <p style="font-size:16px; margin-bottom:20px; color:#cbd5e1;">You've mastered this part of the story like a pro. Keep practicing!</p>
+            <button onclick="submitGameScoreToDB()" style="background:var(--secondary); border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:18px; padding:15px 40px; color:white;">Save Points to Profile 💾</button>
+        </div>
+    `;
+}
+
+async function submitGameScoreToDB() {
+    const sId = document.getElementById('universalId').value.trim();
+    document.getElementById('gameChoicesBox').innerHTML = "<h3 style='color:white; text-align:center;'>Saving to records...</h3>";
+    try {
+        await fetch(GAS_URL, {
+            method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `action=submitGameScore&studentId=${encodeURIComponent(sId)}&score=${encodeURIComponent(gameTotalScore)}`
+        });
+        exitActiveGame(); alert("🎉 Your points have been successfully saved!");
+    } catch(e) { alert("Network connection error occurred."); }
+}
+
+function exitActiveGame() {
+    document.getElementById('gameModesMenu').classList.remove('hidden');
+    document.getElementById('gamePlayEngine').classList.add('hidden');
+    document.getElementById('gameChoicesBox').style.display = "grid";
+}
+
+async function submitStudentHomework() {
+    const sId = document.getElementById('universalId').value.trim(), lec = document.getElementById('studentHwLecture').value, writing = document.getElementById('studentWriting').value.trim(), shadowing = document.getElementById('studentShadowing').value.trim(), msgBox = document.getElementById('hwSubmitMsg');
+    if(!writing && !shadowing) { msgBox.style.color = "red"; msgBox.innerText = "Please write your text or provide a link first."; return; }
+    msgBox.style.color = "orange"; msgBox.innerText = "Uploading homework to system (POST)...";
+    try {
+        const res = await fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: `action=submitHomework&studentId=${encodeURIComponent(sId)}&lecture=${encodeURIComponent(lec)}&writing=${encodeURIComponent(writing)}&shadowing=${encodeURIComponent(shadowing)}` });
+        const d = await res.json();
+        if(d.success) { msgBox.style.color = "green"; msgBox.innerText = "✅ Homework submitted successfully!"; let wObj = parseJSONSafe(cachedUserData.student.homework.writing); wObj[lec] = writing; cachedUserData.student.homework.writing = JSON.stringify(wObj); let shObj = parseJSONSafe(cachedUserData.student.homework.shadowing); shObj[lec] = shadowing; cachedUserData.student.homework.shadowing = JSON.stringify(shObj); } else { msgBox.style.color = "red"; msgBox.innerText = "Error: " + d.error; }
+    } catch(e) { msgBox.style.color = "red"; msgBox.innerText = "Connection failed."; }
+}
+
+// ==================== Main Exams Functions ====================
+function setupExamButton(examKey, gradeValue, isBarred, isOpen, closedMsg) {
+    const container = document.getElementById(`action-${examKey}`); const sId = String(document.getElementById('universalId').value).trim().toUpperCase(); const isS100 = (sId === "S100");
+    if (gradeValue !== undefined && gradeValue !== null && String(gradeValue).trim() !== "") {
+        if (isS100) container.innerHTML = `<b>Grade: ${gradeValue}</b> <button class="btn-att" style="background:var(--danger);color:white;padding:4px 10px;" onclick="startNativeExam('${examKey}', true)">Retake</button>`;
+        else container.innerHTML = `<b>Recorded Grade: ${gradeValue}</b>`;
+    } else if (isBarred) { container.innerHTML = `<button class="btn-att disabled" disabled>Locked (Absence Limit Exceeded)</button>`; }
+    else if (!isOpen || !studentActiveExams[examKey]) { container.innerHTML = `<button class="btn-att disabled" disabled>Locked (${!studentActiveExams[examKey] ? 'Exam not available' : closedMsg})</button>`; }
+    else { container.innerHTML = `<button class="btn-att" style="background:var(--secondary);color:white;" onclick="startNativeExam('${examKey}', false)">Start Exam 🚀</button>`; }
+}
+
+function startNativeExam(examKey, forceReset = false) {
+    currentExamTypeKey = examKey; currentExamQuestions = JSON.parse(studentActiveExams[examKey]); const sId = String(document.getElementById('universalId').value).trim().toUpperCase();
+    if (forceReset) { localStorage.removeItem(`endTime_${sId}_${examKey}`); localStorage.removeItem(`ans_${sId}_${examKey}`); }
+    document.getElementById('studentDashboard').classList.add('hidden'); document.getElementById('examTakerDashboard').classList.remove('hidden'); document.getElementById('currentExamTitle').innerText = examKey.toUpperCase();
+    const qContainer = document.getElementById('examQuestionsContainer'); qContainer.innerHTML = ""; let lastAudioUsed = "";
+    currentExamQuestions.forEach((q, idx) => {
+        let html = `<div class="q-block" data-idx="${idx}" dir="ltr" style="text-align: left;">`;
+        if (q.audio && q.audio !== "none" && q.audio !== lastAudioUsed) {
+            let audioHtml = String(q.audio).includes("drive.google.com") ? `<iframe src="https://drive.google.com/file/d/${String(q.audio).match(/id=([a-zA-Z0-9_-]+)/)[1]}/preview" width="100%" height="80" style="border:none; border-radius:8px;"></iframe>` : `<audio src="${q.audio}" controls style="width:100%;"></audio>`;
+            html += `<div style="margin:15px 0; text-align:center;">${audioHtml}</div>`; lastAudioUsed = q.audio;
+        }
+        if (q.reading && q.reading !== "none") html += `<div class="passage-box">📖 ${q.reading}</div>`;
+        html += `<p style="text-align: left;"><strong>Question ${idx + 1}:</strong></p>`;
+        if (q.type === 'MCQ') { html += `<p style="font-weight:bold;">${q.question}</p>`; q.choices.forEach(choice => { html += `<label style="display:block; margin:8px 0; cursor:pointer;"><input type="radio" name="rad-${idx}" value="${choice}"> ${choice}</label>`; }); }
+        else if (q.type === 'Cloze') { let parsedQuestion = String(q.question).replace(/\[(.*?)\]/g, (match, val) => `<input type="text" class="cloze-input-field" data-ans="${val.trim()}">`); html += `<p style="line-height:2.2;">${parsedQuestion}</p>`; }
+        html += `</div>`; qContainer.innerHTML += html;
+    });
+    const savedAnswers = JSON.parse(localStorage.getItem(`ans_${sId}_${examKey}`) || "{}");
+    currentExamQuestions.forEach((q, idx) => {
+        const block = document.querySelector(`.q-block[data-idx="${idx}"]`);
+        if (q.type === 'MCQ' && savedAnswers[idx]) { const radio = block.querySelector(`input[name="rad-${idx}"][value="${savedAnswers[idx]}"]`); if (radio) radio.checked = true; }
+        else if (q.type === 'Cloze' && savedAnswers[idx]) { const inputs = block.querySelectorAll('.cloze-input-field'); inputs.forEach((inp, sIdx) => { if (savedAnswers[idx][sIdx]) inp.value = savedAnswers[idx][sIdx]; }); }
+    });
+    qContainer.addEventListener('input', (e) => {
+        const answers = JSON.parse(localStorage.getItem(`ans_${sId}_${examKey}`) || "{}"); const block = e.target.closest('.q-block'); if(!block) return; const idx = block.getAttribute('data-idx');
+        if (currentExamQuestions[idx].type === 'MCQ') answers[idx] = e.target.value;
+        else { const inputs = block.querySelectorAll('.cloze-input-field'); answers[idx] = []; inputs.forEach((inp, sIdx) => answers[idx][sIdx] = inp.value); }
+        localStorage.setItem(`ans_${sId}_${examKey}`, JSON.stringify(answers));
+    });
+    let endTime = localStorage.getItem(`endTime_${sId}_${examKey}`);
+    if (!endTime) { let duration = (examKey === 'final' ? 60 : 30); endTime = Date.now() + (duration * 60 * 1000); localStorage.setItem(`endTime_${sId}_${examKey}`, endTime); }
+    examTimerInterval = setInterval(() => {
+        let remainingMs = endTime - Date.now();
+        if (remainingMs <= 0) { clearInterval(examTimerInterval); document.getElementById('examTimerDisplay').innerText = "00:00"; alert("Time is up! Saving your answers."); gradeAndSubmitExam(); }
+        else { let totalSecs = Math.floor(remainingMs / 1000); let m = Math.floor(totalSecs / 60); let s = totalSecs % 60; document.getElementById('examTimerDisplay').innerText = `${m < 10 ? '0'+m : m}:${s < 10 ? '0'+s : s}`; }
+    }, 1000);
+}
+
+async function gradeAndSubmitExam() {
+    clearInterval(examTimerInterval); let correctCount = 0; const total = currentExamQuestions.length;
+    currentExamQuestions.forEach((q, idx) => {
+        const block = document.querySelector(`.q-block[data-idx="${idx}"]`);
+        if (q.type === 'MCQ') { const checked = block.querySelector(`input[name="rad-${idx}"]:checked`); if (checked && String(checked.value).trim().toLowerCase() === String(q.answer).trim().toLowerCase()) correctCount++; }
+        else if (q.type === 'Cloze') { const inputs = block.querySelectorAll('.cloze-input-field'); let allTrue = true; inputs.forEach(inp => { if (String(inp.value).trim().toLowerCase() !== String(inp.dataset.ans).toLowerCase()) allTrue = false; }); if (allTrue && inputs.length > 0) correctCount++; }
+    });
+    const maxGrade = (currentExamTypeKey === 'final') ? 80 : 10; const scaledScore = Math.round((correctCount / total) * maxGrade); const sId = String(document.getElementById('universalId').value).trim().toUpperCase();
+    document.getElementById('examTakerDashboard').innerHTML = "<div style='text-align:center;color:white;'><h2>Saving your grade to the system (POST)...</h2></div>";
+    try {
+        await fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: `action=updateStudentFullInfo&studentId=${encodeURIComponent(sId)}&${currentExamTypeKey}=${scaledScore}` });
+        localStorage.removeItem(`endTime_${sId}_${currentExamTypeKey}`); localStorage.removeItem(`ans_${sId}_${currentExamTypeKey}`); alert(`Grade recorded successfully: ${scaledScore} out of ${maxGrade}`); location.reload();
+    } catch (e) { alert("Network connection error."); }
+}
+
+// ==================== Teacher & Admin Dashboard ====================
+function showTeacherDashboard(data) {
+    document.getElementById('teacherDashboard').classList.remove('hidden'); document.getElementById('welcomeTeacher').innerText = `Welcome, ${String(data.name)}`; teacherStudentsData = data.students;
+    if(data.role === "superadmin") {
+        document.getElementById('superAdminPanel').classList.remove('hidden'); document.getElementById('feedbackUploadPanel').classList.remove('hidden');
+        const adminGroupSel = document.getElementById('adminGroupSelect'); adminGroupSel.innerHTML = ""; data.groups.forEach(g => adminGroupSel.innerHTML += `<option value="${g}">${g}</option>`);
+        document.getElementById('libManagerPanel').classList.remove('hidden');
+        const lbGroupSel = document.getElementById('lbGroup'); lbGroupSel.innerHTML = ""; data.groups.forEach(g => lbGroupSel.innerHTML += `<option value="${g}">${g}</option>`);
+        loadLibraryManagerList();
+    }
+    const groups = [...new Set(teacherStudentsData.map(s => String(s.group).trim()))], groupFilter = document.getElementById('groupFilter'); groupFilter.innerHTML = ""; groups.forEach(g => groupFilter.innerHTML += `<option value="${g}">${g}</option>`);
+    filterTeacherStudents();
+}
+
+async function saveScheduleDate() {
+    const grp = document.getElementById('adminGroupSelect').value, lec = document.getElementById('adminLecSelect').value, dTime = document.getElementById('adminDateTime').value;
+    const zoomLink = document.getElementById('adminZoomLink').value.trim(); const msg = document.getElementById('adminMsg');
+    if(!dTime) { msg.style.color="red"; msg.innerText = "Please select a date first."; return; } msg.style.color="#b45309"; msg.innerText = "Saving to system (POST)...";
+    try {
+        const res = await fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: `action=saveSchedule&group=${encodeURIComponent(grp)}&lecture=${encodeURIComponent(lec)}&dateTime=${encodeURIComponent(dTime)}&zoomLink=${encodeURIComponent(zoomLink)}` });
+        const d = await res.json();
+        if(d.success) { msg.style.color="green"; msg.innerText = "✅ Schedule saved and broadcasted to students!"; cachedUserData.schedule[grp.trim() + "_" + lec] = {date: dTime, zoom: zoomLink}; filterTeacherStudents(); } else { msg.style.color="red"; msg.innerText = "Error: " + d.error; }
+    } catch(e) { msg.style.color="red"; msg.innerText = "Connection error."; }
+}
+
+function filterTeacherStudents() {
+    const grp = document.getElementById('groupFilter').value, lec = document.getElementById('lectureSelect').value, tbody = document.getElementById('teacherStudentsList'); tbody.innerHTML = "";
+    loadLibraryGamesForCurrentSelection();
+    let isLecOpen = false, statusMsg = "", isSuperAdmin = (cachedUserData.role === "superadmin"), schKey = grp.trim() + "_" + lec;
+    let schObj = cachedUserData.schedule ? cachedUserData.schedule[schKey] : null; let schDateString = schObj ? schObj.date : null; let zLink = schObj ? schObj.zoom : null;
+    let zoomHtml = ""; if(zLink) zoomHtml = `<br><a href="${zLink}" target="_blank" class="zoom-btn zoom-active" style="margin-top:10px;">📹 Start/Manage Live Stream (Zoom)</a>`;
+
+    if(isSuperAdmin) {
+        isLecOpen = true; statusMsg = schDateString ? `👑 (Admin: Controls open). Scheduled Time: ${new Date(schDateString).toLocaleString('en-US')} ${zoomHtml}` : "👑 (Admin). No schedule set for this lecture yet.";
+    } else {
+        if(schDateString) {
+            const schDate = new Date(schDateString), diffHours = (new Date() - schDate) / (1000 * 60 * 60);
+            if (diffHours >= 0 && diffHours <= 24) { isLecOpen = true; statusMsg = `🟢 Attendance controls OPEN. Closes in ${Math.floor(24 - diffHours)} hours. ${zoomHtml}`; }
+            else if (diffHours < 0) statusMsg = `🔴 CLOSED (Controls open automatically at: ${schDate.toLocaleString('en-US')})`;
+            else statusMsg = `🔴 CLOSED (Attendance time expired). Contact Administration.`;
+        } else statusMsg = `🔴 Attendance CLOSED (Lecture not scheduled by Admin yet).`;
+    }
+
+    document.getElementById('lectureStatusMsg').innerHTML = statusMsg; document.getElementById('lectureStatusMsg').style.color = isLecOpen ? "#065f46" : "#991b1b";
+    document.getElementById('teacherTableHead').innerHTML = `<tr><th>ID</th><th>Name & Profile</th><th>HW ${lec}</th><th>Attendance</th>` + (lec==='L4'?'<th>Grade Q1</th>':(lec==='L6'?'<th>Grade Q2</th>':(lec==='L8'?'<th>Grade Final</th>':''))) + `<th>General Notes</th><th>Action</th></tr>`;
+    const filtered = teacherStudentsData.filter(s => String(s.group).trim() == String(grp).trim()); if(filtered.length === 0) { tbody.innerHTML = `<tr><td colspan="7">No students found.</td></tr>`; return; }
+    filtered.forEach(s => {
+        const wObj = parseJSONSafe(s.homework.writing), shObj = parseJSONSafe(s.homework.shadowing); let hwBtnColor = (wObj[lec] || shObj[lec]) ? "#2563eb" : "#94a3b8";
+        let attButtons = isLecOpen ? `<button class="btn-att btn-p" onclick="submitAttendance('${s.id}', 'ح')">Present</button><button class="btn-att btn-a" onclick="submitAttendance('${s.id}', 'غ')">Absent</button>` : `<button class="btn-att" style="background:var(--locked);cursor:not-allowed;" disabled>Locked</button>`;
+        let rowHTML = `<tr id="row-${s.id}"><td>${s.id}</td><td><strong>${s.name}</strong><br><button class="btn-att" style="background:#f1f5f9;color:var(--text);margin-top:5px;" onclick="openProfileModal('${s.id}')">👁️ View Profile</button></td><td><button class="btn-att" style="background-color:${hwBtnColor};color:white;" onclick="openHomeworkModal('${s.id}')">Grade 📝</button></td><td>${attButtons}</td>`;
+        if (lec === 'L4') rowHTML += `<td><input type="text" class="grade-input" id="q1-${s.id}" value="${s.grades.quiz1 || ''}"></td>`;
+        if (lec === 'L6') rowHTML += `<td><input type="text" class="grade-input" id="q2-${s.id}" value="${s.grades.quiz2 || ''}"></td>`;
+        if (lec === 'L8') rowHTML += `<td><input type="text" class="grade-input" id="fin-${s.id}" value="${s.grades.final || ''}"></td>`;
+        rowHTML += `<td><textarea class="fb-input" id="fb-${s.id}" rows="1" style="width:120px;">${s.feedback}</textarea></td><td><button class="btn-att" style="background:var(--secondary);color:white;" onclick="saveStudentData('${s.id}')">Save</button></td></tr>`; document.getElementById('teacherStudentsList').innerHTML += rowHTML;
+    });
+}
+
+function processAndUploadExam() {
+    const type = document.getElementById('uploadExamType').value; const course = document.getElementById('uploadExamCourse').value.trim(); const fileInput = document.getElementById('examTxtFile');
+    if (!course || fileInput.files.length === 0) { alert("⚠️ Please enter course name and select an exam file first."); return; }
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const lines = e.target.result.split('\n'); const parsedQuestions = []; let activeAudio = "none"; let activeReading = "none";
+        lines.forEach(line => {
+            let clean = line.trim(); if (!clean) return;
+            if (clean.toUpperCase().startsWith("AUDIO:")) { activeAudio = clean.substring(6).trim(); return; }
+            if (clean.toUpperCase().startsWith("READING:")) { activeReading = clean.substring(8).trim(); return; }
+            if(clean.toUpperCase().startsWith("MATCH:")) {
+                const pairs = clean.substring(6).split('|').map(p => p.trim()); const matchItems = [];
+                pairs.forEach(p => { const side = p.split('=').map(s => s.trim()); if(side.length === 2) matchItems.push({ left: side[0], right: side[1] }); });
+                if(matchItems.length > 0) parsedQuestions.push({ type: "Match", pairs: matchItems, audio: activeAudio, reading: activeReading }); return;
+            }
+            if (clean.includes("|")) {
+                const parts = clean.split('|').map(p => p.trim());
+                if (parts.length >= 3) parsedQuestions.push({ type: "MCQ", question: parts[0], choices: parts.slice(1, parts.length - 1), answer: parts[parts.length - 1], audio: activeAudio, reading: activeReading });
+            } else if (clean.includes("[") && clean.includes("]")) parsedQuestions.push({ type: "Cloze", question: clean, audio: activeAudio, reading: activeReading });
+        });
+        if (parsedQuestions.length === 0) { alert("❌ Exam file is empty or formatted incorrectly."); return; }
+        const examKey = `${course}_${type}`; const examDataString = JSON.stringify(parsedQuestions);
+        fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: `action=uploadExam&examKey=${encodeURIComponent(examKey)}&examData=${encodeURIComponent(examDataString)}` })
+        .then(res => res.json()).then(data => { if (data.success) { alert(`✅ Exam (${examKey}) uploaded and activated successfully!`); fileInput.value = ""; } else alert("❌ Error saving to server."); })
+        .catch(error => { alert("❌ Server connection failed!"); console.log(error); });
+    };
+    reader.readAsText(fileInput.files[0], "UTF-8");
+}
+
+function openProfileModal(id) { const s = teacherStudentsData.find(x => x.id == id); document.getElementById('profName').innerText = String(s.name); document.getElementById('profCourse').innerText = String(s.course); document.getElementById('profGroup').innerText = String(s.group); document.getElementById('profPayment').innerText = String(s.payment); document.getElementById('profTotalAtt').innerText = String(s.attendance.total); document.getElementById('profAttended').innerText = String(s.attendance.attended); document.getElementById('profAbsences').innerText = String(s.attendance.absences); document.getElementById('profQ1').innerText = String(s.grades.quiz1 || "-"); document.getElementById('profQ2').innerText = String(s.grades.quiz2 || "-"); document.getElementById('profFinal').innerText = String(s.grades.final || "-"); document.getElementById('profileModal').classList.remove('hidden'); }
+function closeProfileModal() { document.getElementById('profileModal').classList.add('hidden'); }
+
+function openHomeworkModal(id) {
+    const s = teacherStudentsData.find(x => x.id == id), lec = document.getElementById('lectureSelect').value;
+    const w = parseJSONSafe(s.homework.writing), sh = parseJSONSafe(s.homework.shadowing), g = parseJSONSafe(s.homework.hwGrade), f = parseJSONSafe(s.homework.hwFeedback);
+    document.getElementById('modalStudentName').innerText = `Evaluate Homework: ${s.name}`; document.getElementById('modalLectureLabel').innerText = `(For ${lec})`; document.getElementById('modalWriting').innerText = w[lec] || "Student hasn't submitted text for this lecture.";
+    if(sh[lec]) { document.getElementById('modalShadowingLink').href = sh[lec]; document.getElementById('modalShadowingLink').style.pointerEvents = "auto"; document.getElementById('modalShadowingLink').style.color = "#2563eb"; } else { document.getElementById('modalShadowingLink').href = "#"; document.getElementById('modalShadowingLink').style.pointerEvents = "none"; document.getElementById('modalShadowingLink').style.color = "#94a3b8"; }
+    document.getElementById('modalHwGrade').value = g[lec] || ""; document.getElementById('modalHwFeedback').value = f[lec] || ""; document.getElementById('saveHwBtn').onclick = () => saveHomeworkGrade(id, lec); document.getElementById('hwModal').classList.remove('hidden');
+}
+function closeHomeworkModal() { document.getElementById('hwModal').classList.add('hidden'); }
+
+async function saveHomeworkGrade(id, lec) {
+    const g = document.getElementById('modalHwGrade').value.trim(), f = document.getElementById('modalHwFeedback').value.trim(), btn = document.getElementById('saveHwBtn');
+    btn.innerText = "Saving..."; btn.disabled = true;
+    try {
+        const res = await fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: `action=gradeHomework&studentId=${encodeURIComponent(id)}&lecture=${encodeURIComponent(lec)}&hwGrade=${encodeURIComponent(g)}&hwFeedback=${encodeURIComponent(f)}` });
+        const d = await res.json();
+        if(d.success) { alert("Homework evaluation saved!"); const s = teacherStudentsData.find(x => x.id == id); let gObj = parseJSONSafe(s.homework.hwGrade); gObj[lec] = g; s.homework.hwGrade = JSON.stringify(gObj); let fObj = parseJSONSafe(s.homework.hwFeedback); fObj[lec] = f; s.homework.hwFeedback = JSON.stringify(fObj); closeHomeworkModal(); filterTeacherStudents(); }
+    } catch(e) { alert("Network Error"); } btn.innerText = "Save Evaluation 💾"; btn.disabled = false;
+}
+
+async function submitAttendance(id, status) {
+    const lec = document.getElementById('lectureSelect').value, row = document.getElementById(`row-${id}`), orig = row.style.backgroundColor; row.style.backgroundColor = "#fef3c7";
+    try {
+        const res = await fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: `action=updateAttendance&studentId=${encodeURIComponent(id)}&lecture=${encodeURIComponent(lec)}&status=${encodeURIComponent(status)}` });
+        const d = await res.json();
+        if(d.success) { row.style.backgroundColor = status === 'ح' ? '#d1fae5' : '#fee2e2'; setTimeout(() => { row.style.backgroundColor = orig; }, 1200); const s = teacherStudentsData.find(x => x.id == id); s.attendance.total++; if(status === 'ح') s.attendance.attended++; else s.attendance.absences++; }
+    } catch (e) { row.style.backgroundColor = orig; }
+}
+
+async function saveStudentData(id) {
+    const s = teacherStudentsData.find(x => x.id == id), q1 = document.getElementById(`q1-${id}`) ? document.getElementById(`q1-${id}`).value.trim() : (s.grades.quiz1 || ""), q2 = document.getElementById(`q2-${id}`) ? document.getElementById(`q2-${id}`).value.trim() : (s.grades.quiz2 || ""), fin = document.getElementById(`fin-${id}`) ? document.getElementById(`fin-${id}`).value.trim() : (s.grades.final || ""), fb = document.getElementById(`fb-${id}`) ? document.getElementById(`fb-${id}`).value.trim() : (s.feedback || ""), row = document.getElementById(`row-${id}`); row.style.backgroundColor = "#fef3c7";
+    try {
+        const res = await fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: `action=updateStudentFullInfo&studentId=${encodeURIComponent(id)}&quiz1=${encodeURIComponent(q1)}&quiz2=${encodeURIComponent(q2)}&final=${encodeURIComponent(fin)}&feedback=${encodeURIComponent(fb)}` });
+        const d = await res.json();
+        if(d.success) { row.style.backgroundColor = "#d1fae5"; s.grades.quiz1 = q1; s.grades.quiz2 = q2; s.grades.final = fin; s.feedback = fb; setTimeout(() => { row.style.backgroundColor = ""; }, 1200); }
+    } catch (e) { row.style.backgroundColor = ""; }
+}
+
+/* ==================== Language Switcher (EN / AR) ==================== */
+const translations = {
+en: {
+    slide1_h: "Master English for Adults", slide1_p: "A professional learning environment tailored to develop your skills with complete confidence.",
+    slide2_h: "Speak Fluently & Naturally", slide2_p: "Our curriculum focuses on narrative storytelling and practical application rather than traditional tasks.",
+    slide3_h: "Continuous Assessment", slide3_p: "An integrated digital system that precisely tracks your progress to ensure you reach your goals.",
+    login_title: "English Land LMS", login_sub: "Enter your credentials to access your account",
+    login_id_ph: "Enter your ID here", login_pass_ph: "Password", login_btn: "Secure Login 🔒",
+    login_nav_btn: "🔑 Student & Teacher Login",
+    why_title: "Why Choose English Land?", why_sub: "A modern, proven approach that gets real results — whatever your starting point.",
+    why1_h: "Latest Teaching Methods", why1_p: "We use the most modern, research-backed techniques to make you fluent — even if your level is zero.",
+    why2_h: "From Zero to Professional", why2_p: "A clear, structured path takes you step by step from a complete beginner to a confident, professional speaker.",
+    why3_h: "Expert Instructors", why3_p: "Experienced teachers who track your progress personally and give you real feedback, not just lectures.",
+    why4_h: "Real-Time Progress Tracking", why4_p: "An integrated digital system tracks your attendance, grades and homework so nothing gets missed.",
+    why5_h: "Interactive & Fun Learning", why5_p: "Gamified lessons and interactive storytelling keep you engaged instead of bored.",
+    why6_h: "Ongoing Support", why6_p: "Direct support on WhatsApp and Facebook whenever you have a question.",
+    cta_title: "Not sure what level you are?", cta_sub: "Request a free level assessment and our team will contact you to place you in the right course.",
+    cta_btn: "📋 Request Level Assessment",
+    fb_title: "What Our Students Say", fb_sub: "Real feedback from real English Land students.", fb_loading: "Loading feedback...", fb_empty: "No feedback added yet.",
+    lead_modal_title: "📋 Request a Free Level Assessment", lead_modal_sub: "Fill in your details and our team will contact you shortly.",
+    lead_name_label: "Full Name", lead_name_ph: "Your full name",
+    lead_phone_label: "Phone / WhatsApp Number", lead_phone_ph: "e.g. 01018748203",
+    lead_level_label: "Current English Level (if known)", lead_level_unknown: "I don't know / Zero",
+    lead_notes_label: "Notes (Optional)", lead_notes_ph: "Anything else you'd like us to know...",
+    lead_submit_btn: "Send Request 🚀",
+    lead_sending: "Sending...", lead_success: "✅ Thank you! Our team will contact you soon.", lead_error: "❌ Something went wrong, please try again.", lead_missing: "⚠️ Please enter your name and phone number."
+},
+ar: {
+    slide1_h: "أتقن الإنجليزية للكبار", slide1_p: "بيئة تعليمية احترافية مصممة لتطوير مهاراتك بثقة كاملة.",
+    slide2_h: "تحدث بطلاقة وبشكل طبيعي", slide2_p: "منهجنا يركز على السرد القصصي والتطبيق العملي بدلاً من المهام التقليدية.",
+    slide3_h: "تقييم مستمر", slide3_p: "نظام رقمي متكامل يتتبع تقدمك بدقة ليضمن وصولك لأهدافك.",
+    login_title: "منصة English Land", login_sub: "أدخل بياناتك للدخول إلى حسابك",
+    login_id_ph: "أدخل الـ ID هنا", login_pass_ph: "كلمة المرور", login_btn: "تسجيل دخول آمن 🔒",
+    login_nav_btn: "🔑 دخول الطلاب والمدرسين",
+    why_title: "ليه تختار English Land؟", why_sub: "طريقة حديثة ومضمونة النتائج، مهما كانت نقطة بدايتك.",
+    why1_h: "أحدث طرق التدريس", why1_p: "بنستخدم أحدث الأساليب المبنية على أبحاث علمية عشان نخليك محترف في اللغة حتى لو مستواك صفر.",
+    why2_h: "من الصفر للاحتراف", why2_p: "مسار واضح ومنظم يوصلك خطوة بخطوة من مبتدئ تمامًا إلى متحدث واثق ومحترف.",
+    why3_h: "مدرسون محترفون", why3_p: "مدرسون بخبرة كبيرة يتابعون تقدمك شخصيًا ويقدموا لك تقييم حقيقي مش مجرد محاضرات.",
+    why4_h: "متابعة لحظية لتقدمك", why4_p: "نظام رقمي متكامل يتابع حضورك ودرجاتك وواجباتك أول بأول.",
+    why5_h: "تعلم تفاعلي وممتع", why5_p: "دروس تفاعلية وقصص ممتعة تخليك متحمس للتعلم بدل الملل.",
+    why6_h: "دعم مستمر", why6_p: "تواصل مباشر معانا على واتساب وفيسبوك في أي وقت عندك فيه سؤال.",
+    cta_title: "مش عارف مستواك إيه؟", cta_sub: "اطلب تحديد مستوى مجاني وفريقنا هيتواصل معاك لوضعك في الكورس المناسب.",
+    cta_btn: "📋 اطلب تحديد المستوى",
+    fb_title: "آراء طلابنا", fb_sub: "آراء وتقييمات حقيقية من طلاب English Land.", fb_loading: "جاري تحميل الآراء...", fb_empty: "لا توجد آراء مضافة حتى الآن.",
+    lead_modal_title: "📋 اطلب تحديد مستوى مجاني", lead_modal_sub: "اكتب بياناتك وفريقنا هيتواصل معاك في أقرب وقت.",
+    lead_name_label: "الاسم بالكامل", lead_name_ph: "اكتب اسمك بالكامل",
+    lead_phone_label: "رقم الموبايل / واتساب", lead_phone_ph: "مثال: 01018748203",
+    lead_level_label: "مستواك الحالي في الإنجليزية (لو عارفه)", lead_level_unknown: "مش عارف / صفر",
+    lead_notes_label: "ملاحظات (اختياري)", lead_notes_ph: "أي حاجة تانية حابب تقولها لنا...",
+    lead_submit_btn: "إرسال الطلب 🚀",
+    lead_sending: "جاري الإرسال...", lead_success: "✅ شكرًا ليك! فريقنا هيتواصل معاك قريبًا.", lead_error: "❌ حصل خطأ، من فضلك حاول تاني.", lead_missing: "⚠️ من فضلك اكتب الاسم ورقم الموبايل."
+}
+};
+let currentLang = 'en';
+
+function applyTranslations() {
+    const dict = translations[currentLang];
+    document.querySelectorAll('[data-i18n]').forEach(el => { const key = el.getAttribute('data-i18n'); if(dict[key]) el.innerText = dict[key]; });
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => { const key = el.getAttribute('data-i18n-placeholder'); if(dict[key]) el.setAttribute('placeholder', dict[key]); });
+    renderTestimonials();
+}
+
+function setLanguage(lang) {
+    currentLang = lang;
+    const html = document.getElementById('htmlRoot');
+    html.setAttribute('lang', lang);
+    html.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
+    document.getElementById('langBtnEn').classList.toggle('active', lang === 'en');
+    document.getElementById('langBtnAr').classList.toggle('active', lang === 'ar');
+    try { localStorage.setItem('el_lang', lang); } catch(e) {}
+    applyTranslations();
+}
+
+(function initLanguage() {
+    let saved = 'en';
+    try { saved = localStorage.getItem('el_lang') || 'en'; } catch(e) {}
+    setLanguage(saved);
+})();
+
+/* ==================== Lead Capture (Level Assessment Request) ==================== */
+function openLeadModal() { document.getElementById('leadMsg').innerText = ""; document.getElementById('leadModal').classList.remove('hidden'); }
+function closeLeadModal() { document.getElementById('leadModal').classList.add('hidden'); }
+
+async function submitLead() {
+    const name = document.getElementById('leadName').value.trim();
+    const phone = document.getElementById('leadPhone').value.trim();
+    const level = document.getElementById('leadLevel').value;
+    const notes = document.getElementById('leadNotes').value.trim();
+    const msg = document.getElementById('leadMsg');
+    const dict = translations[currentLang];
+    if (!name || !phone) { msg.style.color = "var(--danger)"; msg.innerText = dict.lead_missing; return; }
+    msg.style.color = "#b45309"; msg.innerText = dict.lead_sending;
+    try {
+        const res = await fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `action=submitLead&name=${encodeURIComponent(name)}&phone=${encodeURIComponent(phone)}&level=${encodeURIComponent(level)}&notes=${encodeURIComponent(notes)}&lang=${encodeURIComponent(currentLang)}` });
+        const d = await res.json();
+        if (d.success) { msg.style.color = "green"; msg.innerText = dict.lead_success; document.getElementById('leadName').value=""; document.getElementById('leadPhone').value=""; document.getElementById('leadNotes').value=""; }
+        else { msg.style.color = "var(--danger)"; msg.innerText = dict.lead_error; }
+    } catch (e) { msg.style.color = "var(--danger)"; msg.innerText = dict.lead_error; }
+}
+
+/* ==================== Testimonials (Feedback) - Public Display ==================== */
+let cachedTestimonials = null;
+
+async function loadTestimonials() {
+    try {
+        const res = await fetch(`${GAS_URL}?action=getFeedback`);
+        const d = await res.json();
+        cachedTestimonials = (d && d.feedback) ? d.feedback : [];
+    } catch (e) { cachedTestimonials = []; }
+    renderTestimonials();
+}
+
+function renderTestimonials() {
+    const track = document.getElementById('testimonialTrack');
+    if (!track) return;
+    const dict = translations[currentLang];
+    if (cachedTestimonials === null) { track.innerHTML = `<div class="testimonial-empty">${dict.fb_loading}</div>`; return; }
+    if (cachedTestimonials.length === 0) { track.innerHTML = `<div class="testimonial-empty">${dict.fb_empty}</div>`; return; }
+    track.innerHTML = "";
+    cachedTestimonials.forEach(item => {
+        const mediaHtml = (String(item.type).toLowerCase() === 'video')
+            ? `<video src="${item.url}" controls></video>`
+            : `<img src="${item.url}" alt="${item.name}">`;
+        track.innerHTML += `<div class="testimonial-card">${mediaHtml}<div class="t-body"><div class="t-name">${item.name || ''}</div><div class="t-caption">${item.caption || ''}</div></div></div>`;
+    });
+}
+
+loadTestimonials();
+
+/* ==================== Super Admin: Upload Student Feedback (Video/Image) ==================== */
+function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result.split(',')[1]);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
+}
+
+async function uploadStudentFeedback() {
+    const name = document.getElementById('fbStudentName').value.trim();
+    const type = document.getElementById('fbMediaType').value;
+    const caption = document.getElementById('fbCaption').value.trim();
+    const fileInput = document.getElementById('fbMediaFile');
+    const msg = document.getElementById('fbUploadMsg');
+    if (!name || fileInput.files.length === 0) { msg.style.color = "var(--danger)"; msg.innerText = "⚠️ Please enter the student's name and choose a file."; return; }
+    msg.style.color = "#b45309"; msg.innerText = "Uploading, please wait... ⏳";
+    try {
+        const file = fileInput.files[0];
+        const base64 = await fileToBase64(file);
+        const res = await fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `action=uploadFeedback&adminId=${encodeURIComponent(loggedInId)}&adminPass=${encodeURIComponent(loggedInPass)}&name=${encodeURIComponent(name)}&type=${encodeURIComponent(type)}&caption=${encodeURIComponent(caption)}&fileName=${encodeURIComponent(file.name)}&mimeType=${encodeURIComponent(file.type)}&fileData=${encodeURIComponent(base64)}` });
+        const d = await res.json();
+        if (d.success) { msg.style.color = "green"; msg.innerText = "✅ Feedback uploaded and now shown on the landing page!"; fileInput.value = ""; document.getElementById('fbStudentName').value = ""; document.getElementById('fbCaption').value = ""; loadTestimonials(); }
+        else { msg.style.color = "var(--danger)"; msg.innerText = "❌ Error: " + (d.error || "Upload failed."); }
+    } catch (e) { msg.style.color = "var(--danger)"; msg.innerText = "❌ Network error while uploading."; }
+}
+
+/* ==================== [جديد] Live Multiplayer Game (Kahoot-style Rooms) ==================== */
+
+// Shared parser: same pipe format used across the platform -> Question|Choice1|Choice2|Choice3|Answer
+function parseLiveGameTxt(text) {
+    const lines = text.split('\n');
+    const questions = [];
+    lines.forEach(line => {
+        const clean = line.trim();
+        if (!clean || !clean.includes('|')) return;
+        const parts = clean.split('|').map(p => p.trim());
+        if (parts.length >= 3) questions.push({ type: 'MCQ', question: parts[0], choices: parts.slice(1, parts.length - 1), answer: parts[parts.length - 1] });
+    });
+    return questions;
+}
+
+/* ==================== [جديد] اختيار الأفاتار (Avatars) ==================== */
+function renderAvatarPicker() {
+    const grid = document.getElementById('joinAvatarGrid');
+    if (!grid) return;
+    grid.innerHTML = AVATAR_LIST.map(a => `<div class="avatar-choice ${pickedAvatar === a ? 'picked' : ''}" data-av="${a}" onclick="pickJoinAvatar('${a}')">${a}</div>`).join('');
+}
+function pickJoinAvatar(a) {
+    pickedAvatar = a;
+    document.querySelectorAll('#joinAvatarGrid .avatar-choice').forEach(el => el.classList.toggle('picked', el.dataset.av === a));
+}
+
+/* ==================== [جديد] رسم مضمار السباق + إشعارات "الضرب/التخطي" ==================== */
+function renderRaceTrack(containerId, raceArr) {
+    const wrap = document.getElementById(containerId);
+    if (!wrap) return;
+    if (!raceArr || raceArr.length === 0) { wrap.classList.add('hidden'); wrap.innerHTML = ""; return; }
+    wrap.classList.remove('hidden');
+    const maxPos = Math.max(150, ...raceArr.map(r => r.trackPos || 0));
+    wrap.innerHTML = raceArr.map(r => {
+        const pct = Math.min(92, Math.max(3, ((r.trackPos || 0) / maxPos) * 88 + 3));
+        const stunnedRecent = r.stunnedAt && (Date.now() - Number(r.stunnedAt) < 1500);
+        return `<div class="race-lane"><div class="race-avatar-token ${stunnedRecent ? 'knocked' : ''}" style="left:${pct}%;"><span class="race-emoji">${r.avatar || '🙂'}</span><span class="race-name">${r.name}</span></div></div>`;
+    }).join('');
+}
+
+function showOvertakeToasts(containerId, raceEvents, seenCount) {
+    const box = document.getElementById(containerId);
+    const events = raceEvents || [];
+    const newEvents = events.slice(seenCount);
+    if (box && newEvents.length > 0) {
+        box.innerHTML = newEvents.map(ev => `<div class="race-overtake-toast">💥 ${ev.actorName} hit ${ev.victimName} and sent them back!</div>`).join('');
+        playSound('overtake');
+        setTimeout(() => { if (box) box.innerHTML = ""; }, 2200);
+    }
+    return events.length;
+}
+
+/* -------------------- STUDENT SIDE -------------------- */
+
+function openJoinGameModal() { document.getElementById('joinGameMsg').innerText = ""; document.getElementById('joinRoomCodeInput').value = ""; renderAvatarPicker(); document.getElementById('joinGameModal').classList.remove('hidden'); }
+function closeJoinGameModal() { document.getElementById('joinGameModal').classList.add('hidden'); }
+
+async function joinLiveGameRoom() {
+    const roomCode = document.getElementById('joinRoomCodeInput').value.trim();
+    const msg = document.getElementById('joinGameMsg');
+    if (!roomCode) { msg.innerText = "⚠️ Please enter the room code."; return; }
+    msg.style.color = "#b45309"; msg.innerText = "Joining...";
+    try {
+        const res = await fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `action=joinGameRoom&roomCode=${encodeURIComponent(roomCode)}&studentId=${encodeURIComponent(loggedInId)}&studentPass=${encodeURIComponent(loggedInPass)}&avatar=${encodeURIComponent(pickedAvatar)}` });
+        const d = await res.json();
+        if (!d.success) { msg.style.color = "var(--danger)"; msg.innerText = "❌ " + (d.error || "Could not join room."); return; }
+        lgStuRoomCode = roomCode; lgStuLastStatus = ""; lgStuLastIndex = -1; lgStuAnsweredThisQuestion = false; lgStuSeenEventCount = 0;
+        playSound('join');
+        closeJoinGameModal();
+        document.getElementById('liveGameStudentStage').classList.remove('hidden');
+        if (lgStuPollInterval) clearInterval(lgStuPollInterval);
+        pollStudentGameState();
+        lgStuPollInterval = setInterval(pollStudentGameState, 2000);
+    } catch (e) { msg.style.color = "var(--danger)"; msg.innerText = "❌ Network error while joining."; }
+}
+
+function showStudentGamePhase(phaseId) {
+    ['lgStuWaiting', 'lgStuQuestion', 'lgStuReveal', 'lgStuFinal'].forEach(id => document.getElementById(id).classList.toggle('hidden', id !== phaseId));
+}
+
+async function pollStudentGameState() {
+    try {
+        const res = await fetch(`${GAS_URL}?action=getGameRoomState&roomCode=${encodeURIComponent(lgStuRoomCode)}&studentId=${encodeURIComponent(loggedInId)}`);
+        const d = await res.json();
+        if (!d.success) { leaveLiveGame(); return; }
+        renderStudentGameState(d);
+    } catch (e) { /* ignore transient network errors, next poll will retry */ }
+}
+
+function renderStudentGameState(d) {
+    document.getElementById('lgStuScoreBadge').innerText = `Score: ${d.me ? d.me.score : 0}`;
+    renderRaceTrack('lgStuRaceTrack', d.race || []);
+    lgStuSeenEventCount = showOvertakeToasts('lgStuOvertakeToast', d.raceEvents || [], lgStuSeenEventCount);
+    if (lgStuLastStatus === 'waiting' && d.status === 'question') playSound('gamestart');
+
+    if (d.status === 'waiting') {
+        showStudentGamePhase('lgStuWaiting');
+        document.getElementById('lgStuTitle').innerText = d.title;
+        document.getElementById('lgStuRoomCodeShown').innerText = d.roomCode;
+        document.getElementById('lgStuPlayerCount').innerText = `${d.playerCount} player(s) in the room`;
+    }
+    else if (d.status === 'question') {
+        if (lgStuLastStatus !== 'question' || lgStuLastIndex !== d.currentIndex) {
+            lgStuAnsweredThisQuestion = false;
+            document.getElementById('lgStuLockedMsg').classList.add('hidden');
+            document.getElementById('lgStuQNum').innerText = `Question ${d.currentIndex + 1}/${d.totalQuestions}`;
+            document.getElementById('lgStuQuestionText').innerText = d.question.question;
+            const box = document.getElementById('lgStuChoicesBox'); box.innerHTML = "";
+            const shuffled = [...kahootColors].sort(() => Math.random() - 0.5);
+            d.question.choices.forEach((choice, i) => {
+                box.innerHTML += `<button class="kahoot-btn ${shuffled[i % shuffled.length]}" onclick="submitLiveAnswer('${String(choice).replace(/'/g, "\\'")}')">${choice}</button>`;
+            });
+        }
+        showStudentGamePhase('lgStuQuestion');
+        if (d.me && d.me.answeredCurrent) {
+            document.getElementById('lgStuLockedMsg').classList.remove('hidden');
+            document.querySelectorAll('#lgStuChoicesBox .kahoot-btn').forEach(b => b.disabled = true);
+        }
+        updateTimerBar('lgStuTimerFill', d.questionStartedAt, d.timeLimitMs);
+    }
+    else if (d.status === 'reveal') {
+        showStudentGamePhase('lgStuReveal');
+        if (lgStuCountdownInterval) clearInterval(lgStuCountdownInterval);
+        document.getElementById('lgStuCorrectAnswerText').innerText = d.question.answer;
+        const resultBox = document.getElementById('lgStuRevealResult');
+        if (d.me && d.me.answeredCurrent) {
+            if (d.me.lastCorrect) { resultBox.style.color = "#34d399"; resultBox.innerText = `✅ Correct! +${d.me.lastPoints} points`; }
+            else { resultBox.style.color = "var(--danger)"; resultBox.innerText = "❌ Incorrect"; }
+        } else { resultBox.style.color = "#94a3b8"; resultBox.innerText = "⏱️ Time's up — no answer submitted"; }
+        document.getElementById('lgStuTotalScoreBadge').innerText = `Total Score: ${d.me ? d.me.score : 0}${d.me && d.me.rank ? " • Rank #" + d.me.rank : ""}`;
+    }
+    else if (d.status === 'finished') {
+        showStudentGamePhase('lgStuFinal');
+        if (lgStuCountdownInterval) clearInterval(lgStuCountdownInterval);
+        if (lgStuPollInterval) { clearInterval(lgStuPollInterval); lgStuPollInterval = null; }
+        const myEntry = (d.leaderboard || []).find(r => normIdJs(r.studentId) === normIdJs(loggedInId));
+        document.getElementById('lgStuFinalRank').innerText = myEntry ? `You finished #${myEntry.rank} with ${myEntry.score} points! 🎉` : "Thanks for playing!";
+        const listEl = document.getElementById('lgStuLeaderboardList');
+        listEl.innerHTML = "";
+        (d.leaderboard || []).slice(0, 10).forEach(r => {
+            const isMe = normIdJs(r.studentId) === normIdJs(loggedInId);
+            listEl.innerHTML += `<div class="leaderboard-row ${isMe ? 'me-row' : ''}"><span><span class="leaderboard-rank">#${r.rank}</span> ${r.avatar||'🙂'} ${r.name}</span><strong>${r.score} pts</strong></div>`;
+        });
+    }
+    lgStuLastStatus = d.status; lgStuLastIndex = d.currentIndex;
+}
+
+function normIdJs(v) { return String(v == null ? '' : v).trim().toUpperCase(); }
+
+async function submitLiveAnswer(choice) {
+    if (lgStuAnsweredThisQuestion) return;
+    lgStuAnsweredThisQuestion = true;
+    document.querySelectorAll('#lgStuChoicesBox .kahoot-btn').forEach(b => b.disabled = true);
+    document.getElementById('lgStuLockedMsg').classList.remove('hidden');
+    try {
+        const res = await fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `action=submitGameAnswer&roomCode=${encodeURIComponent(lgStuRoomCode)}&studentId=${encodeURIComponent(loggedInId)}&questionIndex=${lgStuLastIndex}&answer=${encodeURIComponent(choice)}` });
+        const d = await res.json();
+        if (d && d.success) { if (d.correct) playSound('correct'); else playSound('wrong'); }
+    } catch (e) { /* the reveal phase will show the outcome regardless */ }
+}
+
+function updateTimerBar(fillId, startedAt, timeLimitMs) {
+    const fill = document.getElementById(fillId);
+    if (!fill) return;
+    const key = fillId + '_interval';
+    if (window[key]) clearInterval(window[key]);
+    const tick = () => {
+        const elapsed = Date.now() - Number(startedAt);
+        const pct = Math.max(0, Math.min(100, 100 - (elapsed / Number(timeLimitMs)) * 100));
+        fill.style.width = pct + '%';
+        if (pct <= 0) clearInterval(window[key]);
+    };
+    tick();
+    window[key] = setInterval(tick, 250);
+}
+
+function leaveLiveGame() {
+    if (lgStuPollInterval) { clearInterval(lgStuPollInterval); lgStuPollInterval = null; }
+    if (lgStuCountdownInterval) clearInterval(lgStuCountdownInterval);
+    lgStuRoomCode = ""; lgStuLastStatus = ""; lgStuLastIndex = -1; lgStuSeenEventCount = 0;
+    document.getElementById('liveGameStudentStage').classList.add('hidden');
+}
+
+/* -------------------- TEACHER SIDE -------------------- */
+
+/* ==================== [جديد] الألعاب المحفوظة الجاهزة للمحاضرة الحالية (كل محاضر) ==================== */
+async function loadLibraryGamesForCurrentSelection() {
+    const grp = document.getElementById('groupFilter').value;
+    const lec = document.getElementById('lectureSelect').value;
+    const listEl = document.getElementById('libGamesList');
+    if (!listEl) return;
+    if (!grp) { listEl.innerHTML = '<p class="lib-empty-msg">Select a group to see saved games.</p>'; return; }
+    listEl.innerHTML = '<p class="lib-empty-msg">Loading...</p>';
+    try {
+        const res = await fetch(`${GAS_URL}?action=listLibraryGames&group=${encodeURIComponent(grp)}&lecture=${encodeURIComponent(lec)}`);
+        const d = await res.json();
+        if (!d.success || !d.games || d.games.length === 0) {
+            listEl.innerHTML = '<p class="lib-empty-msg">No saved games for this lecture yet — ask the admin to prepare one, or start one manually below. 👇</p>';
+            return;
+        }
+        listEl.innerHTML = d.games.map(g => `<div class="lib-game-card"><div><div class="lib-title">🎮 ${g.title}</div><div class="lib-meta">${g.questionCount} question(s)</div></div><button class="lib-launch-btn" onclick="launchLibraryGame('${g.libraryId}', '${String(g.title).replace(/'/g, "\\'")}')">🚀 Launch Now</button></div>`).join('');
+    } catch (e) { listEl.innerHTML = '<p class="lib-empty-msg">Could not load saved games (network error).</p>'; }
+}
+
+async function launchLibraryGame(libraryId, title) {
+    document.getElementById('hostGameModal').classList.remove('hidden');
+    document.getElementById('hgBuilderStep').classList.add('hidden');
+    document.getElementById('hgHostStage').classList.remove('hidden');
+    showHostGamePhase('hgLobby');
+    document.getElementById('hgLobbyTitle').innerText = "Launching " + title + "...";
+    document.getElementById('hgRoomCodeDisplay').innerText = "------";
+    hgSeenEventCount = 0;
+    try {
+        const res = await fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `action=createGameRoom&teacherId=${encodeURIComponent(loggedInId)}&teacherPass=${encodeURIComponent(loggedInPass)}&libraryId=${encodeURIComponent(libraryId)}` });
+        const d = await res.json();
+        if (!d.success) { alert("❌ " + (d.error || "Could not launch the saved game.")); closeHostGameModal(); return; }
+        lgHostRoomCode = d.roomCode; lgHostTitle = title; lgHostLastStatus = ""; lgHostLastIndex = -1;
+        document.getElementById('hgLobbyTitle').innerText = title;
+        document.getElementById('hgRoomCodeDisplay').innerText = d.roomCode;
+        if (lgHostPollInterval) clearInterval(lgHostPollInterval);
+        pollHostGameState();
+        lgHostPollInterval = setInterval(pollHostGameState, 2000);
+    } catch (e) { alert("❌ Network error while launching the game."); closeHostGameModal(); }
+}
+
+/* ==================== [جديد] لوحة إدارة مكتبة الألعاب (الأدمن الرئيسي بس) ==================== */
+async function loadLibraryManagerList() {
+    const listEl = document.getElementById('libManagerList');
+    if (!listEl) return;
+    listEl.innerHTML = '<p class="lib-empty-msg">Loading...</p>';
+    try {
+        const res = await fetch(`${GAS_URL}?action=listAllLibraryGames&teacherId=${encodeURIComponent(loggedInId)}&teacherPass=${encodeURIComponent(loggedInPass)}`);
+        const d = await res.json();
+        if (!d.success) { listEl.innerHTML = `<p class="lib-empty-msg">${d.error || 'Could not load the library.'}</p>`; return; }
+        window.__libGamesCache = d.games || [];
+        if (window.__libGamesCache.length === 0) { listEl.innerHTML = '<p class="lib-empty-msg">No saved games yet. Click "Add a New Saved Game" above to prepare one.</p>'; return; }
+        listEl.innerHTML = window.__libGamesCache.map(g => `<div class="lib-game-card"><div><div class="lib-title">🎮 ${g.title}</div><div class="lib-meta">${g.group || '-'} • ${g.lecture || '-'} • ${(g.questions || []).length} question(s)</div></div><div class="lib-admin-row"><button class="lib-edit-btn" onclick="editLibGame('${g.libraryId}')">✏️ Edit</button><button class="lib-del-btn" onclick="deleteLibGame('${g.libraryId}')">🗑️ Delete</button></div></div>`).join('');
+    } catch (e) { listEl.innerHTML = '<p class="lib-empty-msg">Network error while loading the library.</p>'; }
+}
+
+async function deleteLibGame(libraryId) {
+    if (!confirm("Delete this saved game permanently? This cannot be undone.")) return;
+    try {
+        const res = await fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `action=deleteLibraryGame&teacherId=${encodeURIComponent(loggedInId)}&teacherPass=${encodeURIComponent(loggedInPass)}&libraryId=${encodeURIComponent(libraryId)}` });
+        const d = await res.json();
+        if (d.success) loadLibraryManagerList(); else alert("❌ " + (d.error || "Could not delete."));
+    } catch (e) { alert("❌ Network error while deleting."); }
+}
+
+function editLibGame(libraryId) {
+    const g = (window.__libGamesCache || []).find(x => x.libraryId === libraryId);
+    if (g) openLibBuilderModal(g);
+}
+
+function openLibBuilderModal(existingGame) {
+    document.getElementById('lbEditingId').value = existingGame ? existingGame.libraryId : "";
+    document.getElementById('libModalHeading').innerText = existingGame ? "✏️ Edit Saved Game" : "🎮 Add a Saved Game to the Library";
+    document.getElementById('lbTitle').value = existingGame ? existingGame.title : "";
+    if (existingGame && existingGame.group) document.getElementById('lbGroup').value = existingGame.group;
+    document.getElementById('lbLecture').value = existingGame ? (existingGame.lecture || 'L1') : 'L1';
+    document.getElementById('lbBuilderMsg').innerText = "";
+    document.getElementById('lbTxtFile').value = "";
+    libBuilderQuestions = existingGame
+        ? existingGame.questions.map(q => ({ question: q.question, choices: [...q.choices], correctIdx: Math.max(0, q.choices.indexOf(q.answer)) }))
+        : [{ question: "", choices: ["", "", "", ""], correctIdx: 0 }];
+    switchLibBuilderTab('manual');
+    renderLibBuilderQuestions();
+    document.getElementById('libGameModal').classList.remove('hidden');
+}
+
+function closeLibBuilderModal() { document.getElementById('libGameModal').classList.add('hidden'); }
+
+function switchLibBuilderTab(tab) {
+    document.getElementById('lbTabManualBtn').classList.toggle('active-tab', tab === 'manual');
+    document.getElementById('lbTabUploadBtn').classList.toggle('active-tab', tab === 'upload');
+    document.getElementById('lbManualTab').classList.toggle('hidden', tab !== 'manual');
+    document.getElementById('lbUploadTab').classList.toggle('hidden', tab !== 'upload');
+}
+
+function addLibBuilderQuestionRow() { libBuilderQuestions.push({ question: "", choices: ["", "", "", ""], correctIdx: 0 }); renderLibBuilderQuestions(); }
+function removeLibBuilderQuestionRow(idx) { libBuilderQuestions.splice(idx, 1); renderLibBuilderQuestions(); }
+
+function renderLibBuilderQuestions() {
+    const list = document.getElementById('lbQuestionsList');
+    list.innerHTML = "";
+    libBuilderQuestions.forEach((q, idx) => {
+        let choicesHtml = "";
+        q.choices.forEach((c, cIdx) => {
+            choicesHtml += `<div class="q-builder-choice-row">
+                <input type="radio" name="lb-correct-${idx}" ${q.correctIdx === cIdx ? 'checked' : ''} onchange="libBuilderQuestions[${idx}].correctIdx=${cIdx}">
+                <input type="text" placeholder="Choice ${cIdx + 1}" value="${c.replace(/"/g, '&quot;')}" oninput="libBuilderQuestions[${idx}].choices[${cIdx}]=this.value">
+            </div>`;
+        });
+        list.innerHTML += `<div class="q-builder-row">
+            <strong>Question ${idx + 1}</strong> <button onclick="removeLibBuilderQuestionRow(${idx})" style="width:auto; float:right; background:var(--danger); color:white; padding:3px 10px; font-size:12px;">Remove ✕</button>
+            <input type="text" placeholder="Question text" value="${q.question.replace(/"/g, '&quot;')}" oninput="libBuilderQuestions[${idx}].question=this.value">
+            ${choicesHtml}
+        </div>`;
+    });
+}
+
+async function saveLibBuilderGame() {
+    const msg = document.getElementById('lbBuilderMsg');
+    const title = document.getElementById('lbTitle').value.trim() || "Live Game";
+    const group = document.getElementById('lbGroup').value;
+    const lecture = document.getElementById('lbLecture').value;
+    const isUploadTab = !document.getElementById('lbUploadTab').classList.contains('hidden');
     let questions = [];
-    try { questions = JSON.parse(row[idx['QuestionsJSON']]); } catch (e) { /* ignore */ }
-    games.push({
-      libraryId: String(row[idx['LibraryId']]),
-      group: String(row[idx['Group']] || ''),
-      lecture: String(row[idx['Lecture']] || ''),
-      title: String(row[idx['Title']] || ''),
-      questions: questions
+
+    if (isUploadTab) {
+        const fileInput = document.getElementById('lbTxtFile');
+        if (fileInput.files.length === 0) { msg.innerText = "⚠️ Please choose a .txt file first."; return; }
+        const text = await fileInput.files[0].text();
+        questions = parseLiveGameTxt(text);
+        if (questions.length === 0) { msg.innerText = "❌ The file is empty or badly formatted."; return; }
+    } else {
+        questions = libBuilderQuestions
+            .filter(q => q.question.trim() && q.choices.filter(c => c.trim()).length >= 2)
+            .map(q => ({ type: 'MCQ', question: q.question.trim(), choices: q.choices.filter(c => c.trim()), answer: q.choices[q.correctIdx] }));
+        if (questions.length === 0) { msg.innerText = "⚠️ Please add at least one complete question (text + 2 choices)."; return; }
+    }
+
+    const editingId = document.getElementById('lbEditingId').value;
+    msg.style.color = "#4338ca"; msg.innerText = "Saving...";
+    const action = editingId ? 'updateLibraryGame' : 'saveLibraryGame';
+    let body = `action=${action}&teacherId=${encodeURIComponent(loggedInId)}&teacherPass=${encodeURIComponent(loggedInPass)}&group=${encodeURIComponent(group)}&lecture=${encodeURIComponent(lecture)}&title=${encodeURIComponent(title)}&questionsData=${encodeURIComponent(JSON.stringify(questions))}`;
+    if (editingId) body += `&libraryId=${encodeURIComponent(editingId)}`;
+    try {
+        const res = await fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body });
+        const d = await res.json();
+        if (!d.success) { msg.style.color = "var(--danger)"; msg.innerText = "❌ " + (d.error || "Could not save."); return; }
+        closeLibBuilderModal();
+        loadLibraryManagerList();
+        loadLibraryGamesForCurrentSelection();
+    } catch (e) { msg.style.color = "var(--danger)"; msg.innerText = "❌ Network error while saving."; }
+}
+
+function openHostBuilderModal() {
+    lgBuilderQuestions = [];
+    document.getElementById('hgTitle').value = "";
+    document.getElementById('hgBuilderMsg').innerText = "";
+    document.getElementById('hgQuestionsList').innerHTML = "";
+    document.getElementById('hgTxtFile').value = "";
+    switchBuilderTab('manual');
+    addBuilderQuestionRow();
+    document.getElementById('hgBuilderStep').classList.remove('hidden');
+    document.getElementById('hgHostStage').classList.add('hidden');
+    document.getElementById('hostGameModal').classList.remove('hidden');
+}
+
+function closeHostGameModal() {
+    if (lgHostPollInterval) { clearInterval(lgHostPollInterval); lgHostPollInterval = null; }
+    if (lgHostCountdownInterval) clearInterval(lgHostCountdownInterval);
+    lgHostRoomCode = ""; lgHostLastStatus = ""; lgHostLastIndex = -1;
+    document.getElementById('hostGameModal').classList.add('hidden');
+}
+
+function switchBuilderTab(tab) {
+    document.getElementById('hgTabManualBtn').classList.toggle('active-tab', tab === 'manual');
+    document.getElementById('hgTabUploadBtn').classList.toggle('active-tab', tab === 'upload');
+    document.getElementById('hgManualTab').classList.toggle('hidden', tab !== 'manual');
+    document.getElementById('hgUploadTab').classList.toggle('hidden', tab !== 'upload');
+}
+
+function addBuilderQuestionRow() {
+    const idx = lgBuilderQuestions.length;
+    lgBuilderQuestions.push({ question: "", choices: ["", "", "", ""], correctIdx: 0 });
+    renderBuilderQuestions();
+}
+
+function removeBuilderQuestionRow(idx) {
+    lgBuilderQuestions.splice(idx, 1);
+    renderBuilderQuestions();
+}
+
+function renderBuilderQuestions() {
+    const list = document.getElementById('hgQuestionsList');
+    list.innerHTML = "";
+    lgBuilderQuestions.forEach((q, idx) => {
+        let choicesHtml = "";
+        q.choices.forEach((c, cIdx) => {
+            choicesHtml += `<div class="q-builder-choice-row">
+                <input type="radio" name="correct-${idx}" ${q.correctIdx === cIdx ? 'checked' : ''} onchange="lgBuilderQuestions[${idx}].correctIdx=${cIdx}">
+                <input type="text" placeholder="Choice ${cIdx + 1}" value="${c.replace(/"/g, '&quot;')}" oninput="lgBuilderQuestions[${idx}].choices[${cIdx}]=this.value">
+            </div>`;
+        });
+        list.innerHTML += `<div class="q-builder-row">
+            <strong>Question ${idx + 1}</strong> <button onclick="removeBuilderQuestionRow(${idx})" style="width:auto; float:right; background:var(--danger); color:white; padding:3px 10px; font-size:12px;">Remove ✕</button>
+            <input type="text" placeholder="Question text" value="${q.question.replace(/"/g, '&quot;')}" oninput="lgBuilderQuestions[${idx}].question=this.value">
+            ${choicesHtml}
+        </div>`;
     });
-  }
-  return { success: true, games: games };
 }
 
-function handleSaveLibraryGame(p) {
-  const admin = isSuperAdminCreds(p.teacherId, p.teacherPass);
-  if (!admin) return { error: 'حفظ لعبة في المكتبة متاح للأدمن الرئيسي بس' };
+async function createLiveGameRoom() {
+    const title = document.getElementById('hgTitle').value.trim() || "Live Game";
+    const msg = document.getElementById('hgBuilderMsg');
+    const isUploadTab = !document.getElementById('hgUploadTab').classList.contains('hidden');
+    let questions = [];
 
-  let questions;
-  try { questions = JSON.parse(p.questionsData); } catch (e) { return { error: 'صيغة الأسئلة غير صحيحة' }; }
-  if (!Array.isArray(questions) || questions.length === 0) return { error: 'لازم سؤال واحد على الأقل' };
-
-  const lock = LockService.getScriptLock();
-  lock.waitLock(30000);
-  try {
-    const sheet = getGameLibrarySheet();
-    const libraryId = 'LIB' + Date.now() + Math.floor(Math.random() * 1000);
-    sheet.appendRow([
-      libraryId,
-      String(p.group || '').trim(),
-      String(p.lecture || '').trim(),
-      String(p.title || 'Live Game').trim(),
-      JSON.stringify(questions),
-      String(admin['Name'] || ''),
-      new Date(),
-      new Date()
-    ]);
-    return { success: true, libraryId: libraryId };
-  } finally {
-    lock.releaseLock();
-  }
-}
-
-function handleUpdateLibraryGame(p) {
-  const admin = isSuperAdminCreds(p.teacherId, p.teacherPass);
-  if (!admin) return { error: 'تعديل لعبة في المكتبة متاح للأدمن الرئيسي بس' };
-
-  let questions;
-  try { questions = JSON.parse(p.questionsData); } catch (e) { return { error: 'صيغة الأسئلة غير صحيحة' }; }
-  if (!Array.isArray(questions) || questions.length === 0) return { error: 'لازم سؤال واحد على الأقل' };
-
-  const lock = LockService.getScriptLock();
-  lock.waitLock(30000);
-  try {
-    const sheet = getGameLibrarySheet();
-    const values = sheet.getDataRange().getValues();
-    const headers = values[0];
-    const idx = {}; headers.forEach((h, i) => { idx[h] = i; });
-    for (let i = 1; i < values.length; i++) {
-      if (String(values[i][idx['LibraryId']]).trim() === String(p.libraryId).trim()) {
-        const rowNum = i + 1;
-        sheet.getRange(rowNum, idx['Group'] + 1).setValue(String(p.group || '').trim());
-        sheet.getRange(rowNum, idx['Lecture'] + 1).setValue(String(p.lecture || '').trim());
-        sheet.getRange(rowNum, idx['Title'] + 1).setValue(String(p.title || 'Live Game').trim());
-        sheet.getRange(rowNum, idx['QuestionsJSON'] + 1).setValue(JSON.stringify(questions));
-        sheet.getRange(rowNum, idx['UpdatedAt'] + 1).setValue(new Date());
-        return { success: true };
-      }
+    if (isUploadTab) {
+        const fileInput = document.getElementById('hgTxtFile');
+        if (fileInput.files.length === 0) { msg.innerText = "⚠️ Please choose a .txt file first."; return; }
+        const text = await fileInput.files[0].text();
+        questions = parseLiveGameTxt(text);
+        if (questions.length === 0) { msg.innerText = "❌ The file is empty or badly formatted."; return; }
+    } else {
+        questions = lgBuilderQuestions
+            .filter(q => q.question.trim() && q.choices.filter(c => c.trim()).length >= 2)
+            .map(q => ({ type: 'MCQ', question: q.question.trim(), choices: q.choices.filter(c => c.trim()), answer: q.choices[q.correctIdx] }));
+        if (questions.length === 0) { msg.innerText = "⚠️ Please add at least one complete question (text + 2 choices)."; return; }
     }
-    return { error: 'اللعبة غير موجودة في المكتبة' };
-  } finally {
-    lock.releaseLock();
-  }
+
+    msg.style.color = "#b45309"; msg.innerText = "Creating room...";
+    try {
+        const res = await fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `action=createGameRoom&teacherId=${encodeURIComponent(loggedInId)}&teacherPass=${encodeURIComponent(loggedInPass)}&title=${encodeURIComponent(title)}&questionsData=${encodeURIComponent(JSON.stringify(questions))}` });
+        const d = await res.json();
+        if (!d.success) { msg.style.color = "var(--danger)"; msg.innerText = "❌ " + (d.error || "Could not create room."); return; }
+
+        lgHostRoomCode = d.roomCode; lgHostTitle = title; lgHostLastStatus = ""; lgHostLastIndex = -1; hgSeenEventCount = 0;
+        document.getElementById('hgBuilderStep').classList.add('hidden');
+        document.getElementById('hgHostStage').classList.remove('hidden');
+        showHostGamePhase('hgLobby');
+        document.getElementById('hgLobbyTitle').innerText = title;
+        document.getElementById('hgRoomCodeDisplay').innerText = d.roomCode;
+        if (lgHostPollInterval) clearInterval(lgHostPollInterval);
+        pollHostGameState();
+        lgHostPollInterval = setInterval(pollHostGameState, 2000);
+    } catch (e) { msg.style.color = "var(--danger)"; msg.innerText = "❌ Network error while creating the room."; }
 }
 
-function handleDeleteLibraryGame(p) {
-  const admin = isSuperAdminCreds(p.teacherId, p.teacherPass);
-  if (!admin) return { error: 'مسح لعبة من المكتبة متاح للأدمن الرئيسي بس' };
+function showHostGamePhase(phaseId) {
+    ['hgLobby', 'hgQuestionPhase', 'hgRevealPhase', 'hgFinalPhase'].forEach(id => document.getElementById(id).classList.toggle('hidden', id !== phaseId));
+}
 
-  const lock = LockService.getScriptLock();
-  lock.waitLock(30000);
-  try {
-    const sheet = getGameLibrarySheet();
-    const values = sheet.getDataRange().getValues();
-    const headers = values[0];
-    const libCol = headers.indexOf('LibraryId');
-    for (let i = 1; i < values.length; i++) {
-      if (String(values[i][libCol]).trim() === String(p.libraryId).trim()) {
-        sheet.deleteRow(i + 1);
-        return { success: true };
-      }
+async function startLiveGameRoom() {
+    await fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: `action=startGameRoom&roomCode=${encodeURIComponent(lgHostRoomCode)}&teacherId=${encodeURIComponent(loggedInId)}&teacherPass=${encodeURIComponent(loggedInPass)}` });
+    pollHostGameState();
+}
+
+async function revealLiveGameQuestion() {
+    await fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: `action=revealGameQuestion&roomCode=${encodeURIComponent(lgHostRoomCode)}&teacherId=${encodeURIComponent(loggedInId)}&teacherPass=${encodeURIComponent(loggedInPass)}` });
+    pollHostGameState();
+}
+
+async function nextLiveGameQuestion() {
+    await fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: `action=nextGameQuestion&roomCode=${encodeURIComponent(lgHostRoomCode)}&teacherId=${encodeURIComponent(loggedInId)}&teacherPass=${encodeURIComponent(loggedInPass)}` });
+    pollHostGameState();
+}
+
+async function pollHostGameState() {
+    try {
+        const res = await fetch(`${GAS_URL}?action=getGameRoomState&roomCode=${encodeURIComponent(lgHostRoomCode)}&isHost=true`);
+        const d = await res.json();
+        if (!d.success) return;
+        renderHostGameState(d);
+    } catch (e) { /* ignore transient network errors, next poll will retry */ }
+}
+
+function renderHostGameState(d) {
+    renderRaceTrack('hgRaceTrack', d.race || []);
+    hgSeenEventCount = showOvertakeToasts('hgOvertakeToast', d.raceEvents || [], hgSeenEventCount);
+    if (lgHostLastStatus === 'waiting' && d.status === 'question') playSound('gamestart');
+
+    if (d.status === 'waiting') {
+        showHostGamePhase('hgLobby');
+        document.getElementById('hgPlayerCount').innerText = d.playerCount;
+        const chips = document.getElementById('hgPlayerChips'); chips.innerHTML = "";
+        (d.players || []).forEach(pl => { chips.innerHTML += `<div class="player-chip">${pl.avatar || '🙂'} ${pl.name}</div>`; });
     }
-    return { error: 'اللعبة غير موجودة في المكتبة' };
-  } finally {
-    lock.releaseLock();
-  }
+    else if (d.status === 'question') {
+        showHostGamePhase('hgQuestionPhase');
+        if (lgHostLastStatus !== 'question' || lgHostLastIndex !== d.currentIndex) {
+            document.getElementById('hgQNum').innerText = `Question ${d.currentIndex + 1}/${d.totalQuestions}`;
+            document.getElementById('hgQuestionText').innerText = d.question.question;
+            const box = document.getElementById('hgChoicesDisplay'); box.innerHTML = "";
+            d.question.choices.forEach((choice, i) => { box.innerHTML += `<div class="kahoot-btn ${kahootColors[i % kahootColors.length]}" style="cursor:default;">${choice}</div>`; });
+        }
+        document.getElementById('hgAnsweredCount').innerText = d.answeredCount;
+        document.getElementById('hgTotalPlayers').innerText = d.playerCount;
+        updateTimerBar('hgTimerFill', d.questionStartedAt, d.timeLimitMs);
+    }
+    else if (d.status === 'reveal') {
+        showHostGamePhase('hgRevealPhase');
+        document.getElementById('hgRevealAnswer').innerText = d.question.answer;
+        const dist = document.getElementById('hgDistribution'); dist.innerHTML = "";
+        const counts = d.choiceCounts || {};
+        const maxCount = Math.max(1, ...Object.values(counts).map(v => Number(v) || 0));
+        d.question.choices.forEach(choice => {
+            const c = Number(counts[choice]) || 0;
+            const pct = Math.round((c / maxCount) * 100);
+            const isCorrect = choice === d.question.answer;
+            dist.innerHTML += `<div class="answer-dist-row"><div class="answer-dist-label">${isCorrect ? '✅ ' : ''}${choice}</div><div class="answer-dist-bar-outer"><div class="answer-dist-bar-fill ${isCorrect ? 'correct-fill' : ''}" style="width:${pct}%;">${c}</div></div></div>`;
+        });
+        const mini = document.getElementById('hgMiniLeaderboard'); mini.innerHTML = "";
+        (d.leaderboard || []).forEach(r => { mini.innerHTML += `<div class="leaderboard-row"><span><span class="leaderboard-rank">#${r.rank}</span> ${r.avatar||'🙂'} ${r.name}</span><strong>${r.score} pts</strong></div>`; });
+    }
+    else if (d.status === 'finished') {
+        showHostGamePhase('hgFinalPhase');
+        if (lgHostPollInterval) { clearInterval(lgHostPollInterval); lgHostPollInterval = null; }
+        const lb = d.leaderboard || [];
+        const podium = document.getElementById('hgPodium'); podium.innerHTML = "";
+        const order = [1, 0, 2]; // 2nd, 1st, 3rd visual order
+        order.forEach(pos => {
+            const r = lb[pos];
+            if (!r) return;
+            const place = pos + 1;
+            podium.innerHTML += `<div class="podium-place podium-${place}"><div>${r.name}</div><div class="podium-block">${place === 1 ? '🥇' : place === 2 ? '🥈' : '🥉'}</div><div>${r.score} pts</div></div>`;
+        });
+        const full = document.getElementById('hgFullLeaderboard'); full.innerHTML = "";
+        lb.forEach(r => { full.innerHTML += `<div class="leaderboard-row"><span><span class="leaderboard-rank">#${r.rank}</span> ${r.avatar||'🙂'} ${r.name}</span><strong>${r.score} pts</strong></div>`; });
+    }
+    lgHostLastStatus = d.status; lgHostLastIndex = d.currentIndex;
 }
+</script>
+</body>
+</html>
