@@ -389,7 +389,10 @@ html[dir="rtl"] .lead-form label { text-align: right; }
     <div id="lgStuRevealResult" style="font-size:22px; font-weight:bold; margin-bottom:10px;"></div>
     <p style="color:#cbd5e1;">Correct answer: <strong id="lgStuCorrectAnswerText" style="color:#34d399;"></strong></p>
     <div class="game-score-badge" id="lgStuTotalScoreBadge" style="margin-top:10px;"></div>
-    <p style="color:#94a3b8; font-size:13px; margin-top:5px;">Waiting for the instructor to continue...</p>
+    <h4 style="color:#fde047; margin-top:18px;">🏆 Leaderboard</h4>
+    <div id="lgStuMiniLeaderboard"></div>
+    <div class="timer-bar-outer" style="margin-top:12px;"><div class="timer-bar-fill" id="lgStuRevealTimerFill"></div></div>
+    <p style="color:#94a3b8; font-size:13px; margin-top:5px;">Next question in <span id="lgStuRevealCountdown">5</span>s...</p>
   </div>
 
   <!-- Final Phase -->
@@ -618,7 +621,9 @@ html[dir="rtl"] .lead-form label { text-align: right; }
     <div id="hgDistribution" style="margin:20px 0;"></div>
     <h4 style="color:#fde047;">🏆 Top of the Leaderboard</h4>
     <div id="hgMiniLeaderboard"></div>
-    <button onclick="nextLiveGameQuestion()" style="background:var(--secondary); margin-top:15px;">Next Question ▶️</button>
+    <div class="timer-bar-outer" style="margin-top:12px;"><div class="timer-bar-fill" id="hgRevealTimerFill"></div></div>
+    <p style="color:#94a3b8; font-size:13px; margin:6px 0;">Auto-advancing in <span id="hgRevealCountdown">5</span>s — or skip ahead now:</p>
+    <button onclick="nextLiveGameQuestion()" style="background:var(--secondary); margin-top:5px;">Next Question Now ▶️</button>
   </div>
 
   <div id="hgFinalPhase" class="hidden" style="width:100%; text-align:center;">
@@ -778,6 +783,27 @@ let lgStuSeenEventCount = 0, hgSeenEventCount = 0;
 let libBuilderQuestions = [];
 let lgStuCountdownInterval = null, lgHostCountdownInterval = null;
 
+// ==================== [جديد] استمرارية الجلسة واللعبة الحية بعد الريفريش ====================
+// عشان لو الطالب أو المحاضر عمل رفريش لصفحة المتصفح، يرجع يلاقي نفسه Login وجوه نفس الغرفة والسكور زي ما هو (مبيتمسحش حاجة)
+const LMS_SESSION_KEY = 'elandLmsSession';
+const LMS_ACTIVE_GAME_KEY = 'elandLmsActiveGame';
+
+function saveSessionToStorage(id, pass) {
+    try { localStorage.setItem(LMS_SESSION_KEY, JSON.stringify({ id, pass })); } catch (e) { /* لو التخزين متاح مش مهم نوقف الأبلكيشن */ }
+}
+function loadSessionFromStorage() {
+    try { const raw = localStorage.getItem(LMS_SESSION_KEY); return raw ? JSON.parse(raw) : null; } catch (e) { return null; }
+}
+function clearActiveGameStorage() {
+    try { localStorage.removeItem(LMS_ACTIVE_GAME_KEY); } catch (e) { /* ignore */ }
+}
+function saveActiveGameToStorage(role, roomCode) {
+    try { localStorage.setItem(LMS_ACTIVE_GAME_KEY, JSON.stringify({ role, roomCode, ts: Date.now() })); } catch (e) { /* ignore */ }
+}
+function loadActiveGameFromStorage() {
+    try { const raw = localStorage.getItem(LMS_ACTIVE_GAME_KEY); return raw ? JSON.parse(raw) : null; } catch (e) { return null; }
+}
+
 // Gamification Variables
 let gameQuestionsArray = [], gameCurrentQuestionIdx = 0, gameTotalScore = 0, gameActiveStreak = 0, gameTimerEngineInterval, gameModeType = 'arena';
 const kahootColors = ['kahoot-c1', 'kahoot-c2', 'kahoot-c3', 'kahoot-c4'];
@@ -887,7 +913,7 @@ async function handleLogin() {
             document.getElementById('errorMsg').innerText = data.error;
             return;
         }
-        cachedUserData = data; isDataReady = true; checkAndShowDashboard();
+        cachedUserData = data; isDataReady = true; saveSessionToStorage(loggedInId, loggedInPass); checkAndShowDashboard();
     }).catch(() => {
         skipIntroVideo();
         document.getElementById('loadingScreen').classList.add('hidden');
@@ -906,9 +932,72 @@ function checkAndShowDashboard() {
             document.getElementById('loadingScreen').classList.add('hidden');
             if (cachedUserData.role === "teacher" || cachedUserData.role === "superadmin") showTeacherDashboard(cachedUserData);
             else if (cachedUserData.role === "student") { studentActiveExams = cachedUserData.exams; showStudentDashboard(cachedUserData); }
+            resumeActiveGameIfAny(cachedUserData.role);
         } else { document.getElementById('loadingScreen').classList.remove('hidden'); }
     }
 }
+
+// [جديد] لو المستخدم كان جوه لعبة حية وعمل رفريش لصفحة المتصفح، نرجّعه تلقائياً لنفس الغرفة وسكوره زي ما هو من غير ما يعمل حاجة
+async function resumeActiveGameIfAny(role) {
+    const saved = loadActiveGameFromStorage();
+    if (!saved || !saved.roomCode) return;
+    try {
+        const isHost = (saved.role === 'host');
+        const url = isHost
+            ? `${GAS_URL}?action=getGameRoomState&roomCode=${encodeURIComponent(saved.roomCode)}&isHost=true`
+            : `${GAS_URL}?action=getGameRoomState&roomCode=${encodeURIComponent(saved.roomCode)}&studentId=${encodeURIComponent(loggedInId)}`;
+        const res = await fetch(url);
+        const d = await res.json();
+        if (!d.success || d.status === 'finished') { clearActiveGameStorage(); return; }
+
+        if (isHost && (role === 'teacher' || role === 'superadmin')) {
+            lgHostRoomCode = saved.roomCode; lgHostTitle = d.title; lgHostLastStatus = ""; lgHostLastIndex = -1; hgSeenEventCount = 0;
+            document.getElementById('hostGameModal').classList.remove('hidden');
+            document.getElementById('hgBuilderStep').classList.add('hidden');
+            document.getElementById('hgHostStage').classList.remove('hidden');
+            document.getElementById('hgLobbyTitle').innerText = d.title;
+            document.getElementById('hgRoomCodeDisplay').innerText = d.roomCode;
+            if (lgHostPollInterval) clearInterval(lgHostPollInterval);
+            pollHostGameState();
+            lgHostPollInterval = setInterval(pollHostGameState, 1500);
+        } else if (!isHost && role === 'student') {
+            lgStuRoomCode = saved.roomCode; lgStuLastStatus = ""; lgStuLastIndex = -1; lgStuAnsweredThisQuestion = false; lgStuSeenEventCount = 0;
+            document.getElementById('liveGameStudentStage').classList.remove('hidden');
+            if (lgStuPollInterval) clearInterval(lgStuPollInterval);
+            pollStudentGameState();
+            lgStuPollInterval = setInterval(pollStudentGameState, 1500);
+        } else {
+            clearActiveGameStorage();
+        }
+    } catch (e) { /* لو فشل الاتصال، هنحاول تاني عادي في المرة الجاية */ }
+}
+
+// [جديد] لو فيه جلسة محفوظة من قبل (Login سابق) وعمل المستخدم رفريش للصفحة، نسجّل دخوله تلقائياً من غير ما يكتب بياناته تاني
+(function autoResumeSessionOnLoad() {
+    const saved = loadSessionFromStorage();
+    if (!saved || !saved.id || !saved.pass) return;
+    window.addEventListener('DOMContentLoaded', () => {
+        loggedInId = saved.id; loggedInPass = saved.pass;
+        isVideoSkipped = true; // مفيش داعي نعرض فيديو المقدمة تاني بعد الريفريش
+        document.getElementById('landingPage').classList.add('hidden');
+        document.getElementById('loadingScreen').classList.remove('hidden');
+        fetch(`${GAS_URL}?action=login&id=${encodeURIComponent(saved.id)}&pass=${encodeURIComponent(saved.pass)}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.error) {
+                    localStorage.removeItem(LMS_SESSION_KEY);
+                    document.getElementById('loadingScreen').classList.add('hidden');
+                    document.getElementById('landingPage').classList.remove('hidden');
+                    return;
+                }
+                cachedUserData = data; isDataReady = true; checkAndShowDashboard();
+            })
+            .catch(() => {
+                document.getElementById('loadingScreen').classList.add('hidden');
+                document.getElementById('landingPage').classList.remove('hidden');
+            });
+    });
+})();
 
 // ==================== Student Dashboard Functions ====================
 function showStudentDashboard(data) {
@@ -1530,12 +1619,13 @@ async function joinLiveGameRoom() {
         const d = await res.json();
         if (!d.success) { msg.style.color = "var(--danger)"; msg.innerText = "❌ " + (d.error || "Could not join room."); return; }
         lgStuRoomCode = roomCode; lgStuLastStatus = ""; lgStuLastIndex = -1; lgStuAnsweredThisQuestion = false; lgStuSeenEventCount = 0;
+        saveActiveGameToStorage('student', roomCode);
         playSound('join');
         closeJoinGameModal();
         document.getElementById('liveGameStudentStage').classList.remove('hidden');
         if (lgStuPollInterval) clearInterval(lgStuPollInterval);
         pollStudentGameState();
-        lgStuPollInterval = setInterval(pollStudentGameState, 2000);
+        lgStuPollInterval = setInterval(pollStudentGameState, 1500);
     } catch (e) { msg.style.color = "var(--danger)"; msg.innerText = "❌ Network error while joining."; }
 }
 
@@ -1593,24 +1683,52 @@ function renderStudentGameState(d) {
             else { resultBox.style.color = "var(--danger)"; resultBox.innerText = "❌ Incorrect"; }
         } else { resultBox.style.color = "#94a3b8"; resultBox.innerText = "⏱️ Time's up — no answer submitted"; }
         document.getElementById('lgStuTotalScoreBadge').innerText = `Total Score: ${d.me ? d.me.score : 0}${d.me && d.me.rank ? " • Rank #" + d.me.rank : ""}`;
+        renderLeaderboardList('lgStuMiniLeaderboard', d.leaderboard || [], loggedInId);
+        if (d.revealStartedAt) updateRevealCountdown('lgStuRevealTimerFill', 'lgStuRevealCountdown', 'lgStuRevealCountdownInterval', d.revealStartedAt, d.revealDurationMs || 5000);
     }
     else if (d.status === 'finished') {
         showStudentGamePhase('lgStuFinal');
         if (lgStuCountdownInterval) clearInterval(lgStuCountdownInterval);
+        if (window.lgStuRevealCountdownInterval) clearInterval(window.lgStuRevealCountdownInterval);
         if (lgStuPollInterval) { clearInterval(lgStuPollInterval); lgStuPollInterval = null; }
+        clearActiveGameStorage();
         const myEntry = (d.leaderboard || []).find(r => normIdJs(r.studentId) === normIdJs(loggedInId));
         document.getElementById('lgStuFinalRank').innerText = myEntry ? `You finished #${myEntry.rank} with ${myEntry.score} points! 🎉` : "Thanks for playing!";
-        const listEl = document.getElementById('lgStuLeaderboardList');
-        listEl.innerHTML = "";
-        (d.leaderboard || []).slice(0, 10).forEach(r => {
-            const isMe = normIdJs(r.studentId) === normIdJs(loggedInId);
-            listEl.innerHTML += `<div class="leaderboard-row ${isMe ? 'me-row' : ''}"><span><span class="leaderboard-rank">#${r.rank}</span> ${r.avatar||'🙂'} ${r.name}</span><strong>${r.score} pts</strong></div>`;
-        });
+        renderLeaderboardList('lgStuLeaderboardList', (d.leaderboard || []).slice(0, 10), loggedInId);
     }
     lgStuLastStatus = d.status; lgStuLastIndex = d.currentIndex;
 }
 
 function normIdJs(v) { return String(v == null ? '' : v).trim().toUpperCase(); }
+
+// [جديد] لوحة ترتيب واضحة وموحّدة (تستخدم في شاشة الكشف بعد كل سؤال وفي النتيجة النهائية، للطالب والمحاضر)
+function renderLeaderboardList(containerId, leaderboard, highlightStudentId) {
+    const el = document.getElementById(containerId);
+    if (!el) return;
+    el.innerHTML = "";
+    (leaderboard || []).forEach(r => {
+        const isMe = highlightStudentId && normIdJs(r.studentId) === normIdJs(highlightStudentId);
+        const medal = r.rank === 1 ? '🥇' : r.rank === 2 ? '🥈' : r.rank === 3 ? '🥉' : ('#' + r.rank);
+        el.innerHTML += `<div class="leaderboard-row ${isMe ? 'me-row' : ''}"><span><span class="leaderboard-rank">${medal}</span> ${r.avatar || '🙂'} ${r.name}</span><strong>${r.score} pts</strong></div>`;
+    });
+}
+
+// [جديد] عداد تنازلي واضح لمدة شاشة الكشف قبل الانتقال التلقائي للسؤال التالي (يحافظ على إيقاع سريع ومتحمس)
+function updateRevealCountdown(fillId, textId, intervalKey, startedAt, durationMs) {
+    const fill = document.getElementById(fillId);
+    const text = document.getElementById(textId);
+    if (window[intervalKey]) clearInterval(window[intervalKey]);
+    const tick = () => {
+        const elapsed = Date.now() - Number(startedAt);
+        const remainingMs = Math.max(0, Number(durationMs) - elapsed);
+        const pct = Math.max(0, Math.min(100, (remainingMs / Number(durationMs)) * 100));
+        if (fill) fill.style.width = pct + '%';
+        if (text) text.innerText = Math.ceil(remainingMs / 1000);
+        if (remainingMs <= 0) clearInterval(window[intervalKey]);
+    };
+    tick();
+    window[intervalKey] = setInterval(tick, 200);
+}
 
 async function submitLiveAnswer(choice) {
     if (lgStuAnsweredThisQuestion) return;
@@ -1643,7 +1761,9 @@ function updateTimerBar(fillId, startedAt, timeLimitMs) {
 function leaveLiveGame() {
     if (lgStuPollInterval) { clearInterval(lgStuPollInterval); lgStuPollInterval = null; }
     if (lgStuCountdownInterval) clearInterval(lgStuCountdownInterval);
+    if (window.lgStuRevealCountdownInterval) clearInterval(window.lgStuRevealCountdownInterval);
     lgStuRoomCode = ""; lgStuLastStatus = ""; lgStuLastIndex = -1; lgStuSeenEventCount = 0;
+    clearActiveGameStorage();
     document.getElementById('liveGameStudentStage').classList.add('hidden');
 }
 
@@ -1682,11 +1802,12 @@ async function launchLibraryGame(libraryId, title) {
         const d = await res.json();
         if (!d.success) { alert("❌ " + (d.error || "Could not launch the saved game.")); closeHostGameModal(); return; }
         lgHostRoomCode = d.roomCode; lgHostTitle = title; lgHostLastStatus = ""; lgHostLastIndex = -1;
+        saveActiveGameToStorage('host', d.roomCode);
         document.getElementById('hgLobbyTitle').innerText = title;
         document.getElementById('hgRoomCodeDisplay').innerText = d.roomCode;
         if (lgHostPollInterval) clearInterval(lgHostPollInterval);
         pollHostGameState();
-        lgHostPollInterval = setInterval(pollHostGameState, 2000);
+        lgHostPollInterval = setInterval(pollHostGameState, 1500);
     } catch (e) { alert("❌ Network error while launching the game."); closeHostGameModal(); }
 }
 
@@ -1819,7 +1940,9 @@ function openHostBuilderModal() {
 function closeHostGameModal() {
     if (lgHostPollInterval) { clearInterval(lgHostPollInterval); lgHostPollInterval = null; }
     if (lgHostCountdownInterval) clearInterval(lgHostCountdownInterval);
+    if (window.lgHostRevealCountdownInterval) clearInterval(window.lgHostRevealCountdownInterval);
     lgHostRoomCode = ""; lgHostLastStatus = ""; lgHostLastIndex = -1;
+    clearActiveGameStorage();
     document.getElementById('hostGameModal').classList.add('hidden');
 }
 
@@ -1887,6 +2010,7 @@ async function createLiveGameRoom() {
         if (!d.success) { msg.style.color = "var(--danger)"; msg.innerText = "❌ " + (d.error || "Could not create room."); return; }
 
         lgHostRoomCode = d.roomCode; lgHostTitle = title; lgHostLastStatus = ""; lgHostLastIndex = -1; hgSeenEventCount = 0;
+        saveActiveGameToStorage('host', d.roomCode);
         document.getElementById('hgBuilderStep').classList.add('hidden');
         document.getElementById('hgHostStage').classList.remove('hidden');
         showHostGamePhase('hgLobby');
@@ -1894,7 +2018,7 @@ async function createLiveGameRoom() {
         document.getElementById('hgRoomCodeDisplay').innerText = d.roomCode;
         if (lgHostPollInterval) clearInterval(lgHostPollInterval);
         pollHostGameState();
-        lgHostPollInterval = setInterval(pollHostGameState, 2000);
+        lgHostPollInterval = setInterval(pollHostGameState, 1500);
     } catch (e) { msg.style.color = "var(--danger)"; msg.innerText = "❌ Network error while creating the room."; }
 }
 
@@ -1964,12 +2088,14 @@ function renderHostGameState(d) {
             const isCorrect = choice === d.question.answer;
             dist.innerHTML += `<div class="answer-dist-row"><div class="answer-dist-label">${isCorrect ? '✅ ' : ''}${choice}</div><div class="answer-dist-bar-outer"><div class="answer-dist-bar-fill ${isCorrect ? 'correct-fill' : ''}" style="width:${pct}%;">${c}</div></div></div>`;
         });
-        const mini = document.getElementById('hgMiniLeaderboard'); mini.innerHTML = "";
-        (d.leaderboard || []).forEach(r => { mini.innerHTML += `<div class="leaderboard-row"><span><span class="leaderboard-rank">#${r.rank}</span> ${r.avatar||'🙂'} ${r.name}</span><strong>${r.score} pts</strong></div>`; });
+        renderLeaderboardList('hgMiniLeaderboard', d.leaderboard || []);
+        if (d.revealStartedAt) updateRevealCountdown('hgRevealTimerFill', 'hgRevealCountdown', 'lgHostRevealCountdownInterval', d.revealStartedAt, d.revealDurationMs || 5000);
     }
     else if (d.status === 'finished') {
         showHostGamePhase('hgFinalPhase');
         if (lgHostPollInterval) { clearInterval(lgHostPollInterval); lgHostPollInterval = null; }
+        if (window.lgHostRevealCountdownInterval) clearInterval(window.lgHostRevealCountdownInterval);
+        clearActiveGameStorage();
         const lb = d.leaderboard || [];
         const podium = document.getElementById('hgPodium'); podium.innerHTML = "";
         const order = [1, 0, 2]; // 2nd, 1st, 3rd visual order
@@ -1979,8 +2105,7 @@ function renderHostGameState(d) {
             const place = pos + 1;
             podium.innerHTML += `<div class="podium-place podium-${place}"><div>${r.name}</div><div class="podium-block">${place === 1 ? '🥇' : place === 2 ? '🥈' : '🥉'}</div><div>${r.score} pts</div></div>`;
         });
-        const full = document.getElementById('hgFullLeaderboard'); full.innerHTML = "";
-        lb.forEach(r => { full.innerHTML += `<div class="leaderboard-row"><span><span class="leaderboard-rank">#${r.rank}</span> ${r.avatar||'🙂'} ${r.name}</span><strong>${r.score} pts</strong></div>`; });
+        renderLeaderboardList('hgFullLeaderboard', lb);
     }
     lgHostLastStatus = d.status; lgHostLastIndex = d.currentIndex;
 }
