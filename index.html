@@ -670,7 +670,7 @@ html[dir="rtl"] .lead-form label { text-align: right; }
 <h3 style="color:#4338ca;" id="libModalHeading">🎮 Add a Saved Game to the Library</h3>
 <input type="hidden" id="lbEditingId" value="">
 <div style="display:flex; flex-wrap:wrap; gap:10px;">
-<div style="flex:1; min-width:140px;"><label style="font-size:12px; font-weight:bold;">Group:</label><select id="lbGroup" style="padding:8px; font-size:14px; margin:5px 0;"></select></div>
+<div style="flex:1; min-width:140px;"><label style="font-size:12px; font-weight:bold;">Level:</label><select id="lbLevel" style="padding:8px; font-size:14px; margin:5px 0;"></select><p style="font-size:11px; color:#64748b; margin:2px 0 0;">Shared with every group in this level</p></div>
 <div style="flex:1; min-width:140px;"><label style="font-size:12px; font-weight:bold;">Lecture:</label><select id="lbLecture" style="padding:8px; font-size:14px; margin:5px 0;"><option value="L1">L1</option><option value="L2">L2</option><option value="L3">L3</option><option value="L4">L4</option><option value="L5">L5</option><option value="L6">L6</option><option value="L7">L7</option><option value="L8">L8</option></select></div>
 </div>
 <input type="text" id="lbTitle" placeholder="Game title (e.g. Lecture 5 Review)" style="margin-bottom:15px;">
@@ -1273,7 +1273,7 @@ function showTeacherDashboard(data) {
         document.getElementById('superAdminPanel').classList.remove('hidden'); document.getElementById('feedbackUploadPanel').classList.remove('hidden');
         const adminGroupSel = document.getElementById('adminGroupSelect'); adminGroupSel.innerHTML = ""; data.groups.forEach(g => adminGroupSel.innerHTML += `<option value="${g}">${g}</option>`);
         document.getElementById('libManagerPanel').classList.remove('hidden');
-        const lbGroupSel = document.getElementById('lbGroup'); lbGroupSel.innerHTML = ""; data.groups.forEach(g => lbGroupSel.innerHTML += `<option value="${g}">${g}</option>`);
+        const lbLevelSel = document.getElementById('lbLevel'); lbLevelSel.innerHTML = ""; (data.levels || []).forEach(lv => lbLevelSel.innerHTML += `<option value="${lv}">${lv}</option>`);
         loadLibraryManagerList();
     }
     const groups = [...new Set(teacherStudentsData.map(s => String(s.group).trim()))], groupFilter = document.getElementById('groupFilter'); groupFilter.innerHTML = ""; groups.forEach(g => groupFilter.innerHTML += `<option value="${g}">${g}</option>`);
@@ -1770,15 +1770,22 @@ function leaveLiveGame() {
 /* -------------------- TEACHER SIDE -------------------- */
 
 /* ==================== [جديد] الألعاب المحفوظة الجاهزة للمحاضرة الحالية (كل محاضر) ==================== */
+// المكتبة بقت خاصة بالمستوى (Level) مش بالمجموعة، فبنستنتج مستوى المجموعة المختارة من بيانات طلاب المحاضر
+function getLevelForSelectedGroup(grp) {
+    const s = teacherStudentsData.find(st => String(st.group).trim() === String(grp).trim());
+    return s ? String(s.course || '').trim() : '';
+}
+
 async function loadLibraryGamesForCurrentSelection() {
     const grp = document.getElementById('groupFilter').value;
+    const level = getLevelForSelectedGroup(grp);
     const lec = document.getElementById('lectureSelect').value;
     const listEl = document.getElementById('libGamesList');
     if (!listEl) return;
-    if (!grp) { listEl.innerHTML = '<p class="lib-empty-msg">Select a group to see saved games.</p>'; return; }
+    if (!level) { listEl.innerHTML = '<p class="lib-empty-msg">Select a group to see saved games for its level.</p>'; return; }
     listEl.innerHTML = '<p class="lib-empty-msg">Loading...</p>';
     try {
-        const res = await fetch(`${GAS_URL}?action=listLibraryGames&group=${encodeURIComponent(grp)}&lecture=${encodeURIComponent(lec)}`);
+        const res = await fetch(`${GAS_URL}?action=listLibraryGames&level=${encodeURIComponent(level)}&lecture=${encodeURIComponent(lec)}`);
         const d = await res.json();
         if (!d.success || !d.games || d.games.length === 0) {
             listEl.innerHTML = '<p class="lib-empty-msg">No saved games for this lecture yet — ask the admin to prepare one, or start one manually below. 👇</p>';
@@ -1822,7 +1829,7 @@ async function loadLibraryManagerList() {
         if (!d.success) { listEl.innerHTML = `<p class="lib-empty-msg">${d.error || 'Could not load the library.'}</p>`; return; }
         window.__libGamesCache = d.games || [];
         if (window.__libGamesCache.length === 0) { listEl.innerHTML = '<p class="lib-empty-msg">No saved games yet. Click "Add a New Saved Game" above to prepare one.</p>'; return; }
-        listEl.innerHTML = window.__libGamesCache.map(g => `<div class="lib-game-card"><div><div class="lib-title">🎮 ${g.title}</div><div class="lib-meta">${g.group || '-'} • ${g.lecture || '-'} • ${(g.questions || []).length} question(s)</div></div><div class="lib-admin-row"><button class="lib-edit-btn" onclick="editLibGame('${g.libraryId}')">✏️ Edit</button><button class="lib-del-btn" onclick="deleteLibGame('${g.libraryId}')">🗑️ Delete</button></div></div>`).join('');
+        listEl.innerHTML = window.__libGamesCache.map(g => `<div class="lib-game-card"><div><div class="lib-title">🎮 ${g.title}</div><div class="lib-meta">${g.level || '-'} • ${g.lecture || '-'} • ${(g.questions || []).length} question(s)</div></div><div class="lib-admin-row"><button class="lib-edit-btn" onclick="editLibGame('${g.libraryId}')">✏️ Edit</button><button class="lib-del-btn" onclick="deleteLibGame('${g.libraryId}')">🗑️ Delete</button></div></div>`).join('');
     } catch (e) { listEl.innerHTML = '<p class="lib-empty-msg">Network error while loading the library.</p>'; }
 }
 
@@ -1845,7 +1852,7 @@ function openLibBuilderModal(existingGame) {
     document.getElementById('lbEditingId').value = existingGame ? existingGame.libraryId : "";
     document.getElementById('libModalHeading').innerText = existingGame ? "✏️ Edit Saved Game" : "🎮 Add a Saved Game to the Library";
     document.getElementById('lbTitle').value = existingGame ? existingGame.title : "";
-    if (existingGame && existingGame.group) document.getElementById('lbGroup').value = existingGame.group;
+    if (existingGame && existingGame.level) document.getElementById('lbLevel').value = existingGame.level;
     document.getElementById('lbLecture').value = existingGame ? (existingGame.lecture || 'L1') : 'L1';
     document.getElementById('lbBuilderMsg').innerText = "";
     document.getElementById('lbTxtFile').value = "";
@@ -1891,7 +1898,7 @@ function renderLibBuilderQuestions() {
 async function saveLibBuilderGame() {
     const msg = document.getElementById('lbBuilderMsg');
     const title = document.getElementById('lbTitle').value.trim() || "Live Game";
-    const group = document.getElementById('lbGroup').value;
+    const level = document.getElementById('lbLevel').value;
     const lecture = document.getElementById('lbLecture').value;
     const isUploadTab = !document.getElementById('lbUploadTab').classList.contains('hidden');
     let questions = [];
@@ -1912,7 +1919,7 @@ async function saveLibBuilderGame() {
     const editingId = document.getElementById('lbEditingId').value;
     msg.style.color = "#4338ca"; msg.innerText = "Saving...";
     const action = editingId ? 'updateLibraryGame' : 'saveLibraryGame';
-    let body = `action=${action}&teacherId=${encodeURIComponent(loggedInId)}&teacherPass=${encodeURIComponent(loggedInPass)}&group=${encodeURIComponent(group)}&lecture=${encodeURIComponent(lecture)}&title=${encodeURIComponent(title)}&questionsData=${encodeURIComponent(JSON.stringify(questions))}`;
+    let body = `action=${action}&teacherId=${encodeURIComponent(loggedInId)}&teacherPass=${encodeURIComponent(loggedInPass)}&level=${encodeURIComponent(level)}&lecture=${encodeURIComponent(lecture)}&title=${encodeURIComponent(title)}&questionsData=${encodeURIComponent(JSON.stringify(questions))}`;
     if (editingId) body += `&libraryId=${encodeURIComponent(editingId)}`;
     try {
         const res = await fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body });
