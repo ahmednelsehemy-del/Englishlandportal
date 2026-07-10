@@ -327,7 +327,7 @@ html[dir="rtl"] .lead-form label { text-align: right; }
 
 <!-- ==================== Student Dashboard ==================== -->
 <div class="container hidden" id="studentDashboard">
-<div><h2 id="welcomeStudent">Welcome</h2></div>
+<div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;"><h2 id="welcomeStudent" style="margin:0;">Welcome</h2><button onclick="handleLogout()" style="width:auto; padding:8px 18px; background:var(--danger); font-size:13px;">🚪 Log Out</button></div>
 <div class="grid-cards">
 <div class="info-card"><h4>Current Course</h4><strong id="courseName" style="color: var(--primary);"></strong></div>
 <div class="info-card"><h4>Group</h4><strong id="groupName" style="color: var(--secondary);"></strong></div>
@@ -389,10 +389,7 @@ html[dir="rtl"] .lead-form label { text-align: right; }
     <div id="lgStuRevealResult" style="font-size:22px; font-weight:bold; margin-bottom:10px;"></div>
     <p style="color:#cbd5e1;">Correct answer: <strong id="lgStuCorrectAnswerText" style="color:#34d399;"></strong></p>
     <div class="game-score-badge" id="lgStuTotalScoreBadge" style="margin-top:10px;"></div>
-    <h4 style="color:#fde047; margin-top:18px;">🏆 Leaderboard</h4>
-    <div id="lgStuMiniLeaderboard"></div>
-    <div class="timer-bar-outer" style="margin-top:12px;"><div class="timer-bar-fill" id="lgStuRevealTimerFill"></div></div>
-    <p style="color:#94a3b8; font-size:13px; margin-top:5px;">Next question in <span id="lgStuRevealCountdown">5</span>s...</p>
+    <p style="color:#94a3b8; font-size:13px; margin-top:5px;">Waiting for the instructor to continue...</p>
   </div>
 
   <!-- Final Phase -->
@@ -478,7 +475,7 @@ html[dir="rtl"] .lead-form label { text-align: right; }
 
 <!-- ==================== Teacher & Admin Dashboard ==================== -->
 <div class="container hidden" id="teacherDashboard" style="max-width: 1050px;">
-<h2 id="welcomeTeacher">Welcome, Instructor</h2>
+<div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;"><h2 id="welcomeTeacher" style="margin:0;">Welcome, Instructor</h2><button onclick="handleLogout()" style="width:auto; padding:8px 18px; background:var(--danger); font-size:13px;">🚪 Log Out</button></div>
 
 <div id="superAdminPanel" class="admin-panel hidden">
 <h3>👑 Admin Control (Schedules & Zoom Links)</h3>
@@ -621,9 +618,7 @@ html[dir="rtl"] .lead-form label { text-align: right; }
     <div id="hgDistribution" style="margin:20px 0;"></div>
     <h4 style="color:#fde047;">🏆 Top of the Leaderboard</h4>
     <div id="hgMiniLeaderboard"></div>
-    <div class="timer-bar-outer" style="margin-top:12px;"><div class="timer-bar-fill" id="hgRevealTimerFill"></div></div>
-    <p style="color:#94a3b8; font-size:13px; margin:6px 0;">Auto-advancing in <span id="hgRevealCountdown">5</span>s — or skip ahead now:</p>
-    <button onclick="nextLiveGameQuestion()" style="background:var(--secondary); margin-top:5px;">Next Question Now ▶️</button>
+    <button onclick="nextLiveGameQuestion()" style="background:var(--secondary); margin-top:15px;">Next Question ▶️</button>
   </div>
 
   <div id="hgFinalPhase" class="hidden" style="width:100%; text-align:center;">
@@ -670,7 +665,7 @@ html[dir="rtl"] .lead-form label { text-align: right; }
 <h3 style="color:#4338ca;" id="libModalHeading">🎮 Add a Saved Game to the Library</h3>
 <input type="hidden" id="lbEditingId" value="">
 <div style="display:flex; flex-wrap:wrap; gap:10px;">
-<div style="flex:1; min-width:140px;"><label style="font-size:12px; font-weight:bold;">Level:</label><select id="lbLevel" style="padding:8px; font-size:14px; margin:5px 0;"></select><p style="font-size:11px; color:#64748b; margin:2px 0 0;">Shared with every group in this level</p></div>
+<div style="flex:1; min-width:140px;"><label style="font-size:12px; font-weight:bold;">Level:</label><select id="lbLevel" style="padding:8px; font-size:14px; margin:5px 0;"></select></div>
 <div style="flex:1; min-width:140px;"><label style="font-size:12px; font-weight:bold;">Lecture:</label><select id="lbLecture" style="padding:8px; font-size:14px; margin:5px 0;"><option value="L1">L1</option><option value="L2">L2</option><option value="L3">L3</option><option value="L4">L4</option><option value="L5">L5</option><option value="L6">L6</option><option value="L7">L7</option><option value="L8">L8</option></select></div>
 </div>
 <input type="text" id="lbTitle" placeholder="Game title (e.g. Lecture 5 Review)" style="margin-bottom:15px;">
@@ -774,6 +769,9 @@ let loggedInId = "", loggedInPass = "";
 // Live Multiplayer Game (Kahoot-style) state
 let lgBuilderQuestions = [];
 let lgHostRoomCode = "", lgHostPollInterval = null, lgHostLastStatus = "", lgHostLastIndex = -1, lgHostTitle = "";
+// [جديد] تحكم فى الانتقال التلقائي بين الأسئلة (بدون تدخل المحاضر)
+let hgAutoRevealTriggered = false, hgAutoNextTimeout = null;
+const HG_AUTO_NEXT_DELAY_MS = 4000; // مدة عرض الإجابة الصح قبل الانتقال التلقائي للسؤال التالي
 let lgStuRoomCode = "", lgStuPollInterval = null, lgStuLastStatus = "", lgStuLastIndex = -1, lgStuAnsweredThisQuestion = false;
 // [جديد] الأفاتار + الصوت + مضمار السباق + مكتبة الألعاب المحفوظة
 const AVATAR_LIST = ['🦸','🐵','🤖','🦊','🐸','🥷','🧙','🐯','🦄','👽','🐼','🦖','🐙','🐧','🦁','🐝'];
@@ -782,27 +780,6 @@ let soundEnabled = true;
 let lgStuSeenEventCount = 0, hgSeenEventCount = 0;
 let libBuilderQuestions = [];
 let lgStuCountdownInterval = null, lgHostCountdownInterval = null;
-
-// ==================== [جديد] استمرارية الجلسة واللعبة الحية بعد الريفريش ====================
-// عشان لو الطالب أو المحاضر عمل رفريش لصفحة المتصفح، يرجع يلاقي نفسه Login وجوه نفس الغرفة والسكور زي ما هو (مبيتمسحش حاجة)
-const LMS_SESSION_KEY = 'elandLmsSession';
-const LMS_ACTIVE_GAME_KEY = 'elandLmsActiveGame';
-
-function saveSessionToStorage(id, pass) {
-    try { localStorage.setItem(LMS_SESSION_KEY, JSON.stringify({ id, pass })); } catch (e) { /* لو التخزين متاح مش مهم نوقف الأبلكيشن */ }
-}
-function loadSessionFromStorage() {
-    try { const raw = localStorage.getItem(LMS_SESSION_KEY); return raw ? JSON.parse(raw) : null; } catch (e) { return null; }
-}
-function clearActiveGameStorage() {
-    try { localStorage.removeItem(LMS_ACTIVE_GAME_KEY); } catch (e) { /* ignore */ }
-}
-function saveActiveGameToStorage(role, roomCode) {
-    try { localStorage.setItem(LMS_ACTIVE_GAME_KEY, JSON.stringify({ role, roomCode, ts: Date.now() })); } catch (e) { /* ignore */ }
-}
-function loadActiveGameFromStorage() {
-    try { const raw = localStorage.getItem(LMS_ACTIVE_GAME_KEY); return raw ? JSON.parse(raw) : null; } catch (e) { return null; }
-}
 
 // Gamification Variables
 let gameQuestionsArray = [], gameCurrentQuestionIdx = 0, gameTotalScore = 0, gameActiveStreak = 0, gameTimerEngineInterval, gameModeType = 'arena';
@@ -913,7 +890,9 @@ async function handleLogin() {
             document.getElementById('errorMsg').innerText = data.error;
             return;
         }
-        cachedUserData = data; isDataReady = true; saveSessionToStorage(loggedInId, loggedInPass); checkAndShowDashboard();
+        cachedUserData = data; isDataReady = true;
+        try { localStorage.setItem('el_auth', JSON.stringify({ id: id, pass: pass })); } catch (e) {}
+        checkAndShowDashboard();
     }).catch(() => {
         skipIntroVideo();
         document.getElementById('loadingScreen').classList.add('hidden');
@@ -932,72 +911,55 @@ function checkAndShowDashboard() {
             document.getElementById('loadingScreen').classList.add('hidden');
             if (cachedUserData.role === "teacher" || cachedUserData.role === "superadmin") showTeacherDashboard(cachedUserData);
             else if (cachedUserData.role === "student") { studentActiveExams = cachedUserData.exams; showStudentDashboard(cachedUserData); }
-            resumeActiveGameIfAny(cachedUserData.role);
         } else { document.getElementById('loadingScreen').classList.remove('hidden'); }
     }
 }
 
-// [جديد] لو المستخدم كان جوه لعبة حية وعمل رفريش لصفحة المتصفح، نرجّعه تلقائياً لنفس الغرفة وسكوره زي ما هو من غير ما يعمل حاجة
-async function resumeActiveGameIfAny(role) {
-    const saved = loadActiveGameFromStorage();
-    if (!saved || !saved.roomCode) return;
-    try {
-        const isHost = (saved.role === 'host');
-        const url = isHost
-            ? `${GAS_URL}?action=getGameRoomState&roomCode=${encodeURIComponent(saved.roomCode)}&isHost=true`
-            : `${GAS_URL}?action=getGameRoomState&roomCode=${encodeURIComponent(saved.roomCode)}&studentId=${encodeURIComponent(loggedInId)}`;
-        const res = await fetch(url);
-        const d = await res.json();
-        if (!d.success || d.status === 'finished') { clearActiveGameStorage(); return; }
+/* ==================== [جديد] الاحتفاظ بتسجيل الدخول بعد الـ Refresh ==================== */
+// لو فيه بيانات دخول محفوظة من قبل، بندخل المستخدم تلقائياً من غير ما يكتب الـ ID وكلمة المرور تاني،
+// وبنتخطى فيديو الترحيب عشان يوصل لصفحته بسرعة.
+function attemptAutoLogin() {
+    let saved = null;
+    try { saved = JSON.parse(localStorage.getItem('el_auth') || 'null'); } catch (e) { saved = null; }
+    if (!saved || !saved.id || !saved.pass) return;
 
-        if (isHost && (role === 'teacher' || role === 'superadmin')) {
-            lgHostRoomCode = saved.roomCode; lgHostTitle = d.title; lgHostLastStatus = ""; lgHostLastIndex = -1; hgSeenEventCount = 0;
-            document.getElementById('hostGameModal').classList.remove('hidden');
-            document.getElementById('hgBuilderStep').classList.add('hidden');
-            document.getElementById('hgHostStage').classList.remove('hidden');
-            document.getElementById('hgLobbyTitle').innerText = d.title;
-            document.getElementById('hgRoomCodeDisplay').innerText = d.roomCode;
-            if (lgHostPollInterval) clearInterval(lgHostPollInterval);
-            pollHostGameState();
-            lgHostPollInterval = setInterval(pollHostGameState, 1500);
-        } else if (!isHost && role === 'student') {
-            lgStuRoomCode = saved.roomCode; lgStuLastStatus = ""; lgStuLastIndex = -1; lgStuAnsweredThisQuestion = false; lgStuSeenEventCount = 0;
-            document.getElementById('liveGameStudentStage').classList.remove('hidden');
-            if (lgStuPollInterval) clearInterval(lgStuPollInterval);
-            pollStudentGameState();
-            lgStuPollInterval = setInterval(pollStudentGameState, 1500);
-        } else {
-            clearActiveGameStorage();
+    loggedInId = saved.id; loggedInPass = saved.pass;
+    isVideoSkipped = true; // نتخطى الفيديو التقديمي في الدخول التلقائي
+    document.getElementById('landingPage').classList.add('hidden');
+    document.getElementById('loadingScreen').classList.remove('hidden');
+
+    fetch(`${GAS_URL}?action=login&id=${encodeURIComponent(saved.id)}&pass=${encodeURIComponent(saved.pass)}`).then(res => res.json()).then(data => {
+        if (data.error) {
+            // بيانات الدخول القديمة بقت غير صالحة (مثلاً كلمة السر اتغيرت) -> نمسحها ونرجّع صفحة الدخول
+            try { localStorage.removeItem('el_auth'); } catch (e) {}
+            document.getElementById('loadingScreen').classList.add('hidden');
+            document.getElementById('landingPage').classList.remove('hidden');
+            return;
         }
-    } catch (e) { /* لو فشل الاتصال، هنحاول تاني عادي في المرة الجاية */ }
+        cachedUserData = data; isDataReady = true; checkAndShowDashboard();
+    }).catch(() => {
+        document.getElementById('loadingScreen').classList.add('hidden');
+        document.getElementById('landingPage').classList.remove('hidden');
+    });
 }
 
-// [جديد] لو فيه جلسة محفوظة من قبل (Login سابق) وعمل المستخدم رفريش للصفحة، نسجّل دخوله تلقائياً من غير ما يكتب بياناته تاني
-(function autoResumeSessionOnLoad() {
-    const saved = loadSessionFromStorage();
-    if (!saved || !saved.id || !saved.pass) return;
-    window.addEventListener('DOMContentLoaded', () => {
-        loggedInId = saved.id; loggedInPass = saved.pass;
-        isVideoSkipped = true; // مفيش داعي نعرض فيديو المقدمة تاني بعد الريفريش
-        document.getElementById('landingPage').classList.add('hidden');
-        document.getElementById('loadingScreen').classList.remove('hidden');
-        fetch(`${GAS_URL}?action=login&id=${encodeURIComponent(saved.id)}&pass=${encodeURIComponent(saved.pass)}`)
-            .then(res => res.json())
-            .then(data => {
-                if (data.error) {
-                    localStorage.removeItem(LMS_SESSION_KEY);
-                    document.getElementById('loadingScreen').classList.add('hidden');
-                    document.getElementById('landingPage').classList.remove('hidden');
-                    return;
-                }
-                cachedUserData = data; isDataReady = true; checkAndShowDashboard();
-            })
-            .catch(() => {
-                document.getElementById('loadingScreen').classList.add('hidden');
-                document.getElementById('landingPage').classList.remove('hidden');
-            });
-    });
-})();
+// تسجيل الخروج: بيمسح بيانات الدخول المحفوظة وأي تقدم للعبة حية، ويرجّع لصفحة الدخول
+function handleLogout() {
+    try { localStorage.removeItem('el_auth'); localStorage.removeItem('el_liveGameRoom'); } catch (e) {}
+    location.reload();
+}
+
+// لو الطالب كان جوه لعبة حية وعمل refresh للصفحة، اللعبة ترجع تشتغل من غير ما يدخل الكود تاني
+function resumeLiveGameIfAny() {
+    let savedRoom = null;
+    try { savedRoom = localStorage.getItem('el_liveGameRoom'); } catch (e) { savedRoom = null; }
+    if (!savedRoom) return;
+    lgStuRoomCode = savedRoom; lgStuLastStatus = ""; lgStuLastIndex = -1; lgStuAnsweredThisQuestion = false; lgStuSeenEventCount = 0;
+    document.getElementById('liveGameStudentStage').classList.remove('hidden');
+    if (lgStuPollInterval) clearInterval(lgStuPollInterval);
+    pollStudentGameState();
+    lgStuPollInterval = setInterval(pollStudentGameState, 2000);
+}
 
 // ==================== Student Dashboard Functions ====================
 function showStudentDashboard(data) {
@@ -1008,6 +970,7 @@ function showStudentDashboard(data) {
     document.getElementById('scheduleDetails').innerText = String(data.student.schedule);
     document.getElementById('teacherName').innerText = String(data.student.teacher);
     document.getElementById('instructorFeedback').innerText = String(data.student.feedback);
+    resumeLiveGameIfAny(); // [جديد] لو الطالب كان جوه لعبة حية وعمل refresh، يرجّعه للعبة نفسها بتقدمه
 
     const att = data.attendance; const absences = att.total - att.attended;
     document.getElementById('attendanceRate').innerText = att.total === 0 ? "No attendance recorded yet" : `${att.attended} out of ${att.total} lectures (Absences: ${absences})`;
@@ -1273,7 +1236,9 @@ function showTeacherDashboard(data) {
         document.getElementById('superAdminPanel').classList.remove('hidden'); document.getElementById('feedbackUploadPanel').classList.remove('hidden');
         const adminGroupSel = document.getElementById('adminGroupSelect'); adminGroupSel.innerHTML = ""; data.groups.forEach(g => adminGroupSel.innerHTML += `<option value="${g}">${g}</option>`);
         document.getElementById('libManagerPanel').classList.remove('hidden');
-        const lbLevelSel = document.getElementById('lbLevel'); lbLevelSel.innerHTML = ""; (data.levels || []).forEach(lv => lbLevelSel.innerHTML += `<option value="${lv}">${lv}</option>`);
+        // [تحديث] الألعاب المحفوظة بقت بتتربط بالمستوى (Level) مش المجموعة، عشان تتفتح تلقائياً لكل المجموعات في نفس المستوى
+        const levels = [...new Set(teacherStudentsData.map(s => String(s.course).trim()).filter(Boolean))];
+        const lbLevelSel = document.getElementById('lbLevel'); lbLevelSel.innerHTML = ""; levels.forEach(lv => lbLevelSel.innerHTML += `<option value="${lv}">${lv}</option>`);
         loadLibraryManagerList();
     }
     const groups = [...new Set(teacherStudentsData.map(s => String(s.group).trim()))], groupFilter = document.getElementById('groupFilter'); groupFilter.innerHTML = ""; groups.forEach(g => groupFilter.innerHTML += `<option value="${g}">${g}</option>`);
@@ -1619,13 +1584,13 @@ async function joinLiveGameRoom() {
         const d = await res.json();
         if (!d.success) { msg.style.color = "var(--danger)"; msg.innerText = "❌ " + (d.error || "Could not join room."); return; }
         lgStuRoomCode = roomCode; lgStuLastStatus = ""; lgStuLastIndex = -1; lgStuAnsweredThisQuestion = false; lgStuSeenEventCount = 0;
-        saveActiveGameToStorage('student', roomCode);
+        try { localStorage.setItem('el_liveGameRoom', roomCode); } catch (e) {}
         playSound('join');
         closeJoinGameModal();
         document.getElementById('liveGameStudentStage').classList.remove('hidden');
         if (lgStuPollInterval) clearInterval(lgStuPollInterval);
         pollStudentGameState();
-        lgStuPollInterval = setInterval(pollStudentGameState, 1500);
+        lgStuPollInterval = setInterval(pollStudentGameState, 2000);
     } catch (e) { msg.style.color = "var(--danger)"; msg.innerText = "❌ Network error while joining."; }
 }
 
@@ -1683,52 +1648,25 @@ function renderStudentGameState(d) {
             else { resultBox.style.color = "var(--danger)"; resultBox.innerText = "❌ Incorrect"; }
         } else { resultBox.style.color = "#94a3b8"; resultBox.innerText = "⏱️ Time's up — no answer submitted"; }
         document.getElementById('lgStuTotalScoreBadge').innerText = `Total Score: ${d.me ? d.me.score : 0}${d.me && d.me.rank ? " • Rank #" + d.me.rank : ""}`;
-        renderLeaderboardList('lgStuMiniLeaderboard', d.leaderboard || [], loggedInId);
-        if (d.revealStartedAt) updateRevealCountdown('lgStuRevealTimerFill', 'lgStuRevealCountdown', 'lgStuRevealCountdownInterval', d.revealStartedAt, d.revealDurationMs || 5000);
     }
     else if (d.status === 'finished') {
         showStudentGamePhase('lgStuFinal');
         if (lgStuCountdownInterval) clearInterval(lgStuCountdownInterval);
-        if (window.lgStuRevealCountdownInterval) clearInterval(window.lgStuRevealCountdownInterval);
         if (lgStuPollInterval) { clearInterval(lgStuPollInterval); lgStuPollInterval = null; }
-        clearActiveGameStorage();
+        try { localStorage.removeItem('el_liveGameRoom'); } catch (e) {}
         const myEntry = (d.leaderboard || []).find(r => normIdJs(r.studentId) === normIdJs(loggedInId));
         document.getElementById('lgStuFinalRank').innerText = myEntry ? `You finished #${myEntry.rank} with ${myEntry.score} points! 🎉` : "Thanks for playing!";
-        renderLeaderboardList('lgStuLeaderboardList', (d.leaderboard || []).slice(0, 10), loggedInId);
+        const listEl = document.getElementById('lgStuLeaderboardList');
+        listEl.innerHTML = "";
+        (d.leaderboard || []).slice(0, 10).forEach(r => {
+            const isMe = normIdJs(r.studentId) === normIdJs(loggedInId);
+            listEl.innerHTML += `<div class="leaderboard-row ${isMe ? 'me-row' : ''}"><span><span class="leaderboard-rank">#${r.rank}</span> ${r.avatar||'🙂'} ${r.name}</span><strong>${r.score} pts</strong></div>`;
+        });
     }
     lgStuLastStatus = d.status; lgStuLastIndex = d.currentIndex;
 }
 
 function normIdJs(v) { return String(v == null ? '' : v).trim().toUpperCase(); }
-
-// [جديد] لوحة ترتيب واضحة وموحّدة (تستخدم في شاشة الكشف بعد كل سؤال وفي النتيجة النهائية، للطالب والمحاضر)
-function renderLeaderboardList(containerId, leaderboard, highlightStudentId) {
-    const el = document.getElementById(containerId);
-    if (!el) return;
-    el.innerHTML = "";
-    (leaderboard || []).forEach(r => {
-        const isMe = highlightStudentId && normIdJs(r.studentId) === normIdJs(highlightStudentId);
-        const medal = r.rank === 1 ? '🥇' : r.rank === 2 ? '🥈' : r.rank === 3 ? '🥉' : ('#' + r.rank);
-        el.innerHTML += `<div class="leaderboard-row ${isMe ? 'me-row' : ''}"><span><span class="leaderboard-rank">${medal}</span> ${r.avatar || '🙂'} ${r.name}</span><strong>${r.score} pts</strong></div>`;
-    });
-}
-
-// [جديد] عداد تنازلي واضح لمدة شاشة الكشف قبل الانتقال التلقائي للسؤال التالي (يحافظ على إيقاع سريع ومتحمس)
-function updateRevealCountdown(fillId, textId, intervalKey, startedAt, durationMs) {
-    const fill = document.getElementById(fillId);
-    const text = document.getElementById(textId);
-    if (window[intervalKey]) clearInterval(window[intervalKey]);
-    const tick = () => {
-        const elapsed = Date.now() - Number(startedAt);
-        const remainingMs = Math.max(0, Number(durationMs) - elapsed);
-        const pct = Math.max(0, Math.min(100, (remainingMs / Number(durationMs)) * 100));
-        if (fill) fill.style.width = pct + '%';
-        if (text) text.innerText = Math.ceil(remainingMs / 1000);
-        if (remainingMs <= 0) clearInterval(window[intervalKey]);
-    };
-    tick();
-    window[intervalKey] = setInterval(tick, 200);
-}
 
 async function submitLiveAnswer(choice) {
     if (lgStuAnsweredThisQuestion) return;
@@ -1761,37 +1699,38 @@ function updateTimerBar(fillId, startedAt, timeLimitMs) {
 function leaveLiveGame() {
     if (lgStuPollInterval) { clearInterval(lgStuPollInterval); lgStuPollInterval = null; }
     if (lgStuCountdownInterval) clearInterval(lgStuCountdownInterval);
-    if (window.lgStuRevealCountdownInterval) clearInterval(window.lgStuRevealCountdownInterval);
     lgStuRoomCode = ""; lgStuLastStatus = ""; lgStuLastIndex = -1; lgStuSeenEventCount = 0;
-    clearActiveGameStorage();
+    try { localStorage.removeItem('el_liveGameRoom'); } catch (e) {}
     document.getElementById('liveGameStudentStage').classList.add('hidden');
 }
 
 /* -------------------- TEACHER SIDE -------------------- */
 
 /* ==================== [جديد] الألعاب المحفوظة الجاهزة للمحاضرة الحالية (كل محاضر) ==================== */
-// المكتبة بقت خاصة بالمستوى (Level) مش بالمجموعة، فبنستنتج مستوى المجموعة المختارة من بيانات طلاب المحاضر
+// [تحديث] الألعاب بقت بتتحدد على أساس مستوى المجموعة (Level) مش المجموعة نفسها،
+// عشان أي مجموعة تانية بنفس المستوى تلاقي نفس الألعاب المحفوظة جاهزة تلقائياً من غير رفع/بحث تاني.
 function getLevelForSelectedGroup(grp) {
-    const s = teacherStudentsData.find(st => String(st.group).trim() === String(grp).trim());
+    const s = (teacherStudentsData || []).find(x => String(x.group).trim() === String(grp).trim());
     return s ? String(s.course || '').trim() : '';
 }
 
 async function loadLibraryGamesForCurrentSelection() {
     const grp = document.getElementById('groupFilter').value;
-    const level = getLevelForSelectedGroup(grp);
     const lec = document.getElementById('lectureSelect').value;
     const listEl = document.getElementById('libGamesList');
     if (!listEl) return;
-    if (!level) { listEl.innerHTML = '<p class="lib-empty-msg">Select a group to see saved games for its level.</p>'; return; }
+    if (!grp) { listEl.innerHTML = '<p class="lib-empty-msg">Select a group to see saved games.</p>'; return; }
+    const level = getLevelForSelectedGroup(grp);
     listEl.innerHTML = '<p class="lib-empty-msg">Loading...</p>';
     try {
-        const res = await fetch(`${GAS_URL}?action=listLibraryGames&level=${encodeURIComponent(level)}&lecture=${encodeURIComponent(lec)}`);
+        const res = await fetch(`${GAS_URL}?action=listLibraryGames&level=${encodeURIComponent(level)}&group=${encodeURIComponent(grp)}&lecture=${encodeURIComponent(lec)}`);
         const d = await res.json();
         if (!d.success || !d.games || d.games.length === 0) {
             listEl.innerHTML = '<p class="lib-empty-msg">No saved games for this lecture yet — ask the admin to prepare one, or start one manually below. 👇</p>';
             return;
         }
-        listEl.innerHTML = d.games.map(g => `<div class="lib-game-card"><div><div class="lib-title">🎮 ${g.title}</div><div class="lib-meta">${g.questionCount} question(s)</div></div><button class="lib-launch-btn" onclick="launchLibraryGame('${g.libraryId}', '${String(g.title).replace(/'/g, "\\'")}')">🚀 Launch Now</button></div>`).join('');
+        // لو فيه أكتر من لعبة محفوظة لنفس المستوى والمحاضرة، المحاضر بيختار من بينهم (لعبة 1 - لعبة 2 ...)
+        listEl.innerHTML = d.games.map((g, i) => `<div class="lib-game-card"><div><div class="lib-title">🎮 ${g.title || ('Game ' + (i + 1))}</div><div class="lib-meta">${level ? level + ' • ' : ''}${g.questionCount} question(s)</div></div><button class="lib-launch-btn" onclick="launchLibraryGame('${g.libraryId}', '${String(g.title).replace(/'/g, "\\'")}')">🚀 Open Room</button></div>`).join('');
     } catch (e) { listEl.innerHTML = '<p class="lib-empty-msg">Could not load saved games (network error).</p>'; }
 }
 
@@ -1809,12 +1748,11 @@ async function launchLibraryGame(libraryId, title) {
         const d = await res.json();
         if (!d.success) { alert("❌ " + (d.error || "Could not launch the saved game.")); closeHostGameModal(); return; }
         lgHostRoomCode = d.roomCode; lgHostTitle = title; lgHostLastStatus = ""; lgHostLastIndex = -1;
-        saveActiveGameToStorage('host', d.roomCode);
         document.getElementById('hgLobbyTitle').innerText = title;
         document.getElementById('hgRoomCodeDisplay').innerText = d.roomCode;
         if (lgHostPollInterval) clearInterval(lgHostPollInterval);
         pollHostGameState();
-        lgHostPollInterval = setInterval(pollHostGameState, 1500);
+        lgHostPollInterval = setInterval(pollHostGameState, 2000);
     } catch (e) { alert("❌ Network error while launching the game."); closeHostGameModal(); }
 }
 
@@ -1947,9 +1885,9 @@ function openHostBuilderModal() {
 function closeHostGameModal() {
     if (lgHostPollInterval) { clearInterval(lgHostPollInterval); lgHostPollInterval = null; }
     if (lgHostCountdownInterval) clearInterval(lgHostCountdownInterval);
-    if (window.lgHostRevealCountdownInterval) clearInterval(window.lgHostRevealCountdownInterval);
+    if (hgAutoNextTimeout) { clearTimeout(hgAutoNextTimeout); hgAutoNextTimeout = null; }
+    hgAutoRevealTriggered = false;
     lgHostRoomCode = ""; lgHostLastStatus = ""; lgHostLastIndex = -1;
-    clearActiveGameStorage();
     document.getElementById('hostGameModal').classList.add('hidden');
 }
 
@@ -2016,8 +1954,7 @@ async function createLiveGameRoom() {
         const d = await res.json();
         if (!d.success) { msg.style.color = "var(--danger)"; msg.innerText = "❌ " + (d.error || "Could not create room."); return; }
 
-        lgHostRoomCode = d.roomCode; lgHostTitle = title; lgHostLastStatus = ""; lgHostLastIndex = -1; hgSeenEventCount = 0;
-        saveActiveGameToStorage('host', d.roomCode);
+        lgHostRoomCode = d.roomCode; lgHostTitle = title; lgHostLastStatus = ""; lgHostLastIndex = -1; hgSeenEventCount = 0; hgAutoRevealTriggered = false; if (hgAutoNextTimeout) { clearTimeout(hgAutoNextTimeout); hgAutoNextTimeout = null; }
         document.getElementById('hgBuilderStep').classList.add('hidden');
         document.getElementById('hgHostStage').classList.remove('hidden');
         showHostGamePhase('hgLobby');
@@ -2025,7 +1962,7 @@ async function createLiveGameRoom() {
         document.getElementById('hgRoomCodeDisplay').innerText = d.roomCode;
         if (lgHostPollInterval) clearInterval(lgHostPollInterval);
         pollHostGameState();
-        lgHostPollInterval = setInterval(pollHostGameState, 1500);
+        lgHostPollInterval = setInterval(pollHostGameState, 2000);
     } catch (e) { msg.style.color = "var(--danger)"; msg.innerText = "❌ Network error while creating the room."; }
 }
 
@@ -2078,10 +2015,19 @@ function renderHostGameState(d) {
             document.getElementById('hgQuestionText').innerText = d.question.question;
             const box = document.getElementById('hgChoicesDisplay'); box.innerHTML = "";
             d.question.choices.forEach((choice, i) => { box.innerHTML += `<div class="kahoot-btn ${kahootColors[i % kahootColors.length]}" style="cursor:default;">${choice}</div>`; });
+            hgAutoRevealTriggered = false; // سؤال جديد -> نرجّع علامة الكشف التلقائي
         }
         document.getElementById('hgAnsweredCount').innerText = d.answeredCount;
         document.getElementById('hgTotalPlayers').innerText = d.playerCount;
         updateTimerBar('hgTimerFill', d.questionStartedAt, d.timeLimitMs);
+
+        // [جديد] كشف الإجابة تلقائياً من غير تدخل المحاضر: لو كل الطلاب جاوبوا، أو الوقت خلص
+        const timeUp = (Date.now() - Number(d.questionStartedAt)) >= Number(d.timeLimitMs);
+        const allAnswered = d.playerCount > 0 && d.answeredCount >= d.playerCount;
+        if (!hgAutoRevealTriggered && (allAnswered || timeUp)) {
+            hgAutoRevealTriggered = true;
+            revealLiveGameQuestion();
+        }
     }
     else if (d.status === 'reveal') {
         showHostGamePhase('hgRevealPhase');
@@ -2095,14 +2041,19 @@ function renderHostGameState(d) {
             const isCorrect = choice === d.question.answer;
             dist.innerHTML += `<div class="answer-dist-row"><div class="answer-dist-label">${isCorrect ? '✅ ' : ''}${choice}</div><div class="answer-dist-bar-outer"><div class="answer-dist-bar-fill ${isCorrect ? 'correct-fill' : ''}" style="width:${pct}%;">${c}</div></div></div>`;
         });
-        renderLeaderboardList('hgMiniLeaderboard', d.leaderboard || []);
-        if (d.revealStartedAt) updateRevealCountdown('hgRevealTimerFill', 'hgRevealCountdown', 'lgHostRevealCountdownInterval', d.revealStartedAt, d.revealDurationMs || 5000);
+        const mini = document.getElementById('hgMiniLeaderboard'); mini.innerHTML = "";
+        (d.leaderboard || []).forEach(r => { mini.innerHTML += `<div class="leaderboard-row"><span><span class="leaderboard-rank">#${r.rank}</span> ${r.avatar||'🙂'} ${r.name}</span><strong>${r.score} pts</strong></div>`; });
+
+        // [جديد] الانتقال للسؤال التالي تلقائياً بعد عرض الإجابة الصح لمدة ثوانٍ، من غير ما المحاضر يضغط أي زرار
+        if (lgHostLastStatus !== 'reveal') {
+            if (hgAutoNextTimeout) clearTimeout(hgAutoNextTimeout);
+            hgAutoNextTimeout = setTimeout(() => { nextLiveGameQuestion(); }, HG_AUTO_NEXT_DELAY_MS);
+        }
     }
     else if (d.status === 'finished') {
         showHostGamePhase('hgFinalPhase');
+        if (hgAutoNextTimeout) { clearTimeout(hgAutoNextTimeout); hgAutoNextTimeout = null; }
         if (lgHostPollInterval) { clearInterval(lgHostPollInterval); lgHostPollInterval = null; }
-        if (window.lgHostRevealCountdownInterval) clearInterval(window.lgHostRevealCountdownInterval);
-        clearActiveGameStorage();
         const lb = d.leaderboard || [];
         const podium = document.getElementById('hgPodium'); podium.innerHTML = "";
         const order = [1, 0, 2]; // 2nd, 1st, 3rd visual order
@@ -2112,10 +2063,15 @@ function renderHostGameState(d) {
             const place = pos + 1;
             podium.innerHTML += `<div class="podium-place podium-${place}"><div>${r.name}</div><div class="podium-block">${place === 1 ? '🥇' : place === 2 ? '🥈' : '🥉'}</div><div>${r.score} pts</div></div>`;
         });
-        renderLeaderboardList('hgFullLeaderboard', lb);
+        const full = document.getElementById('hgFullLeaderboard'); full.innerHTML = "";
+        lb.forEach(r => { full.innerHTML += `<div class="leaderboard-row"><span><span class="leaderboard-rank">#${r.rank}</span> ${r.avatar||'🙂'} ${r.name}</span><strong>${r.score} pts</strong></div>`; });
     }
     lgHostLastStatus = d.status; lgHostLastIndex = d.currentIndex;
 }
+
+// [جديد] عند تحميل الصفحة (بما فيها الـ refresh)، نحاول ندخّل المستخدم تلقائياً لو كان مسجّل دخول قبل كده
+attemptAutoLogin();
+
 </script>
 </body>
 </html>
