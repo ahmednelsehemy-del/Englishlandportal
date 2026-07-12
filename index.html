@@ -197,6 +197,18 @@ th { background-color: #f1f5f9; color: var(--primary); }
 /* ==================== [جديد] طابع كوميدي خفيف للداشبورد ==================== */
 .comic-title { font-family: 'Baloo 2', 'Segoe UI', sans-serif; }
 .sound-toggle-btn { width: auto; padding: 6px 14px; font-size: 13px; background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.3); color: white; border-radius: 20px; }
+
+/* ==================== [جديد] العد التنازلي بين الأسئلة (3-2-1) ==================== */
+.next-q-countdown-box { text-align:center; padding: 10px 0 4px 0; }
+.next-q-countdown-label { color:#94a3b8; font-size:14px; margin-bottom:6px; letter-spacing:1px; }
+.next-q-countdown-number { display:inline-block; font-size:64px; font-weight:900; color:#fde047; text-shadow: 0 0 18px rgba(253,224,71,0.6); line-height:1; }
+.next-q-countdown-number.pop { animation: countdownPop 0.9s ease; }
+@keyframes countdownPop { 0% { transform: scale(0.4); opacity: 0; } 35% { transform: scale(1.15); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
+
+/* ==================== [جديد] زر إظهار كود الغرفة وقتما أراد المحاضر ==================== */
+.show-code-btn { width: auto; padding: 6px 14px; font-size: 13px; background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.3); color: white; border-radius: 20px; }
+.floating-room-code { text-align:center; background: rgba(255,255,255,0.08); border: 2px dashed rgba(255,255,255,0.3); border-radius: 12px; padding: 8px 10px; margin-bottom: 10px; color:white; font-size: 13px; }
+.floating-room-code strong { font-size: 26px; letter-spacing: 8px; color: var(--secondary); margin-inline-start: 6px; }
 .wiggle-on-hover:hover { animation: wiggle 0.4s ease; }
 @keyframes wiggle { 0%,100% { transform: rotate(0deg); } 25% { transform: rotate(-4deg); } 75% { transform: rotate(4deg); } }
 
@@ -386,10 +398,15 @@ html[dir="rtl"] .lead-form label { text-align: right; }
 
   <!-- Reveal Phase -->
   <div id="lgStuReveal" class="hidden" style="text-align:center; width:100%;">
-    <div id="lgStuRevealResult" style="font-size:22px; font-weight:bold; margin-bottom:10px;"></div>
-    <p style="color:#cbd5e1;">Correct answer: <strong id="lgStuCorrectAnswerText" style="color:#34d399;"></strong></p>
-    <div class="game-score-badge" id="lgStuTotalScoreBadge" style="margin-top:10px;"></div>
-    <p style="color:#94a3b8; font-size:13px; margin-top:5px;">Waiting for the instructor to continue...</p>
+    <div id="lgStuRevealInner">
+      <div id="lgStuRevealResult" style="font-size:22px; font-weight:bold; margin-bottom:10px;"></div>
+      <p style="color:#cbd5e1;">Correct answer: <strong id="lgStuCorrectAnswerText" style="color:#34d399;"></strong></p>
+      <div class="game-score-badge" id="lgStuTotalScoreBadge" style="margin-top:10px;"></div>
+    </div>
+    <div id="lgStuCountdownBox" class="next-q-countdown-box hidden">
+      <div class="next-q-countdown-label">NEXT QUESTION IN</div>
+      <div class="next-q-countdown-number" id="lgStuCountdownNum">3</div>
+    </div>
   </div>
 
   <!-- Final Phase -->
@@ -588,7 +605,11 @@ html[dir="rtl"] .lead-form label { text-align: right; }
 <!-- STEP 2: Live Host Stage -->
 <div id="hgHostStage" class="hidden cinematic-game-board" style="margin:0;">
 
-  <div style="display:flex; justify-content:flex-end; margin-bottom:6px; width:100%;"><button class="sound-toggle-btn" onclick="toggleGameSound()" id="hgSoundBtn">🔊 Sound On</button></div>
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; width:100%;">
+    <button class="show-code-btn" onclick="toggleShowRoomCode()" id="hgShowCodeBtn">🔑 Show Room Code</button>
+    <button class="sound-toggle-btn" onclick="toggleGameSound()" id="hgSoundBtn">🔊 Sound On</button>
+  </div>
+  <div id="hgFloatingRoomCode" class="floating-room-code hidden" style="width:100%;">Room Code: <strong id="hgFloatingRoomCodeText"></strong></div>
   <div id="hgOvertakeToast" style="width:100%;"></div>
   <div id="hgRaceTrack" class="race-track-wrap hidden" style="width:100%;"></div>
 
@@ -614,11 +635,17 @@ html[dir="rtl"] .lead-form label { text-align: right; }
   </div>
 
   <div id="hgRevealPhase" class="hidden" style="width:100%; text-align:center;">
-    <h3 style="color:white;">Correct Answer: <span id="hgRevealAnswer" style="color:#34d399;"></span></h3>
-    <div id="hgDistribution" style="margin:20px 0;"></div>
-    <h4 style="color:#fde047;">🏆 Top of the Leaderboard</h4>
-    <div id="hgMiniLeaderboard"></div>
-    <button onclick="nextLiveGameQuestion()" style="background:var(--secondary); margin-top:15px;">Next Question ▶️</button>
+    <div id="hgRevealInner">
+      <h3 style="color:white;">Correct Answer: <span id="hgRevealAnswer" style="color:#34d399;"></span></h3>
+      <div id="hgDistribution" style="margin:20px 0;"></div>
+      <h4 style="color:#fde047;">🏆 Top of the Leaderboard</h4>
+      <div id="hgMiniLeaderboard"></div>
+      <button onclick="skipToNextQuestionNow()" style="background:var(--secondary); margin-top:15px;">Skip ▶️</button>
+    </div>
+    <div id="hgCountdownBox" class="next-q-countdown-box hidden">
+      <div class="next-q-countdown-label">NEXT QUESTION IN</div>
+      <div class="next-q-countdown-number" id="hgCountdownNum">3</div>
+    </div>
   </div>
 
   <div id="hgFinalPhase" class="hidden" style="width:100%; text-align:center;">
@@ -770,8 +797,12 @@ let loggedInId = "", loggedInPass = "";
 let lgBuilderQuestions = [];
 let lgHostRoomCode = "", lgHostPollInterval = null, lgHostLastStatus = "", lgHostLastIndex = -1, lgHostTitle = "";
 // [جديد] تحكم فى الانتقال التلقائي بين الأسئلة (بدون تدخل المحاضر)
-let hgAutoRevealTriggered = false, hgAutoNextTimeout = null;
-const HG_AUTO_NEXT_DELAY_MS = 4000; // مدة عرض الإجابة الصح قبل الانتقال التلقائي للسؤال التالي
+let hgAutoRevealTriggered = false;
+// [محدّث] الداشبورد وتراك السباق يظهروا لمدة قصيرة بس، وبعدين عد تنازلي 3-2-1 قبل السؤال الجاي
+const LG_REVEAL_SHOW_MS = 2000;    // مدة عرض نتيجة الإجابة + الداشبورد/تراك السباق فى شاشة الكشف
+const LG_COUNTDOWN_MS = 3000;      // مدة العد التنازلي (3-2-1) قبل ظهور السؤال التالي
+const HG_AUTO_NEXT_DELAY_MS = LG_REVEAL_SHOW_MS + LG_COUNTDOWN_MS; // إجمالي وقت شاشة الكشف قبل الانتقال التلقائي للسؤال التالي
+let hgCountdownTimeout = null, lgStuCountdownTimeout = null; // مؤقتات بدء العد التنازلي (محاضر / طالب)
 let lgStuRoomCode = "", lgStuPollInterval = null, lgStuLastStatus = "", lgStuLastIndex = -1, lgStuAnsweredThisQuestion = false;
 // [جديد] الأفاتار + الصوت + مضمار السباق + مكتبة الألعاب المحفوظة
 const AVATAR_LIST = ['🦸','🐵','🤖','🦊','🐸','🥷','🧙','🐯','🦄','👽','🐼','🦖','🐙','🐧','🦁','🐝'];
@@ -1630,6 +1661,7 @@ function renderStudentGameState(d) {
             d.question.choices.forEach((choice, i) => {
                 box.innerHTML += `<button class="kahoot-btn ${shuffled[i % shuffled.length]}" onclick="submitLiveAnswer('${String(choice).replace(/'/g, "\\'")}')">${choice}</button>`;
             });
+            resetStudentRevealUI(); // نجهّز شاشة الكشف من جديد استعداداً للسؤال الجاي
         }
         showStudentGamePhase('lgStuQuestion');
         if (d.me && d.me.answeredCurrent) {
@@ -1640,7 +1672,6 @@ function renderStudentGameState(d) {
     }
     else if (d.status === 'reveal') {
         showStudentGamePhase('lgStuReveal');
-        if (lgStuCountdownInterval) clearInterval(lgStuCountdownInterval);
         document.getElementById('lgStuCorrectAnswerText').innerText = d.question.answer;
         const resultBox = document.getElementById('lgStuRevealResult');
         if (d.me && d.me.answeredCurrent) {
@@ -1648,10 +1679,16 @@ function renderStudentGameState(d) {
             else { resultBox.style.color = "var(--danger)"; resultBox.innerText = "❌ Incorrect"; }
         } else { resultBox.style.color = "#94a3b8"; resultBox.innerText = "⏱️ Time's up — no answer submitted"; }
         document.getElementById('lgStuTotalScoreBadge').innerText = `Total Score: ${d.me ? d.me.score : 0}${d.me && d.me.rank ? " • Rank #" + d.me.rank : ""}`;
+
+        // [جديد] أول ما نوصل لشاشة الكشف: نعرض النتيجة + الداشبورد/تراك السباق لمدة قصيرة، وبعدين عد تنازلي 3-2-1
+        if (lgStuLastStatus !== 'reveal') {
+            resetStudentRevealUI();
+            lgStuCountdownTimeout = setTimeout(() => startStudentCountdown(), LG_REVEAL_SHOW_MS);
+        }
     }
     else if (d.status === 'finished') {
         showStudentGamePhase('lgStuFinal');
-        if (lgStuCountdownInterval) clearInterval(lgStuCountdownInterval);
+        resetStudentRevealUI();
         if (lgStuPollInterval) { clearInterval(lgStuPollInterval); lgStuPollInterval = null; }
         try { localStorage.removeItem('el_liveGameRoom'); } catch (e) {}
         const myEntry = (d.leaderboard || []).find(r => normIdJs(r.studentId) === normIdJs(loggedInId));
@@ -1667,6 +1704,35 @@ function renderStudentGameState(d) {
 }
 
 function normIdJs(v) { return String(v == null ? '' : v).trim().toUpperCase(); }
+
+// [جديد] يرجّع شاشة الكشف عند الطالب لحالتها الأصلية (النتيجة ظاهرة، العد التنازلي مخفي) ويوقف أي مؤقتات شغالة
+function resetStudentRevealUI() {
+    if (lgStuCountdownTimeout) { clearTimeout(lgStuCountdownTimeout); lgStuCountdownTimeout = null; }
+    if (lgStuCountdownInterval) { clearInterval(lgStuCountdownInterval); lgStuCountdownInterval = null; }
+    const inner = document.getElementById('lgStuRevealInner');
+    const box = document.getElementById('lgStuCountdownBox');
+    if (inner) inner.classList.remove('hidden');
+    if (box) box.classList.add('hidden');
+}
+
+// [جديد] بعد عرض النتيجة والداشبورد لمدة LG_REVEAL_SHOW_MS، نبدأ عد تنازلي 3-2-1 قبل ظهور السؤال التالي
+function startStudentCountdown() {
+    const inner = document.getElementById('lgStuRevealInner');
+    const box = document.getElementById('lgStuCountdownBox');
+    const numEl = document.getElementById('lgStuCountdownNum');
+    if (!inner || !box || !numEl) return;
+    inner.classList.add('hidden');
+    box.classList.remove('hidden');
+    let n = 3;
+    const showNum = () => { numEl.innerText = n; numEl.classList.remove('pop'); void numEl.offsetWidth; numEl.classList.add('pop'); };
+    showNum();
+    if (lgStuCountdownInterval) clearInterval(lgStuCountdownInterval);
+    lgStuCountdownInterval = setInterval(() => {
+        n--;
+        if (n <= 0) { clearInterval(lgStuCountdownInterval); lgStuCountdownInterval = null; return; }
+        showNum();
+    }, 1000);
+}
 
 async function submitLiveAnswer(choice) {
     if (lgStuAnsweredThisQuestion) return;
@@ -1698,7 +1764,7 @@ function updateTimerBar(fillId, startedAt, timeLimitMs) {
 
 function leaveLiveGame() {
     if (lgStuPollInterval) { clearInterval(lgStuPollInterval); lgStuPollInterval = null; }
-    if (lgStuCountdownInterval) clearInterval(lgStuCountdownInterval);
+    resetStudentRevealUI();
     lgStuRoomCode = ""; lgStuLastStatus = ""; lgStuLastIndex = -1; lgStuSeenEventCount = 0;
     try { localStorage.removeItem('el_liveGameRoom'); } catch (e) {}
     document.getElementById('liveGameStudentStage').classList.add('hidden');
@@ -1884,10 +1950,10 @@ function openHostBuilderModal() {
 
 function closeHostGameModal() {
     if (lgHostPollInterval) { clearInterval(lgHostPollInterval); lgHostPollInterval = null; }
-    if (lgHostCountdownInterval) clearInterval(lgHostCountdownInterval);
-    if (hgAutoNextTimeout) { clearTimeout(hgAutoNextTimeout); hgAutoNextTimeout = null; }
+    resetHostRevealUI();
     hgAutoRevealTriggered = false;
     lgHostRoomCode = ""; lgHostLastStatus = ""; lgHostLastIndex = -1;
+    document.getElementById('hgFloatingRoomCode').classList.add('hidden');
     document.getElementById('hostGameModal').classList.add('hidden');
 }
 
@@ -1954,9 +2020,10 @@ async function createLiveGameRoom() {
         const d = await res.json();
         if (!d.success) { msg.style.color = "var(--danger)"; msg.innerText = "❌ " + (d.error || "Could not create room."); return; }
 
-        lgHostRoomCode = d.roomCode; lgHostTitle = title; lgHostLastStatus = ""; lgHostLastIndex = -1; hgSeenEventCount = 0; hgAutoRevealTriggered = false; if (hgAutoNextTimeout) { clearTimeout(hgAutoNextTimeout); hgAutoNextTimeout = null; }
+        lgHostRoomCode = d.roomCode; lgHostTitle = title; lgHostLastStatus = ""; lgHostLastIndex = -1; hgSeenEventCount = 0; hgAutoRevealTriggered = false; resetHostRevealUI();
         document.getElementById('hgBuilderStep').classList.add('hidden');
         document.getElementById('hgHostStage').classList.remove('hidden');
+        document.getElementById('hgFloatingRoomCode').classList.add('hidden');
         showHostGamePhase('hgLobby');
         document.getElementById('hgLobbyTitle').innerText = title;
         document.getElementById('hgRoomCodeDisplay').innerText = d.roomCode;
@@ -1968,6 +2035,57 @@ async function createLiveGameRoom() {
 
 function showHostGamePhase(phaseId) {
     ['hgLobby', 'hgQuestionPhase', 'hgRevealPhase', 'hgFinalPhase'].forEach(id => document.getElementById(id).classList.toggle('hidden', id !== phaseId));
+}
+
+// [جديد] يرجّع شاشة الكشف عند المحاضر لحالتها الأصلية (النتيجة ظاهرة، العد التنازلي مخفي) ويوقف أي مؤقتات شغالة
+function resetHostRevealUI() {
+    if (hgCountdownTimeout) { clearTimeout(hgCountdownTimeout); hgCountdownTimeout = null; }
+    if (lgHostCountdownInterval) { clearInterval(lgHostCountdownInterval); lgHostCountdownInterval = null; }
+    const inner = document.getElementById('hgRevealInner');
+    const box = document.getElementById('hgCountdownBox');
+    if (inner) inner.classList.remove('hidden');
+    if (box) box.classList.add('hidden');
+}
+
+// [جديد] بعد عرض الإجابة والداشبورد لمدة LG_REVEAL_SHOW_MS، نبدأ عد تنازلي 3-2-1 ثم ننتقل تلقائياً للسؤال التالي
+function startHostCountdown() {
+    const inner = document.getElementById('hgRevealInner');
+    const box = document.getElementById('hgCountdownBox');
+    const numEl = document.getElementById('hgCountdownNum');
+    if (!inner || !box || !numEl) return;
+    inner.classList.add('hidden');
+    box.classList.remove('hidden');
+    let n = 3;
+    const showNum = () => { numEl.innerText = n; numEl.classList.remove('pop'); void numEl.offsetWidth; numEl.classList.add('pop'); };
+    showNum();
+    if (lgHostCountdownInterval) clearInterval(lgHostCountdownInterval);
+    lgHostCountdownInterval = setInterval(() => {
+        n--;
+        if (n <= 0) {
+            clearInterval(lgHostCountdownInterval); lgHostCountdownInterval = null;
+            nextLiveGameQuestion(); // العد التنازلي خلص -> ننتقل فعلياً للسؤال التالي
+            return;
+        }
+        showNum();
+    }, 1000);
+}
+
+// [جديد] زر يظهره المحاضر وقتما أراد لتذكير الطلاب بكود الغرفة، حتى بعد بداية اللعبة
+function toggleShowRoomCode() {
+    const box = document.getElementById('hgFloatingRoomCode');
+    if (!box) return;
+    if (box.classList.contains('hidden')) {
+        document.getElementById('hgFloatingRoomCodeText').innerText = lgHostRoomCode;
+        box.classList.remove('hidden');
+    } else {
+        box.classList.add('hidden');
+    }
+}
+
+// [جديد] يسمح للمحاضر بتخطي شاشة الكشف/العد التنازلي والانتقال فوراً للسؤال التالي
+function skipToNextQuestionNow() {
+    resetHostRevealUI();
+    nextLiveGameQuestion();
 }
 
 async function startLiveGameRoom() {
@@ -2016,6 +2134,7 @@ function renderHostGameState(d) {
             const box = document.getElementById('hgChoicesDisplay'); box.innerHTML = "";
             d.question.choices.forEach((choice, i) => { box.innerHTML += `<div class="kahoot-btn ${kahootColors[i % kahootColors.length]}" style="cursor:default;">${choice}</div>`; });
             hgAutoRevealTriggered = false; // سؤال جديد -> نرجّع علامة الكشف التلقائي
+            resetHostRevealUI(); // نجهّز شاشة الكشف من جديد استعداداً للسؤال الجاي
         }
         document.getElementById('hgAnsweredCount').innerText = d.answeredCount;
         document.getElementById('hgTotalPlayers').innerText = d.playerCount;
@@ -2044,15 +2163,15 @@ function renderHostGameState(d) {
         const mini = document.getElementById('hgMiniLeaderboard'); mini.innerHTML = "";
         (d.leaderboard || []).forEach(r => { mini.innerHTML += `<div class="leaderboard-row"><span><span class="leaderboard-rank">#${r.rank}</span> ${r.avatar||'🙂'} ${r.name}</span><strong>${r.score} pts</strong></div>`; });
 
-        // [جديد] الانتقال للسؤال التالي تلقائياً بعد عرض الإجابة الصح لمدة ثوانٍ، من غير ما المحاضر يضغط أي زرار
+        // [محدّث] نعرض النتيجة/الداشبورد لمدة قصيرة، وبعدين عد تنازلي 3-2-1، وبعدها ننتقل تلقائياً للسؤال التالي
         if (lgHostLastStatus !== 'reveal') {
-            if (hgAutoNextTimeout) clearTimeout(hgAutoNextTimeout);
-            hgAutoNextTimeout = setTimeout(() => { nextLiveGameQuestion(); }, HG_AUTO_NEXT_DELAY_MS);
+            resetHostRevealUI();
+            hgCountdownTimeout = setTimeout(() => startHostCountdown(), LG_REVEAL_SHOW_MS);
         }
     }
     else if (d.status === 'finished') {
         showHostGamePhase('hgFinalPhase');
-        if (hgAutoNextTimeout) { clearTimeout(hgAutoNextTimeout); hgAutoNextTimeout = null; }
+        resetHostRevealUI();
         if (lgHostPollInterval) { clearInterval(lgHostPollInterval); lgHostPollInterval = null; }
         const lb = d.leaderboard || [];
         const podium = document.getElementById('hgPodium'); podium.innerHTML = "";
