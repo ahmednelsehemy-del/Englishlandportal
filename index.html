@@ -275,7 +275,7 @@ html[dir="rtl"] .why-grid, html[dir="rtl"] .testimonial-track { direction: rtl; 
 .testimonial-card { background: #fff; border-radius: var(--radius-md); overflow: hidden; box-shadow: var(--shadow-md); text-align: left; transition: transform 0.18s ease; border-left: 4px solid var(--coral); }
 html[dir="rtl"] .testimonial-card { border-left: none; border-right: 4px solid var(--coral); }
 .testimonial-card:hover { transform: translateY(-4px); }
-.testimonial-card video, .testimonial-card img { width: 100%; height: 180px; object-fit: cover; display: block; background: #000; }
+.testimonial-card video, .testimonial-card img, .testimonial-card iframe { width: 100%; height: 180px; object-fit: cover; display: block; background: #000; border: none; }
 .testimonial-card .t-body { padding: 14px 16px; }
 .testimonial-card .t-name { font-weight: 700; color: var(--primary); font-size: 14px; }
 .testimonial-card .t-caption { color: var(--muted); font-size: 12px; margin-top: 4px; }
@@ -527,7 +527,7 @@ html[dir="rtl"] .lead-form label { text-align: right; }
 
 <div id="homeworkQuizContainer" class="hidden hw-quiz-box"></div>
 
-<div id="hwResultBox" class="hidden" style="margin-top: 20px; padding: 15px; background: #f0fdf4; border: 1px solid #EAB531; border-radius: 8px;">
+<div id="hwResultBox" class="hidden" style="margin-top: 20px; padding: 15px; background: #f0fdf4; border: 1px solid var(--secondary); border-radius: 8px;">
 <h4 style="margin: 0 0 10px 0; color: #065f46;">✅ Instructor's Evaluation:</h4>
 <strong>Grade:</strong> <span id="displayHwGrade" style="color: var(--primary); font-weight: bold; font-size: 16px;"></span><br>
 <strong style="display:block; margin-top:8px;">Feedback:</strong> <div id="displayHwFeedback" style="margin-top:5px; font-style: italic;"></div>
@@ -572,7 +572,7 @@ html[dir="rtl"] .lead-form label { text-align: right; }
 <div id="libManagerList" style="margin-top:15px;"><p class="lib-empty-msg">Loading...</p></div>
 </div>
 
-<div id="feedbackUploadPanel" class="card-section hidden" style="background: #f0fdf4; padding: 20px; border-radius: 8px; border: 1px solid #EAB531; margin-bottom: 25px;">
+<div id="feedbackUploadPanel" class="card-section hidden" style="background: #f0fdf4; padding: 20px; border-radius: 8px; border: 1px solid var(--secondary); margin-bottom: 25px;">
 <div style="color: #065f46; font-weight: bold; font-size: 16px; margin-bottom: 10px;">🌟 Upload Student Feedback (Video/Image) - Shown on Landing Page</div>
 <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
 <div style="flex: 1; min-width: 150px;"><input type="text" id="fbStudentName" placeholder="Student name" style="padding: 8px; font-size: 14px; margin: 5px 0;"></div>
@@ -585,7 +585,7 @@ html[dir="rtl"] .lead-form label { text-align: right; }
 <div style="flex: 2; min-width: 180px;"><input type="file" id="fbMediaFile" accept="image/*,video/*" style="padding: 5px; font-size: 13px; margin: 5px 0; border: none;"></div>
 </div>
 <input type="text" id="fbCaption" placeholder="Short caption (optional), e.g. Went from zero to fluent in 6 months" style="margin-top:8px;">
-<button onclick="uploadStudentFeedback()" style="background: #EAB531; margin-top: 10px;">Upload Feedback 🌟</button>
+<button onclick="uploadStudentFeedback()" style="background: var(--secondary); margin-top: 10px;">Upload Feedback 🌟</button>
 <div id="fbUploadMsg" style="margin-top:10px; font-weight:bold; font-size:14px;"></div>
 <p style="font-size:12px; color:#065f46; margin-top:5px;">⚠️ Keep video files short (under ~20MB) since they are uploaded directly through the form.</p>
 </div>
@@ -845,7 +845,7 @@ if(slides.length > 0) {
     }, 4000);
 }
 
-const GAS_URL = "https://script.google.com/macros/s/AKfycbzSjFAeIxxFGu-KWNWxvKa5Pt7ItDMLJBEnCeyTrzodnHv7zdl-vmUsRMysGcaTNfZ9/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbxjjZmjHiv3WB8JS5CXjhYE_de3jCh9RuIlManhPRdJcgWtaoiOcsg4jYMyMWisCem7/exec";
 
 // Global Variables
 let teacherStudentsData = [], studentActiveExams = {}, currentExamQuestions = [], currentExamTypeKey = "", examTimerInterval, cachedUserData = null, splashCountdownInterval;
@@ -1561,6 +1561,14 @@ async function loadTestimonials() {
     renderTestimonials();
 }
 
+// [محدّث] رابط "uc?export=view" بتاع Google Drive بقى غير موثوق للعرض المباشر جوه <img>/<video>
+// (بيظهر أيقونة صورة/فيديو معطوبة كتير). بدل منه: بنستخرج ID الملف من الرابط المخزّن،
+// وبعدين نبني رابط عرض موثوق حسب نوع الميديا - نفس الأسلوب المستخدم بالفعل لتشغيل صوتيات الامتحانات.
+function extractDriveFileId(url) {
+    const match = String(url || '').match(/[-\w]{25,}/);
+    return match ? match[0] : null;
+}
+
 function renderTestimonials() {
     const track = document.getElementById('testimonialTrack');
     if (!track) return;
@@ -1569,9 +1577,16 @@ function renderTestimonials() {
     if (cachedTestimonials.length === 0) { track.innerHTML = `<div class="testimonial-empty">${dict.fb_empty}</div>`; return; }
     track.innerHTML = "";
     cachedTestimonials.forEach(item => {
-        const mediaHtml = (String(item.type).toLowerCase() === 'video')
-            ? `<video src="${item.url}" controls></video>`
-            : `<img src="${item.url}" alt="${item.name}">`;
+        const fileId = extractDriveFileId(item.url);
+        let mediaHtml;
+        if (String(item.type).toLowerCase() === 'video') {
+            mediaHtml = fileId
+                ? `<iframe src="https://drive.google.com/file/d/${fileId}/preview" allow="autoplay" loading="lazy"></iframe>`
+                : `<video src="${item.url}" controls></video>`;
+        } else {
+            const imgSrc = fileId ? `https://drive.google.com/thumbnail?id=${fileId}&sz=w1000` : item.url;
+            mediaHtml = `<img src="${imgSrc}" alt="${item.name}" loading="lazy">`;
+        }
         track.innerHTML += `<div class="testimonial-card">${mediaHtml}<div class="t-body"><div class="t-name">${item.name || ''}</div><div class="t-caption">${item.caption || ''}</div></div></div>`;
     });
 }
