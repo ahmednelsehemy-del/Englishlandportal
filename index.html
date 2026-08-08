@@ -410,47 +410,47 @@ html[dir="rtl"] .lead-form label { text-align: right; }
 
 <!-- ==================== Student Dashboard ==================== -->
 <div class="container hidden" id="studentDashboard">
-<div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;"><h2 id="welcomeStudent" style="margin:0;">Welcome</h2><button onclick="handleLogout()" style="width:auto; padding:8px 18px; background:var(--danger); font-size:13px;">🚪 Log Out</button></div>
+<div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;"><h2 id="welcomeStudent" style="margin:0;">Welcome</h2><button onclick="handleLogout()" style="width:auto; padding:8px 18px; background:var(--danger); font-size:13px;" data-i18n="logout_btn">🚪 Log Out</button></div>
 
 <div class="student-tabs-bar">
-<button type="button" class="student-tab-btn active" id="studentTabBtn-personal" onclick="switchStudentTab('personal')">👤 Personal Data</button>
-<button type="button" class="student-tab-btn" id="studentTabBtn-attendance" onclick="switchStudentTab('attendance')">📊 Attendance</button>
-<button type="button" class="student-tab-btn" id="studentTabBtn-lectures" onclick="switchStudentTab('lectures')">📅 My Lectures</button>
-<button type="button" class="student-tab-btn" id="studentTabBtn-livegame" onclick="switchStudentTab('livegame')">🎮 Live Game</button>
-<button type="button" class="student-tab-btn" id="studentTabBtn-homework" onclick="switchStudentTab('homework')">📝 Homework</button>
-<button type="button" class="student-tab-btn" id="studentTabBtn-exams" onclick="switchStudentTab('exams')">💻 Exams</button>
-<button type="button" class="student-tab-btn" id="studentTabBtn-materials" onclick="switchStudentTab('materials')">📚 Course Materials</button>
+<button type="button" class="student-tab-btn active" id="studentTabBtn-personal" onclick="switchStudentTab('personal')" data-i18n="tab_personal">👤 Personal Data</button>
+<button type="button" class="student-tab-btn" id="studentTabBtn-attendance" onclick="switchStudentTab('attendance')" data-i18n="tab_attendance">📊 Attendance</button>
+<button type="button" class="student-tab-btn" id="studentTabBtn-lectures" onclick="switchStudentTab('lectures')" data-i18n="tab_lectures">📅 My Lectures</button>
+<button type="button" class="student-tab-btn" id="studentTabBtn-livegame" onclick="switchStudentTab('livegame')" data-i18n="tab_livegame">🎮 Live Game</button>
+<button type="button" class="student-tab-btn" id="studentTabBtn-homework" onclick="switchStudentTab('homework')" data-i18n="tab_homework">📝 Homework</button>
+<button type="button" class="student-tab-btn" id="studentTabBtn-exams" onclick="switchStudentTab('exams')" data-i18n="tab_exams">💻 Exams</button>
+<button type="button" class="student-tab-btn" id="studentTabBtn-materials" onclick="switchStudentTab('materials')" data-i18n="tab_materials">📚 Course Materials</button>
 </div>
 
 <!-- ===== TAB: Personal Data ===== -->
 <div class="student-tab-pane" id="studentTab-personal">
 <div class="grid-cards">
-<div class="info-card"><h4>Current Course</h4><strong id="courseName" style="color: var(--primary);"></strong></div>
-<div class="info-card"><h4>Group</h4><strong id="groupName" style="color: var(--secondary);"></strong></div>
-<div class="info-card"><h4>Schedule Details</h4><strong id="scheduleDetails"></strong></div>
-<div class="info-card"><h4>Instructor</h4><strong id="teacherName"></strong></div>
-<div class="info-card"><h4>Financial Status</h4><span id="paymentStatus" class="payment-status"></span></div>
+<div class="info-card"><h4 data-i18n="lbl_course">Current Course</h4><strong id="courseName" style="color: var(--primary);"></strong></div>
+<div class="info-card"><h4 data-i18n="lbl_group">Group</h4><strong id="groupName" style="color: var(--secondary);"></strong></div>
+<div class="info-card"><h4 data-i18n="lbl_schedule_details">Schedule Details</h4><strong id="scheduleDetails"></strong></div>
+<div class="info-card"><h4 data-i18n="lbl_instructor">Instructor</h4><strong id="teacherName"></strong></div>
+<div class="info-card"><h4 data-i18n="lbl_payment">Financial Status</h4><span id="paymentStatus" class="payment-status"></span></div>
 </div>
-<div class="feedback-box"><h4>💬 General Instructor Feedback:</h4><p id="instructorFeedback" style="margin:5px 0 0 0; color:#1E3FD8;"></p></div>
+<div class="feedback-box"><h4 data-i18n="lbl_feedback_title">💬 General Instructor Feedback:</h4><p id="instructorFeedback" style="margin:5px 0 0 0; color:#1E3FD8;"></p></div>
 </div>
 
 <!-- ===== TAB: Attendance ===== -->
 <div class="student-tab-pane hidden" id="studentTab-attendance">
 <div class="grid-cards">
-<div class="info-card"><h4>Attendance Rate</h4><strong id="attendanceRate" style="color: #3b82f6;"></strong></div>
+<div class="info-card"><h4 data-i18n="lbl_attendance_rate">Attendance Rate</h4><strong id="attendanceRate" style="color: #3b82f6;"></strong></div>
 </div>
-<div id="barNoticeSection" class="hidden"><div class="bar-box"><strong>⚠️ Academic Warning:</strong><p style="margin: 5px 0 0 0;">You have exceeded the allowed absence limit.</p></div></div>
-<p style="color: var(--muted); font-size: 13px; margin-top: 15px;">Per-lecture attendance status is shown in the <strong>My Lectures</strong> tab.</p>
+<div id="barNoticeSection" class="hidden"><div class="bar-box"><strong data-i18n="lbl_warning_title">⚠️ Academic Warning:</strong><p style="margin: 5px 0 0 0;" data-i18n="lbl_warning_text">You have exceeded the allowed absence limit.</p></div></div>
+<p style="color: var(--muted); font-size: 13px; margin-top: 15px;" data-i18n="lbl_attendance_note">Per-lecture attendance status is shown in the My Lectures tab.</p>
 </div>
 
 <!-- ===== TAB: My Lectures ===== -->
 <div class="student-tab-pane hidden" id="studentTab-lectures">
 <div class="card-section" style="margin-top: 0;">
-<div class="card-title">📅 Schedule (Center & Live Stream)</div>
+<div class="card-title" data-i18n="lbl_schedule_title">📅 Schedule (Center & Live Stream)</div>
 <div class="table-responsive">
 <table>
-<thead><tr><th>Lecture</th><th>Date & Time</th><th>Status</th><th>Live Stream 🔴</th></tr></thead>
-<tbody id="studentScheduleTableBody"><tr><td colspan="4">Fetching Schedule...⏳</td></tr></tbody>
+<thead><tr><th data-i18n="th_lecture">Lecture</th><th data-i18n="th_datetime">Date & Time</th><th data-i18n="th_status">Status</th><th data-i18n="th_livestream">Live Stream 🔴</th></tr></thead>
+<tbody id="studentScheduleTableBody"><tr><td colspan="4" data-i18n="lbl_fetching_schedule">Fetching Schedule...⏳</td></tr></tbody>
 </table>
 </div>
 </div>
@@ -459,9 +459,9 @@ html[dir="rtl"] .lead-form label { text-align: right; }
 <!-- ===== TAB: Live Game ===== -->
 <div class="student-tab-pane hidden" id="studentTab-livegame">
 <div class="live-cta-box" style="margin-top: 0;">
-<h3>🎮 Live Class Game Room</h3>
-<p>Got a room code from your instructor? Join the live competition now!</p>
-<button onclick="openJoinGameModal()">🚀 Join a Live Game</button>
+<h3 data-i18n="lbl_livegame_title">🎮 Live Class Game Room</h3>
+<p data-i18n="lbl_livegame_desc">Got a room code from your instructor? Join the live competition now!</p>
+<button onclick="openJoinGameModal()" data-i18n="lbl_join_game_btn">🚀 Join a Live Game</button>
 </div>
 
 <div id="liveGameStudentStage" class="hidden cinematic-game-board" style="margin-top:15px;">
@@ -472,12 +472,12 @@ html[dir="rtl"] .lead-form label { text-align: right; }
 
   <!-- Waiting Lobby -->
   <div id="lgStuWaiting" class="hidden" style="text-align:center;">
-    <div class="live-badge">WAITING ROOM</div>
+    <div class="live-badge" data-i18n="lbl_waiting_room">WAITING ROOM</div>
     <h3 id="lgStuTitle" style="color:white;"></h3>
-    <p style="color:#cbd5e1;">✅ You're in! Waiting for your instructor to start the game...</p>
+    <p style="color:#cbd5e1;" data-i18n="lbl_waiting_desc">✅ You're in! Waiting for your instructor to start the game...</p>
     <div class="room-code-display" id="lgStuRoomCodeShown" style="font-size:28px; letter-spacing:6px;"></div>
     <p style="color:#94a3b8; font-size:13px;" id="lgStuPlayerCount"></p>
-    <button onclick="leaveLiveGame()" style="width:auto; padding:8px 25px; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.3); color:white;">🚪 Leave Room</button>
+    <button onclick="leaveLiveGame()" style="width:auto; padding:8px 25px; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.3); color:white;" data-i18n="lbl_leave_room">🚪 Leave Room</button>
   </div>
 
   <!-- Question Phase -->
@@ -489,28 +489,28 @@ html[dir="rtl"] .lead-form label { text-align: right; }
     <div class="timer-bar-outer"><div class="timer-bar-fill" id="lgStuTimerFill"></div></div>
     <div class="game-question-text" id="lgStuQuestionText"></div>
     <div id="lgStuChoicesBox" class="kahoot-grid"></div>
-    <p id="lgStuLockedMsg" class="hidden" style="color:#F6D883; text-align:center; font-weight:bold; margin-top:15px;">✅ Answer locked in! Waiting for other players...</p>
+    <p id="lgStuLockedMsg" class="hidden" style="color:#F6D883; text-align:center; font-weight:bold; margin-top:15px;" data-i18n="lbl_answer_locked">✅ Answer locked in! Waiting for other players...</p>
   </div>
 
   <!-- Reveal Phase -->
   <div id="lgStuReveal" class="hidden" style="text-align:center; width:100%;">
     <div id="lgStuRevealInner">
       <div id="lgStuRevealResult" style="font-size:22px; font-weight:bold; margin-bottom:10px;"></div>
-      <p style="color:#cbd5e1;">Correct answer: <strong id="lgStuCorrectAnswerText" style="color:#F6D883;"></strong></p>
+      <p style="color:#cbd5e1;"><span data-i18n="lbl_correct_answer">Correct answer:</span> <strong id="lgStuCorrectAnswerText" style="color:#F6D883;"></strong></p>
       <div class="game-score-badge" id="lgStuTotalScoreBadge" style="margin-top:10px;"></div>
     </div>
     <div id="lgStuCountdownBox" class="next-q-countdown-box hidden">
-      <div class="next-q-countdown-label">NEXT QUESTION IN</div>
+      <div class="next-q-countdown-label" data-i18n="lbl_next_question">NEXT QUESTION IN</div>
       <div class="next-q-countdown-number" id="lgStuCountdownNum">3</div>
     </div>
   </div>
 
   <!-- Final Phase -->
   <div id="lgStuFinal" class="hidden" style="text-align:center; width:100%;">
-    <h3 style="color:#fde047;">🏆 Game Over!</h3>
+    <h3 style="color:#fde047;" data-i18n="lbl_game_over">🏆 Game Over!</h3>
     <div id="lgStuFinalRank" style="font-size:20px; color:white; margin:10px 0;"></div>
     <div id="lgStuLeaderboardList"></div>
-    <button onclick="leaveLiveGame()" style="width:auto; padding:10px 25px; background:var(--secondary); margin-top:15px;">Done ✅</button>
+    <button onclick="leaveLiveGame()" style="width:auto; padding:10px 25px; background:var(--secondary); margin-top:15px;" data-i18n="lbl_done">Done ✅</button>
   </div>
 
 </div>
@@ -519,34 +519,34 @@ html[dir="rtl"] .lead-form label { text-align: right; }
 <!-- ===== TAB: Homework ===== -->
 <div class="student-tab-pane hidden" id="studentTab-homework">
 <div class="card-section" style="margin-top: 0;">
-<div class="card-title">📝 Homework & Interactive Storytelling</div>
+<div class="card-title" data-i18n="lbl_homework_title">📝 Homework & Interactive Storytelling</div>
 <div class="q-block">
-<label class="hw-label" style="font-size:16px;">Select a lecture to submit narrative assignment or start the interactive journey:</label>
+<label class="hw-label" style="font-size:16px;" data-i18n="lbl_homework_select">Select a lecture to submit narrative assignment or start the interactive journey:</label>
 <select id="studentHwLecture" onchange="loadStudentHomework()" style="background:#eff6ff; color:var(--primary); font-weight:bold;">
 <option value="L1">Lecture 1 (L1)</option><option value="L2">Lecture 2 (L2)</option><option value="L3">Lecture 3 (L3)</option>
 <option value="L4">Lecture 4 (L4)</option><option value="L5">Lecture 5 (L5)</option><option value="L6">Lecture 6 (L6)</option>
 <option value="L7">Lecture 7 (L7)</option><option value="L8">Lecture 8 (L8)</option>
 </select>
-<textarea id="studentWriting" class="en-input" rows="4" placeholder="Type your narrative storytelling assignment here..."></textarea>
-<input type="url" id="studentShadowing" class="en-input" placeholder="Paste your audio recording link here...">
-<button onclick="submitStudentHomework()" style="margin-top: 15px;">📤 Submit Narrative</button>
+<textarea id="studentWriting" class="en-input" rows="4" placeholder="Type your narrative storytelling assignment here..." data-i18n-placeholder="ph_narrative"></textarea>
+<input type="url" id="studentShadowing" class="en-input" placeholder="Paste your audio recording link here..." data-i18n-placeholder="ph_audio_link">
+<button onclick="submitStudentHomework()" style="margin-top: 15px;" data-i18n="lbl_submit_narrative">📤 Submit Narrative</button>
 <div id="hwSubmitMsg" style="margin-top:10px; font-weight:bold; font-size:14px;"></div>
 
 <!-- Cinematic Gamified Arena -->
 <div id="gamifiedArena" class="gamified-section hidden">
-    <h3>🎬 Interactive Story Journey</h3>
-    <p style="color:#cbd5e1; font-size:14px;">Complete the narrative and test your understanding in a fun, cinematic way to collect points.</p>
+    <h3 data-i18n="lbl_story_journey">🎬 Interactive Story Journey</h3>
+    <p style="color:#cbd5e1; font-size:14px;" data-i18n="lbl_story_journey_desc">Complete the narrative and test your understanding in a fun, cinematic way to collect points.</p>
     
     <div id="gameModesMenu" class="game-modes-grid">
         <div class="game-mode-card" onclick="initGamifiedQuiz('arena')">
             <span class="game-icon">⚡</span>
-            <strong>Narrative Heroes Challenge</strong>
-            <p style="color:#94a3b8; font-size:12px; margin-top:8px;">Answer quickly to keep the story flowing and double your points.</p>
+            <strong data-i18n="lbl_heroes_challenge">Narrative Heroes Challenge</strong>
+            <p style="color:#94a3b8; font-size:12px; margin-top:8px;" data-i18n="lbl_heroes_desc">Answer quickly to keep the story flowing and double your points.</p>
         </div>
         <div class="game-mode-card" onclick="initGamifiedQuiz('review')">
             <span class="game-icon">📖</span>
-            <strong>Quiet Review</strong>
-            <p style="color:#94a3b8; font-size:12px; margin-top:8px;">Enjoy reading the context and selecting answers without time pressure.</p>
+            <strong data-i18n="lbl_quiet_review">Quiet Review</strong>
+            <p style="color:#94a3b8; font-size:12px; margin-top:8px;" data-i18n="lbl_quiet_review_desc">Enjoy reading the context and selecting answers without time pressure.</p>
         </div>
     </div>
 
@@ -561,16 +561,16 @@ html[dir="rtl"] .lead-form label { text-align: right; }
             <div id="gameQuestionText" class="game-question-text"></div>
         </div>
         <div id="gameChoicesBox" class="kahoot-grid"></div>
-        <button onclick="exitActiveGame()" style="background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.3); margin-top:25px; width:auto; padding:8px 25px; color:#fff; cursor:pointer;">🏳️ Pause Journey & Return</button>
+        <button onclick="exitActiveGame()" style="background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.3); margin-top:25px; width:auto; padding:8px 25px; color:#fff; cursor:pointer;" data-i18n="lbl_pause_journey">🏳️ Pause Journey & Return</button>
     </div>
 </div>
 
 <div id="homeworkQuizContainer" class="hidden hw-quiz-box"></div>
 
 <div id="hwResultBox" class="hidden" style="margin-top: 20px; padding: 15px; background: #f0fdf4; border: 1px solid var(--secondary); border-radius: 8px;">
-<h4 style="margin: 0 0 10px 0; color: #065f46;">✅ Instructor's Evaluation:</h4>
-<strong>Grade:</strong> <span id="displayHwGrade" style="color: var(--primary); font-weight: bold; font-size: 16px;"></span><br>
-<strong style="display:block; margin-top:8px;">Feedback:</strong> <div id="displayHwFeedback" style="margin-top:5px; font-style: italic;"></div>
+<h4 style="margin: 0 0 10px 0; color: #065f46;" data-i18n="lbl_evaluation_title">✅ Instructor's Evaluation:</h4>
+<strong data-i18n="lbl_grade">Grade:</strong> <span id="displayHwGrade" style="color: var(--primary); font-weight: bold; font-size: 16px;"></span><br>
+<strong style="display:block; margin-top:8px;" data-i18n="lbl_feedback_label">Feedback:</strong> <div id="displayHwFeedback" style="margin-top:5px; font-style: italic;"></div>
 </div>
 </div>
 </div>
@@ -578,12 +578,12 @@ html[dir="rtl"] .lead-form label { text-align: right; }
 
 <!-- ===== TAB: Exams ===== -->
 <div class="student-tab-pane hidden" id="studentTab-exams">
-<div class="card-section" style="margin-top: 0;"><div class="card-title">💻 Digital Exams & Quizzes</div><div id="examsContainer"><div class="exam-row"><div><strong>Quiz 1 (10)</strong></div><div id="action-quiz1"></div></div><div class="exam-row"><div><strong>Quiz 2 (10)</strong></div><div id="action-quiz2"></div></div><div class="exam-row"><div><strong>Final Exam (80)</strong></div><div id="action-final"></div></div></div></div>
+<div class="card-section" style="margin-top: 0;"><div class="card-title" data-i18n="lbl_exams_title">💻 Digital Exams & Quizzes</div><div id="examsContainer"><div class="exam-row"><div><strong data-i18n="lbl_quiz1">Quiz 1 (10)</strong></div><div id="action-quiz1"></div></div><div class="exam-row"><div><strong data-i18n="lbl_quiz2">Quiz 2 (10)</strong></div><div id="action-quiz2"></div></div><div class="exam-row"><div><strong data-i18n="lbl_final">Final Exam (80)</strong></div><div id="action-final"></div></div></div></div>
 </div>
 
 <!-- ===== TAB: Course Materials ===== -->
 <div class="student-tab-pane hidden" id="studentTab-materials">
-<div class="card-section" style="margin-top: 0;"><div class="card-title">📚 Course Materials</div><div id="materialsList"></div></div>
+<div class="card-section" style="margin-top: 0;"><div class="card-title" data-i18n="lbl_materials_title">📚 Course Materials</div><div id="materialsList"></div></div>
 </div>
 </div>
 
@@ -1131,7 +1131,7 @@ function switchStudentTab(tab) {
 function showStudentDashboard(data) {
     document.getElementById('studentDashboard').classList.remove('hidden');
     switchStudentTab('personal'); // كل مرة الطالب يدخل، الداشبورد يفتح على تاب "البيانات الشخصية" افتراضياً
-    document.getElementById('welcomeStudent').innerText = `Welcome, ${String(data.student.name)} 👋`;
+    document.getElementById('welcomeStudent').innerText = translations[currentLang].welcome_greeting.replace('{name}', String(data.student.name));
     document.getElementById('courseName').innerText = String(data.student.course);
     document.getElementById('groupName').innerText = String(data.student.group);
     document.getElementById('scheduleDetails').innerText = String(data.student.schedule);
@@ -1553,7 +1553,48 @@ en: {
     lead_level_label: "Current English Level (if known)", lead_level_unknown: "I don't know / Zero",
     lead_notes_label: "Notes (Optional)", lead_notes_ph: "Anything else you'd like us to know...",
     lead_submit_btn: "Send Request 🚀",
-    lead_sending: "Sending...", lead_success: "✅ Thank you! Our team will contact you soon.", lead_error: "❌ Something went wrong, please try again.", lead_missing: "⚠️ Please enter your name and phone number."
+    lead_sending: "Sending...", lead_success: "✅ Thank you! Our team will contact you soon.", lead_error: "❌ Something went wrong, please try again.", lead_missing: "⚠️ Please enter your name and phone number.",
+
+    logout_btn: "🚪 Log Out",
+    welcome_greeting: "Welcome, {name} 👋",
+    tab_personal: "👤 Personal Data", tab_attendance: "📊 Attendance", tab_lectures: "📅 My Lectures",
+    tab_livegame: "🎮 Live Game", tab_homework: "📝 Homework", tab_exams: "💻 Exams", tab_materials: "📚 Course Materials",
+    lbl_course: "Current Course", lbl_group: "Group", lbl_schedule_details: "Schedule Details",
+    lbl_instructor: "Instructor", lbl_payment: "Financial Status", lbl_feedback_title: "💬 General Instructor Feedback:",
+    lbl_attendance_rate: "Attendance Rate", lbl_warning_title: "⚠️ Academic Warning:",
+    lbl_warning_text: "You have exceeded the allowed absence limit.",
+    lbl_attendance_note: "Per-lecture attendance status is shown in the My Lectures tab.",
+    lbl_schedule_title: "📅 Schedule (Center & Live Stream)",
+    th_lecture: "Lecture", th_datetime: "Date & Time", th_status: "Status", th_livestream: "Live Stream 🔴",
+    lbl_fetching_schedule: "Fetching Schedule...⏳",
+    lbl_livegame_title: "🎮 Live Class Game Room",
+    lbl_livegame_desc: "Got a room code from your instructor? Join the live competition now!",
+    lbl_join_game_btn: "🚀 Join a Live Game",
+    lbl_waiting_room: "WAITING ROOM",
+    lbl_waiting_desc: "✅ You're in! Waiting for your instructor to start the game...",
+    lbl_leave_room: "🚪 Leave Room",
+    lbl_answer_locked: "✅ Answer locked in! Waiting for other players...",
+    lbl_correct_answer: "Correct answer:",
+    lbl_next_question: "NEXT QUESTION IN",
+    lbl_game_over: "🏆 Game Over!",
+    lbl_done: "Done ✅",
+    lbl_homework_title: "📝 Homework & Interactive Storytelling",
+    lbl_homework_select: "Select a lecture to submit narrative assignment or start the interactive journey:",
+    ph_narrative: "Type your narrative storytelling assignment here...",
+    ph_audio_link: "Paste your audio recording link here...",
+    lbl_submit_narrative: "📤 Submit Narrative",
+    lbl_story_journey: "🎬 Interactive Story Journey",
+    lbl_story_journey_desc: "Complete the narrative and test your understanding in a fun, cinematic way to collect points.",
+    lbl_heroes_challenge: "Narrative Heroes Challenge",
+    lbl_heroes_desc: "Answer quickly to keep the story flowing and double your points.",
+    lbl_quiet_review: "Quiet Review",
+    lbl_quiet_review_desc: "Enjoy reading the context and selecting answers without time pressure.",
+    lbl_pause_journey: "🏳️ Pause Journey & Return",
+    lbl_evaluation_title: "✅ Instructor's Evaluation:",
+    lbl_grade: "Grade:", lbl_feedback_label: "Feedback:",
+    lbl_exams_title: "💻 Digital Exams & Quizzes",
+    lbl_quiz1: "Quiz 1 (10)", lbl_quiz2: "Quiz 2 (10)", lbl_final: "Final Exam (80)",
+    lbl_materials_title: "📚 Course Materials"
 },
 ar: {
     slide1_h: "أتقن الإنجليزية للكبار", slide1_p: "بيئة تعليمية احترافية مصممة لتطوير مهاراتك بثقة كاملة.",
@@ -1582,7 +1623,48 @@ ar: {
     lead_level_label: "مستواك الحالي في الإنجليزية (لو عارفه)", lead_level_unknown: "مش عارف / صفر",
     lead_notes_label: "ملاحظات (اختياري)", lead_notes_ph: "أي حاجة تانية حابب تقولها لنا...",
     lead_submit_btn: "إرسال الطلب 🚀",
-    lead_sending: "جاري الإرسال...", lead_success: "✅ شكرًا ليك! فريقنا هيتواصل معاك قريبًا.", lead_error: "❌ حصل خطأ، من فضلك حاول تاني.", lead_missing: "⚠️ من فضلك اكتب الاسم ورقم الموبايل."
+    lead_sending: "جاري الإرسال...", lead_success: "✅ شكرًا ليك! فريقنا هيتواصل معاك قريبًا.", lead_error: "❌ حصل خطأ، من فضلك حاول تاني.", lead_missing: "⚠️ من فضلك اكتب الاسم ورقم الموبايل.",
+
+    logout_btn: "🚪 تسجيل الخروج",
+    welcome_greeting: "أهلاً بيك، {name} 👋",
+    tab_personal: "👤 البيانات الشخصية", tab_attendance: "📊 الحضور والغياب", tab_lectures: "📅 محاضراتي",
+    tab_livegame: "🎮 اللعبة الحية", tab_homework: "📝 الواجبات", tab_exams: "💻 الامتحانات", tab_materials: "📚 مواد الكورس",
+    lbl_course: "الكورس الحالي", lbl_group: "المجموعة", lbl_schedule_details: "تفاصيل المواعيد",
+    lbl_instructor: "المحاضر", lbl_payment: "الحالة المالية", lbl_feedback_title: "💬 ملاحظات المحاضر العامة:",
+    lbl_attendance_rate: "نسبة الحضور", lbl_warning_title: "⚠️ تنبيه أكاديمي:",
+    lbl_warning_text: "لقد تجاوزت الحد المسموح به من الغياب.",
+    lbl_attendance_note: "حالة الحضور لكل محاضرة على حدة موجودة في تاب \"محاضراتي\".",
+    lbl_schedule_title: "📅 المواعيد (بالمركز والبث المباشر)",
+    th_lecture: "المحاضرة", th_datetime: "التاريخ والوقت", th_status: "الحالة", th_livestream: "البث المباشر 🔴",
+    lbl_fetching_schedule: "جاري تحميل المواعيد...⏳",
+    lbl_livegame_title: "🎮 غرفة الألعاب الحية للفصل",
+    lbl_livegame_desc: "معاك كود غرفة من المحاضر؟ انضم للمنافسة الحية دلوقتي!",
+    lbl_join_game_btn: "🚀 انضم للعبة حية",
+    lbl_waiting_room: "غرفة الانتظار",
+    lbl_waiting_desc: "✅ أنت داخل! في انتظار المحاضر ليبدأ اللعبة...",
+    lbl_leave_room: "🚪 مغادرة الغرفة",
+    lbl_answer_locked: "✅ تم تسجيل إجابتك! في انتظار باقي اللاعبين...",
+    lbl_correct_answer: "الإجابة الصحيحة:",
+    lbl_next_question: "السؤال التالي خلال",
+    lbl_game_over: "🏆 انتهت اللعبة!",
+    lbl_done: "تم ✅",
+    lbl_homework_title: "📝 الواجبات والسرد التفاعلي",
+    lbl_homework_select: "اختر محاضرة لتسليم الواجب السردي أو بدء الرحلة التفاعلية:",
+    ph_narrative: "اكتب واجب السرد القصصي هنا...",
+    ph_audio_link: "الصق رابط التسجيل الصوتي هنا...",
+    lbl_submit_narrative: "📤 تسليم الواجب",
+    lbl_story_journey: "🎬 رحلة القصة التفاعلية",
+    lbl_story_journey_desc: "أكمل القصة واختبر فهمك بطريقة سينمائية ممتعة لجمع النقاط.",
+    lbl_heroes_challenge: "تحدي أبطال السرد",
+    lbl_heroes_desc: "جاوب بسرعة عشان تكمل القصة وتضاعف نقاطك.",
+    lbl_quiet_review: "مراجعة هادئة",
+    lbl_quiet_review_desc: "استمتع بقراءة السياق واختيار الإجابات بدون ضغط وقت.",
+    lbl_pause_journey: "🏳️ إيقاف الرحلة والعودة",
+    lbl_evaluation_title: "✅ تقييم المحاضر:",
+    lbl_grade: "الدرجة:", lbl_feedback_label: "الملاحظات:",
+    lbl_exams_title: "💻 الامتحانات والكويزات الرقمية",
+    lbl_quiz1: "الكويز الأول (10)", lbl_quiz2: "الكويز الثاني (10)", lbl_final: "الامتحان النهائي (80)",
+    lbl_materials_title: "📚 مواد الكورس"
 }
 };
 let currentLang = 'en';
