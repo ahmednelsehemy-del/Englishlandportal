@@ -69,6 +69,15 @@ button:disabled { background-color: var(--locked); color: #64748b; cursor: not-a
 .feedback-box { background: var(--primary-tint); border-left: 4px solid #3b82f6; padding: 16px; margin-top: 20px; border-radius: var(--radius-sm); text-align: left; }
 .bar-box { background: #fef2f2; border-left: 4px solid var(--danger); padding: 16px; margin-top: 20px; border-radius: var(--radius-sm); text-align: left; color: #991b1b; }
 .card-section { margin-top: 28px; text-align: left; }
+
+/* ==================== Student Dashboard Tabs ==================== */
+.student-tabs-bar { display: flex; gap: 6px; overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 18px 0 4px; padding-bottom: 6px; border-bottom: 1px solid var(--border-c); scrollbar-width: thin; }
+.student-tab-btn { flex-shrink: 0; width: auto; background: var(--primary-tint); color: var(--primary); font-size: 13px; font-weight: 600; padding: 10px 16px; border-radius: 20px 20px 0 0; white-space: nowrap; transition: background-color 0.15s ease, color 0.15s ease; }
+.student-tab-btn:hover { background: #dfe7fb; }
+.student-tab-btn.active { background: var(--primary); color: #fff; }
+.student-tab-pane { animation: fadeInTab 0.15s ease; }
+@keyframes fadeInTab { from { opacity: 0; } to { opacity: 1; } }
+@media(min-width: 640px) { .student-tabs-bar { overflow-x: visible; flex-wrap: wrap; } }
 .card-title { font-family: var(--font-display); font-size: 17px; font-weight: 600; color: var(--primary); border-bottom: 2px solid var(--primary-tint); padding-bottom: 8px; margin-bottom: 12px; }
 .material-item { background: var(--primary-tint); margin: 8px 0; padding: 13px 14px; border-radius: var(--radius-sm); display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between; align-items: center; border: 1px solid var(--border-c); }
 .material-item a { color: var(--secondary-dark); text-decoration: none; font-weight: 700; }
@@ -242,6 +251,8 @@ tbody tr:last-child td { border-bottom: none; }
 .hero-login-btn, .hero-lead-btn { width: auto; padding: 13px 26px; font-size: 14px; border-radius: 30px; font-weight: 700; }
 .hero-login-btn { background: var(--gold); color: var(--gold-ink); box-shadow: 0 8px 20px rgba(234,181,49,0.35); }
 .hero-login-btn:hover { background: var(--gold-dark); }
+.hero-login-btn-alt { background: #fff; color: var(--primary); box-shadow: 0 8px 20px rgba(255,255,255,0.2); }
+.hero-login-btn-alt:hover { background: #eef1f7; }
 .hero-lead-btn { background: rgba(255,255,255,0.05); color: #fff; border: 1.5px solid rgba(255,255,255,0.35); }
 .hero-lead-btn:hover { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.5); }
 @media(min-width: 768px) { .hero-cta-row { margin-top: -25px; } }
@@ -311,7 +322,7 @@ html[dir="rtl"] .lead-form label { text-align: right; }
 <div class="lang-switch-bar">
 <button type="button" class="lang-btn active" id="langBtnEn" onclick="setLanguage('en')">English</button>
 <button type="button" class="lang-btn" id="langBtnAr" onclick="setLanguage('ar')">العربية</button>
-<button type="button" class="login-nav-btn" onclick="openLoginModal()" data-i18n="login_nav_btn">🔑 Student & Teacher Login</button>
+<button type="button" class="login-nav-btn" onclick="openLoginModal()" data-i18n="login_nav_btn">🔑 Login</button>
 </div>
 </div>
 
@@ -329,7 +340,8 @@ html[dir="rtl"] .lead-form label { text-align: right; }
 </div>
 
 <div class="hero-cta-row">
-<button type="button" class="hero-login-btn" onclick="openLoginModal()" data-i18n="login_nav_btn">🔑 Student & Teacher Login</button>
+<button type="button" class="hero-login-btn" onclick="openLoginModal('student')" data-i18n="student_login_btn">🎓 Student Login</button>
+<button type="button" class="hero-login-btn hero-login-btn-alt" onclick="openLoginModal('teacher')" data-i18n="teacher_login_btn">👨‍🏫 Teacher Login</button>
 <button type="button" class="hero-lead-btn" onclick="openLeadModal()" data-i18n="cta_btn">📋 Request Level Assessment</button>
 </div>
 
@@ -399,19 +411,41 @@ html[dir="rtl"] .lead-form label { text-align: right; }
 <!-- ==================== Student Dashboard ==================== -->
 <div class="container hidden" id="studentDashboard">
 <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;"><h2 id="welcomeStudent" style="margin:0;">Welcome</h2><button onclick="handleLogout()" style="width:auto; padding:8px 18px; background:var(--danger); font-size:13px;">🚪 Log Out</button></div>
+
+<div class="student-tabs-bar">
+<button type="button" class="student-tab-btn active" id="studentTabBtn-personal" onclick="switchStudentTab('personal')">👤 Personal Data</button>
+<button type="button" class="student-tab-btn" id="studentTabBtn-attendance" onclick="switchStudentTab('attendance')">📊 Attendance</button>
+<button type="button" class="student-tab-btn" id="studentTabBtn-lectures" onclick="switchStudentTab('lectures')">📅 My Lectures</button>
+<button type="button" class="student-tab-btn" id="studentTabBtn-livegame" onclick="switchStudentTab('livegame')">🎮 Live Game</button>
+<button type="button" class="student-tab-btn" id="studentTabBtn-homework" onclick="switchStudentTab('homework')">📝 Homework</button>
+<button type="button" class="student-tab-btn" id="studentTabBtn-exams" onclick="switchStudentTab('exams')">💻 Exams</button>
+<button type="button" class="student-tab-btn" id="studentTabBtn-materials" onclick="switchStudentTab('materials')">📚 Course Materials</button>
+</div>
+
+<!-- ===== TAB: Personal Data ===== -->
+<div class="student-tab-pane" id="studentTab-personal">
 <div class="grid-cards">
 <div class="info-card"><h4>Current Course</h4><strong id="courseName" style="color: var(--primary);"></strong></div>
 <div class="info-card"><h4>Group</h4><strong id="groupName" style="color: var(--secondary);"></strong></div>
 <div class="info-card"><h4>Schedule Details</h4><strong id="scheduleDetails"></strong></div>
 <div class="info-card"><h4>Instructor</h4><strong id="teacherName"></strong></div>
-<div class="info-card"><h4>Attendance Rate</h4><strong id="attendanceRate" style="color: #3b82f6;"></strong></div>
 <div class="info-card"><h4>Financial Status</h4><span id="paymentStatus" class="payment-status"></span></div>
 </div>
-
-<div id="barNoticeSection" class="hidden"><div class="bar-box"><strong>⚠️ Academic Warning:</strong><p style="margin: 5px 0 0 0;">You have exceeded the allowed absence limit.</p></div></div>
 <div class="feedback-box"><h4>💬 General Instructor Feedback:</h4><p id="instructorFeedback" style="margin:5px 0 0 0; color:#1E3FD8;"></p></div>
+</div>
 
-<div class="card-section">
+<!-- ===== TAB: Attendance ===== -->
+<div class="student-tab-pane hidden" id="studentTab-attendance">
+<div class="grid-cards">
+<div class="info-card"><h4>Attendance Rate</h4><strong id="attendanceRate" style="color: #3b82f6;"></strong></div>
+</div>
+<div id="barNoticeSection" class="hidden"><div class="bar-box"><strong>⚠️ Academic Warning:</strong><p style="margin: 5px 0 0 0;">You have exceeded the allowed absence limit.</p></div></div>
+<p style="color: var(--muted); font-size: 13px; margin-top: 15px;">Per-lecture attendance status is shown in the <strong>My Lectures</strong> tab.</p>
+</div>
+
+<!-- ===== TAB: My Lectures ===== -->
+<div class="student-tab-pane hidden" id="studentTab-lectures">
+<div class="card-section" style="margin-top: 0;">
 <div class="card-title">📅 Schedule (Center & Live Stream)</div>
 <div class="table-responsive">
 <table>
@@ -420,8 +454,11 @@ html[dir="rtl"] .lead-form label { text-align: right; }
 </table>
 </div>
 </div>
+</div>
 
-<div class="live-cta-box">
+<!-- ===== TAB: Live Game ===== -->
+<div class="student-tab-pane hidden" id="studentTab-livegame">
+<div class="live-cta-box" style="margin-top: 0;">
 <h3>🎮 Live Class Game Room</h3>
 <p>Got a room code from your instructor? Join the live competition now!</p>
 <button onclick="openJoinGameModal()">🚀 Join a Live Game</button>
@@ -477,8 +514,11 @@ html[dir="rtl"] .lead-form label { text-align: right; }
   </div>
 
 </div>
+</div>
 
-<div class="card-section">
+<!-- ===== TAB: Homework ===== -->
+<div class="student-tab-pane hidden" id="studentTab-homework">
+<div class="card-section" style="margin-top: 0;">
 <div class="card-title">📝 Homework & Interactive Storytelling</div>
 <div class="q-block">
 <label class="hw-label" style="font-size:16px;">Select a lecture to submit narrative assignment or start the interactive journey:</label>
@@ -534,9 +574,17 @@ html[dir="rtl"] .lead-form label { text-align: right; }
 </div>
 </div>
 </div>
+</div>
 
-<div class="card-section"><div class="card-title">💻 Digital Exams & Quizzes</div><div id="examsContainer"><div class="exam-row"><div><strong>Quiz 1 (10)</strong></div><div id="action-quiz1"></div></div><div class="exam-row"><div><strong>Quiz 2 (10)</strong></div><div id="action-quiz2"></div></div><div class="exam-row"><div><strong>Final Exam (80)</strong></div><div id="action-final"></div></div></div></div>
-<div class="card-section"><div class="card-title">📚 Course Materials</div><div id="materialsList"></div></div>
+<!-- ===== TAB: Exams ===== -->
+<div class="student-tab-pane hidden" id="studentTab-exams">
+<div class="card-section" style="margin-top: 0;"><div class="card-title">💻 Digital Exams & Quizzes</div><div id="examsContainer"><div class="exam-row"><div><strong>Quiz 1 (10)</strong></div><div id="action-quiz1"></div></div><div class="exam-row"><div><strong>Quiz 2 (10)</strong></div><div id="action-quiz2"></div></div><div class="exam-row"><div><strong>Final Exam (80)</strong></div><div id="action-final"></div></div></div></div>
+</div>
+
+<!-- ===== TAB: Course Materials ===== -->
+<div class="student-tab-pane hidden" id="studentTab-materials">
+<div class="card-section" style="margin-top: 0;"><div class="card-title">📚 Course Materials</div><div id="materialsList"></div></div>
+</div>
 </div>
 
 <!-- ==================== Exam Interface ==================== -->
@@ -794,7 +842,7 @@ html[dir="rtl"] .lead-form label { text-align: right; }
 <div id="loginModal" class="modal hidden">
 <div class="modal-content" style="max-width: 400px; text-align:center;">
 <span class="close-btn" onclick="closeLoginModal()">&times;</span>
-<h2 style="font-size: 22px;" data-i18n="login_title">English Land LMS</h2>
+<h2 style="font-size: 22px;" id="loginModalTitle" data-i18n="login_title">English Land LMS</h2>
 <p style="margin-bottom: 20px;" data-i18n="login_sub">Enter your credentials to access your account</p>
 <input type="text" id="universalId" data-i18n-placeholder="login_id_ph" placeholder="Enter your ID here" style="margin-bottom: 10px;">
 <input type="password" id="universalPass" data-i18n-placeholder="login_pass_ph" placeholder="Password" style="margin-bottom: 15px;">
@@ -947,7 +995,23 @@ function toggleGameSound() {
 function parseJSONSafe(str) { let safeStr = String(str); if (!safeStr || safeStr === "" || safeStr === "undefined") return {}; try { return JSON.parse(safeStr); } catch (e) { return { "L1": safeStr }; } }
 
 /* ==================== Login Modal ==================== */
-function openLoginModal() { document.getElementById('errorMsg').innerText = ""; document.getElementById('loginModal').classList.remove('hidden'); }
+function openLoginModal(role) {
+    document.getElementById('errorMsg').innerText = "";
+    const titleEl = document.getElementById('loginModalTitle');
+    const idInput = document.getElementById('universalId');
+    const dict = translations[currentLang];
+    if (role === 'student') {
+        titleEl.innerText = dict.login_title_student;
+        idInput.placeholder = dict.login_id_ph_student;
+    } else if (role === 'teacher') {
+        titleEl.innerText = dict.login_title_teacher;
+        idInput.placeholder = dict.login_id_ph_teacher;
+    } else {
+        titleEl.innerText = dict.login_title;
+        idInput.placeholder = dict.login_id_ph;
+    }
+    document.getElementById('loginModal').classList.remove('hidden');
+}
 function closeLoginModal() { document.getElementById('loginModal').classList.add('hidden'); }
 
 async function handleLogin() {
@@ -1045,15 +1109,28 @@ function resumeLiveGameIfAny() {
     try { savedRoom = localStorage.getItem('el_liveGameRoom'); } catch (e) { savedRoom = null; }
     if (!savedRoom) return;
     lgStuRoomCode = savedRoom; lgStuLastStatus = ""; lgStuLastIndex = -1; lgStuAnsweredThisQuestion = false; lgStuSeenEventCount = 0;
+    switchStudentTab('livegame'); // كان جوه لعبة حية وعمل refresh -> نوديه لتاب اللعبة الحية على طول
     document.getElementById('liveGameStudentStage').classList.remove('hidden');
     if (lgStuPollInterval) clearInterval(lgStuPollInterval);
     pollStudentGameState();
     lgStuPollInterval = setInterval(pollStudentGameState, 2000);
 }
 
+// ==================== Student Dashboard Tabs ====================
+// [جديد] التبديل بين تابات الطالب (البيانات الشخصية / الحضور / المحاضرات / اللعبة الحية / الواجبات / الامتحانات / المواد)
+function switchStudentTab(tab) {
+    document.querySelectorAll('.student-tab-pane').forEach(el => el.classList.add('hidden'));
+    document.querySelectorAll('.student-tab-btn').forEach(el => el.classList.remove('active'));
+    const pane = document.getElementById('studentTab-' + tab);
+    const btn = document.getElementById('studentTabBtn-' + tab);
+    if (pane) pane.classList.remove('hidden');
+    if (btn) btn.classList.add('active');
+}
+
 // ==================== Student Dashboard Functions ====================
 function showStudentDashboard(data) {
     document.getElementById('studentDashboard').classList.remove('hidden');
+    switchStudentTab('personal'); // كل مرة الطالب يدخل، الداشبورد يفتح على تاب "البيانات الشخصية" افتراضياً
     document.getElementById('welcomeStudent').innerText = `Welcome, ${String(data.student.name)} 👋`;
     document.getElementById('courseName').innerText = String(data.student.course);
     document.getElementById('groupName').innerText = String(data.student.group);
@@ -1455,7 +1532,10 @@ en: {
     slide3_h: "Continuous Assessment", slide3_p: "An integrated digital system that precisely tracks your progress to ensure you reach your goals.",
     login_title: "English Land LMS", login_sub: "Enter your credentials to access your account",
     login_id_ph: "Enter your ID here", login_pass_ph: "Password", login_btn: "Secure Login 🔒",
-    login_nav_btn: "🔑 Student & Teacher Login",
+    login_nav_btn: "🔑 Login",
+    login_title_student: "🎓 Student Login", login_id_ph_student: "Enter your Student ID",
+    login_title_teacher: "👨‍🏫 Teacher Login", login_id_ph_teacher: "Enter your Teacher ID",
+    student_login_btn: "🎓 Student Login", teacher_login_btn: "👨‍🏫 Teacher Login",
     why_title: "Why Choose English Land?", why_sub: "A modern, proven approach that gets real results — whatever your starting point.",
     why1_h: "Latest Teaching Methods", why1_p: "We use the most modern, research-backed techniques to make you fluent — even if your level is zero.",
     why2_h: "From Zero to Professional", why2_p: "A clear, structured path takes you step by step from a complete beginner to a confident, professional speaker.",
@@ -1481,7 +1561,10 @@ ar: {
     slide3_h: "تقييم مستمر", slide3_p: "نظام رقمي متكامل يتتبع تقدمك بدقة ليضمن وصولك لأهدافك.",
     login_title: "منصة English Land", login_sub: "أدخل بياناتك للدخول إلى حسابك",
     login_id_ph: "أدخل الـ ID هنا", login_pass_ph: "كلمة المرور", login_btn: "تسجيل دخول آمن 🔒",
-    login_nav_btn: "🔑 دخول الطلاب والمدرسين",
+    login_nav_btn: "🔑 تسجيل الدخول",
+    login_title_student: "🎓 دخول الطلاب", login_id_ph_student: "أدخل الـ ID الخاص بالطالب",
+    login_title_teacher: "👨‍🏫 دخول المحاضرين", login_id_ph_teacher: "أدخل الـ ID الخاص بالمحاضر",
+    student_login_btn: "🎓 دخول الطلاب", teacher_login_btn: "👨‍🏫 دخول المحاضرين",
     why_title: "ليه تختار English Land؟", why_sub: "طريقة حديثة ومضمونة النتائج، مهما كانت نقطة بدايتك.",
     why1_h: "أحدث طرق التدريس", why1_p: "بنستخدم أحدث الأساليب المبنية على أبحاث علمية عشان نخليك محترف في اللغة حتى لو مستواك صفر.",
     why2_h: "من الصفر للاحتراف", why2_p: "مسار واضح ومنظم يوصلك خطوة بخطوة من مبتدئ تمامًا إلى متحدث واثق ومحترف.",
