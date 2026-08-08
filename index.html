@@ -601,7 +601,67 @@ html[dir="rtl"] .lead-form label { text-align: right; }
 <div class="container hidden" id="teacherDashboard" style="max-width: 1050px;">
 <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;"><h2 id="welcomeTeacher" style="margin:0;">Welcome, Instructor</h2><button onclick="handleLogout()" style="width:auto; padding:8px 18px; background:var(--danger); font-size:13px;">🚪 Log Out</button></div>
 
-<div id="superAdminPanel" class="admin-panel hidden">
+<div class="student-tabs-bar">
+<button type="button" class="student-tab-btn active" id="teacherTabBtn-students" onclick="switchTeacherTab('students')">👥 My Students</button>
+<button type="button" class="student-tab-btn" id="teacherTabBtn-livegame" onclick="switchTeacherTab('livegame')">🎮 Live Game</button>
+<button type="button" class="student-tab-btn" id="teacherTabBtn-upload" onclick="switchTeacherTab('upload')">📁 Upload Content</button>
+<button type="button" class="student-tab-btn hidden" id="teacherTabBtn-admin" onclick="switchTeacherTab('admin')">👑 Admin Settings</button>
+</div>
+
+<!-- ===== TAB: My Students ===== -->
+<div class="student-tab-pane" id="teacherTab-students">
+<div class="teacher-tools">
+<div style="flex: 1; min-width: 150px;"><label style="font-weight: bold; color: var(--primary);">Filter Group:</label><select id="groupFilter" onchange="filterTeacherStudents()"></select></div>
+<div style="flex: 1; min-width: 150px;"><label style="font-weight: bold; color: var(--primary);">Lecture:</label><select id="lectureSelect" onchange="filterTeacherStudents()"><option value="L1">Lecture 1 (L1)</option><option value="L2">Lecture 2 (L2)</option><option value="L3">Lecture 3 (L3)</option><option value="L4">Lecture 4 (L4)</option><option value="L5">Lecture 5 (L5)</option><option value="L6">Lecture 6 (L6)</option><option value="L7">Lecture 7 (L7)</option><option value="L8">Lecture 8 (L8)</option></select></div>
+</div>
+
+<div class="lib-games-box" id="libGamesBox">
+<h4>🎮 Saved Games Ready for this Lecture</h4>
+<div id="libGamesList"><p class="lib-empty-msg">Loading...</p></div>
+</div>
+<div id="lectureStatusMsg" style="text-align:center; font-weight:bold; margin-bottom:15px; font-size:14px; line-height: 1.6;"></div>
+
+<div class="card-section" style="margin-top: 12px;">
+<div class="card-title">👥 Students List</div>
+<div class="table-responsive">
+<table style="width: 100%; min-width: 800px;"><thead id="teacherTableHead"></thead><tbody id="teacherStudentsList"></tbody></table>
+</div>
+</div>
+</div>
+
+<!-- ===== TAB: Live Game ===== -->
+<div class="student-tab-pane hidden" id="teacherTab-livegame">
+<div class="live-cta-box" style="margin-top: 0;">
+<h3>🎮 Live Class Game Room</h3>
+<p>Host a Kahoot-style live quiz. Students join with a room code and compete for the top of the leaderboard!</p>
+<button onclick="openHostBuilderModal()">🚀 Start a Live Game Room</button>
+</div>
+</div>
+
+<!-- ===== TAB: Upload Content ===== -->
+<div class="student-tab-pane hidden" id="teacherTab-upload">
+<div class="card-section" style="background: #f8fafc; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0; margin-top: 0;">
+<div style="color: var(--primary); font-weight: bold; font-size: 16px; margin-bottom: 5px;">📁 Upload Center (.txt Exams & Games)</div>
+<p style="margin: 0 0 10px 0; font-size: 13px;">Upload a plain-text file with one question per line to activate a quiz, final exam, or lecture homework/game instantly.</p>
+<div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
+<div style="flex: 1; min-width: 150px;">
+<select id="uploadExamType" style="padding: 8px; font-size: 14px; margin: 5px 0;">
+<option value="quiz1">Quiz 1</option><option value="quiz2">Quiz 2</option><option value="final">Final Exam</option>
+<option value="L1_hw">L1 Homework / Game</option><option value="L2_hw">L2 Homework / Game</option><option value="L3_hw">L3 Homework / Game</option>
+<option value="L4_hw">L4 Homework / Game</option><option value="L5_hw">L5 Homework / Game</option><option value="L6_hw">L6 Homework / Game</option>
+<option value="L7_hw">L7 Homework / Game</option><option value="L8_hw">L8 Homework / Game</option>
+</select>
+</div>
+<div style="flex: 1; min-width: 120px;"><input type="text" id="uploadExamCourse" placeholder="Course Name (e.g. Level3)" style="padding: 8px; font-size: 14px; margin: 5px 0;"></div>
+<div style="flex: 2; min-width: 180px;"><input type="file" id="examTxtFile" accept=".txt" style="padding: 5px; font-size: 13px; margin: 5px 0; border: none;"></div>
+<div style="flex: 1; min-width: 120px;"><button onclick="processAndUploadExam()" style="padding: 10px; font-size: 14px; background: var(--secondary); margin: 0;">Upload & Activate 🚀</button></div>
+</div>
+</div>
+</div>
+
+<!-- ===== TAB: Admin Settings (Super Admin only) ===== -->
+<div class="student-tab-pane hidden" id="teacherTab-admin">
+<div id="superAdminPanel" class="admin-panel">
 <h3>👑 Admin Control (Schedules & Zoom Links)</h3>
 <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
 <div style="flex: 1; min-width: 120px;"><label style="font-size: 12px; font-weight: bold;">Group:</label><select id="adminGroupSelect" style="padding: 8px; font-size: 14px; margin: 5px 0;"></select></div>
@@ -613,14 +673,14 @@ html[dir="rtl"] .lead-form label { text-align: right; }
 <div id="adminMsg" style="margin-top:10px; font-weight:bold; font-size:14px;"></div>
 </div>
 
-<div id="libManagerPanel" class="admin-panel hidden" style="background:#eef2ff; border-color:#4f46e5;">
+<div id="libManagerPanel" class="admin-panel" style="background:#eef2ff; border-color:#4f46e5;">
 <h3 style="color:#4338ca;">🎮 Game Library Manager (Super Admin Only)</h3>
 <p style="color:#4338ca;">Prepare games once here — teachers will see them ready to launch instantly when they open the matching group & lecture.</p>
 <button onclick="openLibBuilderModal()" style="width:auto; padding:10px 25px; background:#4f46e5;">➕ Add a New Saved Game</button>
 <div id="libManagerList" style="margin-top:15px;"><p class="lib-empty-msg">Loading...</p></div>
 </div>
 
-<div id="feedbackUploadPanel" class="card-section hidden" style="background: #f0fdf4; padding: 20px; border-radius: 8px; border: 1px solid var(--secondary); margin-bottom: 25px;">
+<div id="feedbackUploadPanel" class="card-section" style="background: #f0fdf4; padding: 20px; border-radius: 8px; border: 1px solid var(--secondary); margin-bottom: 0;">
 <div style="color: #065f46; font-weight: bold; font-size: 16px; margin-bottom: 10px;">🌟 Upload Student Feedback (Video/Image) - Shown on Landing Page</div>
 <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
 <div style="flex: 1; min-width: 150px;"><input type="text" id="fbStudentName" placeholder="Student name" style="padding: 8px; font-size: 14px; margin: 5px 0;"></div>
@@ -636,46 +696,6 @@ html[dir="rtl"] .lead-form label { text-align: right; }
 <button onclick="uploadStudentFeedback()" style="background: var(--secondary); margin-top: 10px;">Upload Feedback 🌟</button>
 <div id="fbUploadMsg" style="margin-top:10px; font-weight:bold; font-size:14px;"></div>
 <p style="font-size:12px; color:#065f46; margin-top:5px;">⚠️ Keep video files short (under ~20MB) since they are uploaded directly through the form.</p>
-</div>
-
-<div class="card-section" style="background: #f8fafc; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 25px;">
-<div style="color: var(--primary); font-weight: bold; font-size: 16px; margin-bottom: 5px;">📁 Upload Center (.txt Exams & Games)</div>
-<div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
-<div style="flex: 1; min-width: 150px;">
-<select id="uploadExamType" style="padding: 8px; font-size: 14px; margin: 5px 0;">
-<option value="quiz1">Quiz 1</option><option value="quiz2">Quiz 2</option><option value="final">Final Exam</option>
-<option value="L1_hw">L1 Homework / Game</option><option value="L2_hw">L2 Homework / Game</option><option value="L3_hw">L3 Homework / Game</option>
-<option value="L4_hw">L4 Homework / Game</option><option value="L5_hw">L5 Homework / Game</option><option value="L6_hw">L6 Homework / Game</option>
-<option value="L7_hw">L7 Homework / Game</option><option value="L8_hw">L8 Homework / Game</option>
-</select>
-</div>
-<div style="flex: 1; min-width: 120px;"><input type="text" id="uploadExamCourse" placeholder="Course Name (e.g. Level3)" style="padding: 8px; font-size: 14px; margin: 5px 0;"></div>
-<div style="flex: 2; min-width: 180px;"><input type="file" id="examTxtFile" accept=".txt" style="padding: 5px; font-size: 13px; margin: 5px 0; border: none;"></div>
-<div style="flex: 1; min-width: 120px;"><button onclick="processAndUploadExam()" style="padding: 10px; font-size: 14px; background: var(--secondary); margin: 0;">Upload & Activate 🚀</button></div>
-</div>
-</div>
-
-<div class="live-cta-box" style="margin-bottom:25px;">
-<h3>🎮 Live Class Game Room</h3>
-<p>Host a Kahoot-style live quiz. Students join with a room code and compete for the top of the leaderboard!</p>
-<button onclick="openHostBuilderModal()">🚀 Start a Live Game Room</button>
-</div>
-
-<div class="teacher-tools">
-<div style="flex: 1; min-width: 150px;"><label style="font-weight: bold; color: var(--primary);">Filter Group:</label><select id="groupFilter" onchange="filterTeacherStudents()"></select></div>
-<div style="flex: 1; min-width: 150px;"><label style="font-weight: bold; color: var(--primary);">Lecture:</label><select id="lectureSelect" onchange="filterTeacherStudents()"><option value="L1">Lecture 1 (L1)</option><option value="L2">Lecture 2 (L2)</option><option value="L3">Lecture 3 (L3)</option><option value="L4">Lecture 4 (L4)</option><option value="L5">Lecture 5 (L5)</option><option value="L6">Lecture 6 (L6)</option><option value="L7">Lecture 7 (L7)</option><option value="L8">Lecture 8 (L8)</option></select></div>
-</div>
-
-<div class="lib-games-box" id="libGamesBox">
-<h4>🎮 Saved Games Ready for this Lecture</h4>
-<div id="libGamesList"><p class="lib-empty-msg">Loading...</p></div>
-</div>
-<div id="lectureStatusMsg" style="text-align:center; font-weight:bold; margin-bottom:15px; font-size:14px; line-height: 1.6;"></div>
-
-<div class="card-section">
-<div class="card-title">👥 Students List</div>
-<div class="table-responsive">
-<table style="width: 100%; min-width: 800px;"><thead id="teacherTableHead"></thead><tbody id="teacherStudentsList"></tbody></table>
 </div>
 </div>
 </div>
@@ -1397,9 +1417,22 @@ async function gradeAndSubmitExam() {
 }
 
 // ==================== Teacher & Admin Dashboard ====================
+// ==================== Teacher Dashboard Tabs ====================
+// [جديد] التبديل بين تابات المحاضر (طلابي / اللعبة الحية / رفع المحتوى / إعدادات الأدمن)
+function switchTeacherTab(tab) {
+    document.querySelectorAll('#teacherDashboard .student-tab-pane').forEach(el => el.classList.add('hidden'));
+    document.querySelectorAll('#teacherDashboard .student-tab-btn').forEach(el => el.classList.remove('active'));
+    const pane = document.getElementById('teacherTab-' + tab);
+    const btn = document.getElementById('teacherTabBtn-' + tab);
+    if (pane) pane.classList.remove('hidden');
+    if (btn) btn.classList.add('active');
+}
+
 function showTeacherDashboard(data) {
     document.getElementById('teacherDashboard').classList.remove('hidden'); document.getElementById('welcomeTeacher').innerText = `Welcome, ${String(data.name)}`; teacherStudentsData = data.students;
+    switchTeacherTab('students'); // كل مرة المحاضر يدخل، الداشبورد يفتح على تاب "طلابي" افتراضياً
     if(data.role === "superadmin") {
+        document.getElementById('teacherTabBtn-admin').classList.remove('hidden'); // زرار "إعدادات الأدمن" يظهر للأدمن الرئيسي بس
         document.getElementById('superAdminPanel').classList.remove('hidden'); document.getElementById('feedbackUploadPanel').classList.remove('hidden');
         const adminGroupSel = document.getElementById('adminGroupSelect'); adminGroupSel.innerHTML = ""; data.groups.forEach(g => adminGroupSel.innerHTML += `<option value="${g}">${g}</option>`);
         document.getElementById('libManagerPanel').classList.remove('hidden');
