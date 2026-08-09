@@ -1237,7 +1237,12 @@ function showStudentDashboard(data) {
         const safeLink = String(m.link).replace(/'/g, "\\'");
         const isMobileDevice = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
         const downloadLabel = isMobileDevice ? "📲 Open with an app (e.g. WPS Office)" : "Download 📥";
-        mList.innerHTML += `<div class="material-item"><span>📄 ${String(m.title)}</span><div class="material-actions"><button class="material-view-btn" onclick="openMaterialViewer('${safeTitle}', '${safeLink}')">👁️ View Online</button><a href="${String(m.link)}" target="_blank">${downloadLabel}</a></div></div>`;
+        // [جديد] بدل ما زرار التحميل يوديه لصفحة معاينة Drive (خطوة زيادة ومربكة)، بنوديه على طول لرابط التحميل المباشر
+        // لو الرابط ده رابط ملف (مش فولدر) عشان يبدأ التحميل فورًا ومباشرة تظهر نافذة "افتح باستخدام" بتاعة الموبايل
+        const dlFileId = extractDriveFileId(m.link);
+        const isFolderLink = /\/folders\//.test(String(m.link));
+        const downloadUrl = (dlFileId && !isFolderLink) ? `https://drive.google.com/uc?export=download&id=${dlFileId}` : String(m.link);
+        mList.innerHTML += `<div class="material-item"><span>📄 ${String(m.title)}</span><div class="material-actions"><button class="material-view-btn" onclick="openMaterialViewer('${safeTitle}', '${safeLink}')">👁️ View Online</button><a href="${downloadUrl}" target="_blank">${downloadLabel}</a></div></div>`;
     });
 
     loadStudentHomework();
@@ -1436,7 +1441,10 @@ function startNativeExam(examKey, forceReset = false) {
     currentExamQuestions.forEach((q, idx) => {
         let html = `<div class="q-block" data-idx="${idx}" dir="ltr" style="text-align: left;">`;
         if (q.audio && q.audio !== "none" && q.audio !== lastAudioUsed) {
-            let audioHtml = String(q.audio).includes("drive.google.com") ? `<iframe src="https://drive.google.com/file/d/${String(q.audio).match(/id=([a-zA-Z0-9_-]+)/)[1]}/preview" width="100%" height="80" style="border:none; border-radius:8px;"></iframe>` : `<audio src="${q.audio}" controls style="width:100%;"></audio>`;
+            // [إصلاح] الكود القديم كان بيدور على "id=" في الرابط بس، فلو الرابط بصيغة /file/d/ID/view العادية (من غير id=) كان بيبوظ الصفحة كلها.
+            // دلوقتي بنستخدم نفس دالة استخراج الـ ID الموحّدة اللي بتتعرف على أي شكل رابط Drive بشكل موثوق.
+            const audioFileId = extractDriveFileId(String(q.audio));
+            let audioHtml = audioFileId ? `<iframe src="https://drive.google.com/file/d/${audioFileId}/preview" width="100%" height="80" style="border:none; border-radius:8px;"></iframe>` : `<audio src="${q.audio}" controls style="width:100%;"></audio>`;
             html += `<div style="margin:15px 0; text-align:center;">${audioHtml}</div>`; lastAudioUsed = q.audio;
         }
         if (q.reading && q.reading !== "none") html += `<div class="passage-box">📖 ${q.reading}</div>`;
