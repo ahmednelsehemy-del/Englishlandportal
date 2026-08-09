@@ -1235,7 +1235,9 @@ function showStudentDashboard(data) {
     else data.materials.forEach(m => {
         const safeTitle = String(m.title).replace(/'/g, "\\'");
         const safeLink = String(m.link).replace(/'/g, "\\'");
-        mList.innerHTML += `<div class="material-item"><span>📄 ${String(m.title)}</span><div class="material-actions"><button class="material-view-btn" onclick="openMaterialViewer('${safeTitle}', '${safeLink}')">👁️ View Online</button><a href="${String(m.link)}" target="_blank">Download 📥</a></div></div>`;
+        const isMobileDevice = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+        const downloadLabel = isMobileDevice ? "📲 Open with an app (e.g. WPS Office)" : "Download 📥";
+        mList.innerHTML += `<div class="material-item"><span>📄 ${String(m.title)}</span><div class="material-actions"><button class="material-view-btn" onclick="openMaterialViewer('${safeTitle}', '${safeLink}')">👁️ View Online</button><a href="${String(m.link)}" target="_blank">${downloadLabel}</a></div></div>`;
     });
 
     loadStudentHomework();
