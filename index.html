@@ -855,6 +855,7 @@ html[dir="rtl"] .lead-form label { text-align: right; }
 <div class="modal-content material-viewer-content">
 <span class="close-btn" onclick="closeMaterialViewer()">&times;</span>
 <h3 id="materialViewerTitle" style="margin: 0 0 12px 0; padding-right: 30px;">Course Material</h3>
+<p id="materialViewerFolderHint" class="hidden" style="margin: 0 0 10px 0; font-size: 13px; color: var(--muted);">📁 This is a folder — tap a session below to open it.</p>
 <iframe id="materialViewerFrame" class="material-viewer-frame" allow="autoplay" allowfullscreen loading="lazy"></iframe>
 <div id="materialViewerFallback" class="hidden" style="text-align:center; padding: 30px 10px;">
 <p style="margin-bottom: 15px;">This file can't be previewed here — you can still open it directly.</p>
@@ -1248,16 +1249,27 @@ function openMaterialViewer(title, url) {
     const frame = document.getElementById('materialViewerFrame');
     const titleEl = document.getElementById('materialViewerTitle');
     const fallback = document.getElementById('materialViewerFallback');
+    const folderHint = document.getElementById('materialViewerFolderHint');
     titleEl.innerText = title;
-    if (fileId) {
+    // [جديد] بعض المواد بتكون رابط "فولدر" فيه كذا محاضرة، مش ملف واحد بس - ده محتاج نوع تضمين (embed) مختلف تماماً عن الملف الواحد
+    const isFolder = /\/folders\//.test(url);
+    if (fileId && isFolder) {
+        // عرض الفولدر كقائمة ملفات قابلة للنقر جوه نفس النافذة - الطالب يدوس على المحاضرة اللي عايزها
+        frame.src = `https://drive.google.com/embeddedfolderview?id=${fileId}#list`;
+        frame.classList.remove('hidden');
+        fallback.classList.add('hidden');
+        folderHint.classList.remove('hidden');
+    } else if (fileId) {
         frame.src = `https://drive.google.com/file/d/${fileId}/preview`;
         frame.classList.remove('hidden');
         fallback.classList.add('hidden');
+        folderHint.classList.add('hidden');
     } else {
         // لو الرابط مش رابط Drive عادي (مثلاً رابط خارجي)، منعرضش iframe فاضي - بنقترح فتح الرابط في تاب جديد بدل منه
         frame.src = '';
         frame.classList.add('hidden');
         fallback.classList.remove('hidden');
+        folderHint.classList.add('hidden');
         document.getElementById('materialViewerFallbackLink').href = url;
     }
     document.getElementById('materialViewerModal').classList.remove('hidden');
