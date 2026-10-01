@@ -1121,6 +1121,9 @@ function attemptAutoLogin() {
     if (!saved || !saved.id || !saved.pass) return;
 
     loggedInId = saved.id; loggedInPass = saved.pass;
+    // [إصلاح احترازي] نملأ حقل فورم الدخول كمان (حتى إنه مخفي) كخط دفاع إضافي، عشان أي كود تاني
+    // لسه بيقرا منه مباشرة (بدل متغير loggedInId) يفضل شغال صح برضه.
+    try { document.getElementById('universalId').value = saved.id; } catch (e) {}
     isVideoSkipped = true; // نتخطى الفيديو التقديمي في الدخول التلقائي
     document.getElementById('landingPage').classList.add('hidden');
     document.getElementById('loadingScreen').classList.remove('hidden');
@@ -1397,7 +1400,9 @@ function finishActiveGameSession() {
 }
 
 async function submitGameScoreToDB() {
-    const sId = document.getElementById('universalId').value.trim();
+    // [إصلاح] الكود القديم كان بيقرا الـ ID من حقل فورم تسجيل الدخول (#universalId)، اللي بيفضل فاضي
+    // لو الطالب دخل تلقائياً (auto-login) بدل ما يكتب الـ ID بنفسه - فكانت الدرجة بتتسجل بـ ID فاضي.
+    const sId = String(loggedInId).trim();
     document.getElementById('gameChoicesBox').innerHTML = "<h3 style='color:white; text-align:center;'>Saving to records...</h3>";
     try {
         await fetch(GAS_URL, {
@@ -1415,7 +1420,7 @@ function exitActiveGame() {
 }
 
 async function submitStudentHomework() {
-    const sId = document.getElementById('universalId').value.trim(), lec = document.getElementById('studentHwLecture').value, writing = document.getElementById('studentWriting').value.trim(), shadowing = document.getElementById('studentShadowing').value.trim(), msgBox = document.getElementById('hwSubmitMsg');
+    const sId = String(loggedInId).trim(), lec = document.getElementById('studentHwLecture').value, writing = document.getElementById('studentWriting').value.trim(), shadowing = document.getElementById('studentShadowing').value.trim(), msgBox = document.getElementById('hwSubmitMsg');
     if(!writing && !shadowing) { msgBox.style.color = "red"; msgBox.innerText = "Please write your text or provide a link first."; return; }
     msgBox.style.color = "orange"; msgBox.innerText = "Uploading homework to system (POST)...";
     try {
@@ -1427,7 +1432,7 @@ async function submitStudentHomework() {
 
 // ==================== Main Exams Functions ====================
 function setupExamButton(examKey, gradeValue, isBarred, isOpen, closedMsg) {
-    const container = document.getElementById(`action-${examKey}`); const sId = String(document.getElementById('universalId').value).trim().toUpperCase(); const isS100 = (sId === "S100");
+    const container = document.getElementById(`action-${examKey}`); const sId = String(loggedInId).trim().toUpperCase(); const isS100 = (sId === "S100");
     if (gradeValue !== undefined && gradeValue !== null && String(gradeValue).trim() !== "") {
         if (isS100) container.innerHTML = `<b>Grade: ${gradeValue}</b> <button class="btn-att" style="background:var(--danger);color:white;padding:4px 10px;" onclick="startNativeExam('${examKey}', true)">Retake</button>`;
         else container.innerHTML = `<b>Recorded Grade: ${gradeValue}</b>`;
@@ -1447,7 +1452,7 @@ function setupExamButton(examKey, gradeValue, isBarred, isOpen, closedMsg) {
 }
 
 function startNativeExam(examKey, forceReset = false) {
-    currentExamTypeKey = examKey; currentExamQuestions = JSON.parse(studentActiveExams[examKey]); const sId = String(document.getElementById('universalId').value).trim().toUpperCase();
+    currentExamTypeKey = examKey; currentExamQuestions = JSON.parse(studentActiveExams[examKey]); const sId = String(loggedInId).trim().toUpperCase();
     if (forceReset) { localStorage.removeItem(`endTime_${sId}_${examKey}`); localStorage.removeItem(`ans_${sId}_${examKey}`); }
     document.getElementById('studentDashboard').classList.add('hidden'); document.getElementById('examTakerDashboard').classList.remove('hidden'); document.getElementById('currentExamTitle').innerText = examKey.toUpperCase();
     const qContainer = document.getElementById('examQuestionsContainer'); qContainer.innerHTML = ""; let lastAudioUsed = "";
@@ -1498,7 +1503,7 @@ async function gradeAndSubmitExam() {
         if (q.type === 'MCQ') { const checked = block.querySelector(`input[name="rad-${idx}"]:checked`); if (checked && String(checked.value).trim().toLowerCase() === String(q.answer).trim().toLowerCase()) correctCount++; }
         else if (q.type === 'Cloze') { const inputs = block.querySelectorAll('.cloze-input-field'); let allTrue = true; inputs.forEach(inp => { if (String(inp.value).trim().toLowerCase() !== String(inp.dataset.ans).toLowerCase()) allTrue = false; }); if (allTrue && inputs.length > 0) correctCount++; }
     });
-    const maxGrade = (currentExamTypeKey === 'final') ? 80 : 10; const scaledScore = Math.round((correctCount / total) * maxGrade); const sId = String(document.getElementById('universalId').value).trim().toUpperCase();
+    const maxGrade = (currentExamTypeKey === 'final') ? 80 : 10; const scaledScore = Math.round((correctCount / total) * maxGrade); const sId = String(loggedInId).trim().toUpperCase();
     attemptExamSubmission(sId, currentExamTypeKey, scaledScore, maxGrade, 1);
 }
 
